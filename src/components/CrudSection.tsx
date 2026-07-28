@@ -141,9 +141,18 @@ export function CrudSection({
           <div className="grid gap-4 sm:grid-cols-2">
             {fields.map((f) => (
               <div key={f.key} className={f.type === "textarea" ? "sm:col-span-2" : ""}>
-                <label className="mb-1.5 block text-xs font-bold text-muted-foreground">
-                  {f.label}
-                </label>
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <label className="block text-xs font-bold text-muted-foreground">
+                    {f.label}
+                  </label>
+                  {aiHelpers?.[f.key] && editing && (
+                    <AiWriteButton
+                      purpose={aiHelpers[f.key].purpose}
+                      placeholder={aiHelpers[f.key].placeholder}
+                      onGenerated={(t) => setEditing({ ...editing, [f.key]: t })}
+                    />
+                  )}
+                </div>
                 {f.type === "textarea" ? (
                   <textarea
                     rows={3}
