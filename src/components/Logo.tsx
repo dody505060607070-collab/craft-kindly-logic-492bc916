@@ -4,10 +4,10 @@ import logoMark from "@/assets/logo-mark.png";
 type Size = "xs" | "sm" | "md" | "lg";
 
 const dims: Record<Size, string> = {
-  xs: "h-8 w-8",
-  sm: "h-10 w-10",
-  md: "h-14 w-14",
-  lg: "h-20 w-20",
+  xs: "h-12 w-12",
+  sm: "h-16 w-16",
+  md: "h-24 w-24",
+  lg: "h-32 w-32",
 };
 
 const text: Record<Size, string> = {
@@ -19,7 +19,7 @@ const text: Record<Size, string> = {
 
 export function Logo({
   size = "sm",
-  withText = true,
+  withText = false,
   to = "/",
   className = "",
 }: {
@@ -39,7 +39,7 @@ export function Logo({
         alt="شعار منصة المستر"
         width={1024}
         height={1024}
-        className={`${dims[size]} drop-shadow-md`}
+        className={`${dims[size]} object-contain drop-shadow-md`}
       />
       {withText && (
         <span
