@@ -39,6 +39,7 @@ export function CrudSection({
   readOnly = false,
   allowCreate = true,
   emptyText = "لا توجد بيانات بعد.",
+  aiHelpers,
 }: {
   table: string;
   title: string;
@@ -49,6 +50,7 @@ export function CrudSection({
   readOnly?: boolean;
   allowCreate?: boolean;
   emptyText?: string;
+  aiHelpers?: Record<string, { purpose: string; placeholder?: string }>;
 }) {
   const { isAdmin } = useAuth();
   const qc = useQueryClient();
