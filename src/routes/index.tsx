@@ -170,6 +170,7 @@ const FEATURES = [
 ];
 
 function Home() {
+  const { user } = useAuth();
   const heroRef = useRef<HTMLElement | null>(null);
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 24, mass: 0.3 });
@@ -214,7 +215,7 @@ function Home() {
                 شوف الكورسات
               </a>
               <Link
-                to="/auth"
+                to={user ? "/courses" : "/auth"}
                 className="rounded-2xl border border-border bg-card px-6 py-3 font-bold transition hover:-translate-y-0.5"
               >
                 ابدأ دلوقتي
@@ -275,7 +276,7 @@ function Home() {
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-sm font-bold text-muted-foreground">{c.price}</span>
                     <Link
-                      to="/auth"
+                      to={user ? "/courses" : "/auth"}
                       className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
                     >
                       ادخل الكورس
