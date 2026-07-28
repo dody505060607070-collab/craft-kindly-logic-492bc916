@@ -429,9 +429,10 @@ export const gradeQuizEssay = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: adminChk } = await context.supabase.rpc("is_admin");
     if (!adminChk) throw new Error("للأدمن فقط");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [q, a] = await Promise.all([
-      context.supabase.from("quiz_questions").select("prompt, correct_answer, points").eq("id", data.questionId).maybeSingle(),
-      context.supabase.from("quiz_attempts").select("answers").eq("id", data.attemptId).maybeSingle(),
+      supabaseAdmin.from("quiz_questions").select("prompt, correct_answer, points").eq("id", data.questionId).maybeSingle(),
+      supabaseAdmin.from("quiz_attempts").select("answers").eq("id", data.attemptId).maybeSingle(),
     ]);
     if (!q.data || !a.data) throw new Error("بيانات ناقصة");
     const studentAnswer = ((a.data.answers as Record<string, unknown>)?.[data.questionId] as string) ?? "";
