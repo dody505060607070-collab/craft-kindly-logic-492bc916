@@ -134,17 +134,10 @@ function Logo({ size = "lg" }: { size?: "lg" | "sm" }) {
         alt="شعار منصة المستر"
         width={1024}
         height={1024}
-        className={big ? "h-16 w-16 drop-shadow-xl sm:h-20 sm:w-20" : "h-11 w-11"}
+        className={big ? "h-28 w-28 object-contain drop-shadow-xl sm:h-36 sm:w-36" : "h-14 w-14 object-contain"}
         whileHover={{ rotate: -6, scale: 1.06 }}
         transition={{ type: "spring", stiffness: 250, damping: 14 }}
       />
-      <span
-        className={`font-display font-black tracking-tight text-primary ${
-          big ? "mt-1 text-base sm:text-lg" : "text-xs"
-        }`}
-      >
-        المستر
-      </span>
     </Link>
   );
 }
