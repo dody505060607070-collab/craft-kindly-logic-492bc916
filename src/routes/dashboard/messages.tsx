@@ -55,6 +55,7 @@ function MessagesPage() {
         fields={[
           { key: "title", label: "العنوان" },
           { key: "body", label: "المحتوى", type: "textarea" },
+          { key: "image_url", label: "رابط صورة (اختياري) — تظهر تحت الإعلان المنبثق" },
           { key: "is_pinned", label: "مثبت", type: "bool", default: false },
           { key: "show_as_popup", label: "إظهار كإعلان منبثق (5 ثواني)", type: "bool", default: false },
           { key: "is_active", label: "مفعّل", type: "bool", default: true },
