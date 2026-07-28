@@ -43,6 +43,7 @@ export type Database = {
           body: string
           created_at: string
           id: string
+          image_url: string | null
           is_active: boolean
           is_pinned: boolean
           show_as_popup: boolean
@@ -53,6 +54,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           is_pinned?: boolean
           show_as_popup?: boolean
@@ -63,6 +65,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           is_pinned?: boolean
           show_as_popup?: boolean
