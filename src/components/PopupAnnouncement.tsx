@@ -65,6 +65,14 @@ export function PopupAnnouncement() {
         <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
           {data.body}
         </p>
+        {data.image_url && (
+          <img
+            src={data.image_url}
+            alt={data.title}
+            className="mt-3 w-full rounded-2xl border border-border object-cover max-h-64"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+        )}
         <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-card">
           <div className="h-full bg-primary animate-[popup-bar_5s_linear_forwards]" />
         </div>
