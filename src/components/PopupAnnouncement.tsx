@@ -12,13 +12,13 @@ export function PopupAnnouncement() {
     queryFn: async () => {
       const { data } = await supabase
         .from("announcements")
-        .select("id,title,body")
+        .select("id,title,body,image_url")
         .eq("show_as_popup", true)
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      return data;
+      return data as { id: string; title: string; body: string; image_url: string | null } | null;
     },
     staleTime: 60_000,
   });
