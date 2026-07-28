@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { MessageCircle, PlayCircle, ShieldCheck, Sparkles } from "lucide-react";
 
 import logoMark from "@/assets/logo-mark.png";
+import logoMarkDark from "@/assets/logo-mark-dark.png";
 import teacherHero from "@/assets/teacher-hero.png";
 import teacherThumbs from "@/assets/teacher-thumbsup.png";
 import teacherPoint from "@/assets/teacher-point.png";
@@ -127,6 +128,7 @@ function Reveal({
 
 function Logo({ size = "lg" }: { size?: "lg" | "sm" }) {
   const big = size === "lg";
+  const cls = big ? "h-28 w-28 object-contain drop-shadow-xl sm:h-36 sm:w-36" : "h-14 w-14 object-contain";
   return (
     <Link to="/" className="group flex flex-col items-center leading-none">
       <motion.img
@@ -134,9 +136,19 @@ function Logo({ size = "lg" }: { size?: "lg" | "sm" }) {
         alt="شعار منصة المستر"
         width={1024}
         height={1024}
-        className={big ? "h-28 w-28 object-contain drop-shadow-xl sm:h-36 sm:w-36" : "h-14 w-14 object-contain"}
+        className={`${cls} block dark:hidden`}
         whileHover={{ rotate: -6, scale: 1.06 }}
         transition={{ type: "spring", stiffness: 250, damping: 14 }}
+      />
+      <motion.img
+        src={logoMarkDark}
+        alt="شعار منصة المستر"
+        width={1024}
+        height={1024}
+        className={`${cls} hidden dark:block`}
+        whileHover={{ rotate: -6, scale: 1.06 }}
+        transition={{ type: "spring", stiffness: 250, damping: 14 }}
+        aria-hidden
       />
     </Link>
   );

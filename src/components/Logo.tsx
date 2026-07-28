@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import logoMark from "@/assets/logo-mark.png";
+import logoMarkDark from "@/assets/logo-mark-dark.png";
 
 type Size = "xs" | "sm" | "md" | "lg";
 
@@ -39,7 +40,15 @@ export function Logo({
         alt="شعار منصة المستر"
         width={1024}
         height={1024}
-        className={`${dims[size]} object-contain drop-shadow-md`}
+        className={`${dims[size]} object-contain drop-shadow-md block dark:hidden`}
+      />
+      <img
+        src={logoMarkDark}
+        alt="شعار منصة المستر"
+        width={1024}
+        height={1024}
+        className={`${dims[size]} object-contain drop-shadow-md hidden dark:block`}
+        aria-hidden
       />
       {withText && (
         <span
