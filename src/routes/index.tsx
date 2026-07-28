@@ -82,14 +82,14 @@ function HomeHeader() {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "منصة السيد عبدالعاطي | كورسات برمجة وذكاء اصطناعي" },
+      { title: "منصة المستر | كورسات برمجة وذكاء اصطناعي" },
       {
         name: "description",
         content:
-          "كورسات برمجة وذكاء اصطناعي مع الأستاذ السيد عبدالعاطي — شرح مبسط، فيديوهات منظمة، ومتابعة خطوة بخطوة.",
+          "كورسات برمجة وذكاء اصطناعي مع الأستاذ المستر — شرح مبسط، فيديوهات منظمة، ومتابعة خطوة بخطوة.",
       },
-      { property: "og:title", content: "منصة السيد عبدالعاطي | كورسات برمجة وذكاء اصطناعي" },
-      { property: "og:description", content: "كورسات برمجة وذكاء اصطناعي مع الأستاذ السيد عبدالعاطي — شرح مبسط، فيديوهات منظمة، ومتابعة خطوة بخطوة." },
+      { property: "og:title", content: "منصة المستر | كورسات برمجة وذكاء اصطناعي" },
+      { property: "og:description", content: "كورسات برمجة وذكاء اصطناعي مع الأستاذ المستر — شرح مبسط، فيديوهات منظمة، ومتابعة خطوة بخطوة." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -131,7 +131,7 @@ function Logo({ size = "lg" }: { size?: "lg" | "sm" }) {
     <Link to="/" className="group flex flex-col items-center leading-none">
       <motion.img
         src={logoMark}
-        alt="شعار منصة السيد عبدالعاطي"
+        alt="شعار منصة المستر"
         width={1024}
         height={1024}
         className={big ? "h-16 w-16 drop-shadow-xl sm:h-20 sm:w-20" : "h-11 w-11"}
@@ -143,7 +143,7 @@ function Logo({ size = "lg" }: { size?: "lg" | "sm" }) {
           big ? "mt-1 text-base sm:text-lg" : "text-xs"
         }`}
       >
-        السيد عبدالعاطي
+        المستر
       </span>
     </Link>
   );
@@ -233,7 +233,7 @@ function Home() {
             <div className="blob morphy absolute inset-6 -z-10" />
             <motion.img
               src={teacherHero}
-              alt="الأستاذ السيد عبدالعاطي"
+              alt="الأستاذ المستر"
               width={1024}
               height={1024}
               className="relative w-full drop-shadow-2xl"
@@ -301,7 +301,7 @@ function Home() {
           <Reveal>
             <img
               src={teacherPoint}
-              alt="الأستاذ السيد عبدالعاطي بيشرح"
+              alt="الأستاذ المستر بيشرح"
               loading="lazy"
               width={1024}
               height={1024}
