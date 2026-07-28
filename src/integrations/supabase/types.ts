@@ -122,7 +122,9 @@ export type Database = {
           description: string | null
           due_at: string | null
           id: string
+          instructions: string | null
           is_published: boolean
+          max_score: number
           title: string
           updated_at: string
         }
@@ -132,7 +134,9 @@ export type Database = {
           description?: string | null
           due_at?: string | null
           id?: string
+          instructions?: string | null
           is_published?: boolean
+          max_score?: number
           title: string
           updated_at?: string
         }
@@ -142,7 +146,9 @@ export type Database = {
           description?: string | null
           due_at?: string | null
           id?: string
+          instructions?: string | null
           is_published?: boolean
+          max_score?: number
           title?: string
           updated_at?: string
         }
@@ -240,7 +246,9 @@ export type Database = {
           cover_url: string | null
           created_at: string
           description: string | null
+          grade: string | null
           id: string
+          is_free: boolean
           is_published: boolean
           price: number
           price_year: number | null
@@ -253,7 +261,9 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          grade?: string | null
           id?: string
+          is_free?: boolean
           is_published?: boolean
           price?: number
           price_year?: number | null
@@ -266,7 +276,9 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          grade?: string | null
           id?: string
+          is_free?: boolean
           is_published?: boolean
           price?: number
           price_year?: number | null
@@ -359,6 +371,7 @@ export type Database = {
           is_published: boolean
           sort_order: number
           title: string
+          transcript: string | null
           updated_at: string
           video_url: string | null
         }
@@ -373,6 +386,7 @@ export type Database = {
           is_published?: boolean
           sort_order?: number
           title: string
+          transcript?: string | null
           updated_at?: string
           video_url?: string | null
         }
@@ -387,6 +401,7 @@ export type Database = {
           is_published?: boolean
           sort_order?: number
           title?: string
+          transcript?: string | null
           updated_at?: string
           video_url?: string | null
         }
@@ -447,7 +462,10 @@ export type Database = {
           id: string
           is_active: boolean
           meeting_url: string | null
+          recording_url: string | null
           starts_at: string
+          status: string
+          stream_url: string | null
           title: string
         }
         Insert: {
@@ -457,7 +475,10 @@ export type Database = {
           id?: string
           is_active?: boolean
           meeting_url?: string | null
+          recording_url?: string | null
           starts_at?: string
+          status?: string
+          stream_url?: string | null
           title: string
         }
         Update: {
@@ -467,7 +488,10 @@ export type Database = {
           id?: string
           is_active?: boolean
           meeting_url?: string | null
+          recording_url?: string | null
           starts_at?: string
+          status?: string
+          stream_url?: string | null
           title?: string
         }
         Relationships: []
@@ -618,8 +642,10 @@ export type Database = {
       quiz_attempts: {
         Row: {
           answers: Json
+          created_at: string
           id: string
           max_score: number
+          passed: boolean
           quiz_id: string
           score: number
           submitted_at: string
@@ -627,8 +653,10 @@ export type Database = {
         }
         Insert: {
           answers?: Json
+          created_at?: string
           id?: string
           max_score?: number
+          passed?: boolean
           quiz_id: string
           score?: number
           submitted_at?: string
@@ -636,8 +664,10 @@ export type Database = {
         }
         Update: {
           answers?: Json
+          created_at?: string
           id?: string
           max_score?: number
+          passed?: boolean
           quiz_id?: string
           score?: number
           submitted_at?: string
@@ -655,28 +685,34 @@ export type Database = {
       }
       quiz_questions: {
         Row: {
+          correct_answer: string | null
           correct_index: number
           id: string
           options: Json
           points: number
+          prompt: string | null
           question: string
           quiz_id: string
           sort_order: number
         }
         Insert: {
+          correct_answer?: string | null
           correct_index?: number
           id?: string
           options?: Json
           points?: number
+          prompt?: string | null
           question: string
           quiz_id: string
           sort_order?: number
         }
         Update: {
+          correct_answer?: string | null
           correct_index?: number
           id?: string
           options?: Json
           points?: number
+          prompt?: string | null
           question?: string
           quiz_id?: string
           sort_order?: number
@@ -697,8 +733,10 @@ export type Database = {
           created_at: string
           description: string | null
           duration_min: number | null
+          duration_minutes: number | null
           id: string
           is_published: boolean
+          pass_score: number
           title: string
           updated_at: string
         }
@@ -707,8 +745,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_min?: number | null
+          duration_minutes?: number | null
           id?: string
           is_published?: boolean
+          pass_score?: number
           title: string
           updated_at?: string
         }
@@ -717,8 +757,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_min?: number | null
+          duration_minutes?: number | null
           id?: string
           is_published?: boolean
+          pass_score?: number
           title?: string
           updated_at?: string
         }
