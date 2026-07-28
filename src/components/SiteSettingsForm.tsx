@@ -3,6 +3,7 @@ import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AiWriteButton } from "@/components/AiWriteButton";
 
 export function SiteSettingsForm() {
   const qc = useQueryClient();
@@ -73,12 +74,22 @@ export function SiteSettingsForm() {
           className="w-full rounded-xl border border-input bg-surface px-3 py-2 text-sm" />
       </div>
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between gap-2">
           <label className="text-sm font-black">الشريط العلوي المتحرك (Marquee)</label>
-          <label className="flex items-center gap-2 text-xs font-bold">
-            <input type="checkbox" checked={marqueeEnabled} onChange={(e) => setMarqueeEnabled(e.target.checked)} />
-            مفعّل
-          </label>
+          <div className="flex items-center gap-2">
+            <AiWriteButton
+              purpose="نص قصير للشريط المتحرك أعلى الموقع (سطر واحد، أقل من 120 حرف)"
+              placeholder="مثال: خصم 20% على كورس البايثون لحد الجمعة"
+              onGenerated={(t) => {
+                setMarqueeText(t);
+                setMarqueeEnabled(true);
+              }}
+            />
+            <label className="flex items-center gap-2 text-xs font-bold">
+              <input type="checkbox" checked={marqueeEnabled} onChange={(e) => setMarqueeEnabled(e.target.checked)} />
+              مفعّل
+            </label>
+          </div>
         </div>
         <input
           value={marqueeText}

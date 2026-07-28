@@ -59,6 +59,10 @@ function MessagesPage() {
           { key: "show_as_popup", label: "إظهار كإعلان منبثق (5 ثواني)", type: "bool", default: false },
           { key: "is_active", label: "مفعّل", type: "bool", default: true },
         ]}
+        aiHelpers={{
+          title: { purpose: "عنوان إعلان قصير وجذاب (أقل من 60 حرف)" },
+          body: { purpose: "محتوى إعلان تعليمي واضح ومختصر لطلاب منصة المستر" },
+        }}
       />
 
       <CrudSection

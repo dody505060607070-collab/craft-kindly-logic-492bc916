@@ -4,6 +4,7 @@ import { Loader2, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { AiWriteButton } from "@/components/AiWriteButton";
 
 /* الوصول لأي جدول باسم ديناميكي */
 type AnyQuery = {
@@ -38,6 +39,7 @@ export function CrudSection({
   readOnly = false,
   allowCreate = true,
   emptyText = "لا توجد بيانات بعد.",
+  aiHelpers,
 }: {
   table: string;
   title: string;
@@ -48,6 +50,7 @@ export function CrudSection({
   readOnly?: boolean;
   allowCreate?: boolean;
   emptyText?: string;
+  aiHelpers?: Record<string, { purpose: string; placeholder?: string }>;
 }) {
   const { isAdmin } = useAuth();
   const qc = useQueryClient();
@@ -138,9 +141,18 @@ export function CrudSection({
           <div className="grid gap-4 sm:grid-cols-2">
             {fields.map((f) => (
               <div key={f.key} className={f.type === "textarea" ? "sm:col-span-2" : ""}>
-                <label className="mb-1.5 block text-xs font-bold text-muted-foreground">
-                  {f.label}
-                </label>
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <label className="block text-xs font-bold text-muted-foreground">
+                    {f.label}
+                  </label>
+                  {aiHelpers?.[f.key] && editing && (
+                    <AiWriteButton
+                      purpose={aiHelpers[f.key].purpose}
+                      placeholder={aiHelpers[f.key].placeholder}
+                      onGenerated={(t) => setEditing({ ...editing, [f.key]: t })}
+                    />
+                  )}
+                </div>
                 {f.type === "textarea" ? (
                   <textarea
                     rows={3}
