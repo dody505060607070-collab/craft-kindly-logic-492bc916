@@ -4,6 +4,7 @@ import { Loader2, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { AiWriteButton } from "@/components/AiWriteButton";
 
 /* الوصول لأي جدول باسم ديناميكي */
 type AnyQuery = {
