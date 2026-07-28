@@ -9,38 +9,362 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as QuizzesRouteImport } from './routes/quizzes'
+import { Route as MeRouteImport } from './routes/me'
+import { Route as LiveRouteImport } from './routes/live'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AssignmentsRouteImport } from './routes/assignments'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as SubscribeCourseIdRouteImport } from './routes/subscribe.$courseId'
+import { Route as DashboardVideosRouteImport } from './routes/dashboard/videos'
+import { Route as DashboardStudentsRouteImport } from './routes/dashboard/students'
+import { Route as DashboardReportsRouteImport } from './routes/dashboard/reports'
+import { Route as DashboardQuizzesRouteImport } from './routes/dashboard/quizzes'
+import { Route as DashboardPaymentsRouteImport } from './routes/dashboard/payments'
+import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
+import { Route as DashboardLiveRouteImport } from './routes/dashboard/live'
+import { Route as DashboardCoursesRouteImport } from './routes/dashboard/courses'
+import { Route as DashboardAssignmentsRouteImport } from './routes/dashboard/assignments'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
+import { Route as DashboardAbTestsRouteImport } from './routes/dashboard/ab-tests'
+import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
+import { Route as ApiAiTranscribeRouteImport } from './routes/api/ai.transcribe'
 
+const QuizzesRoute = QuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesRoute = CoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssignmentsRoute = AssignmentsRouteImport.update({
+  id: '/assignments',
+  path: '/assignments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const SubscribeCourseIdRoute = SubscribeCourseIdRouteImport.update({
+  id: '/subscribe/$courseId',
+  path: '/subscribe/$courseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardVideosRoute = DashboardVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStudentsRoute = DashboardStudentsRouteImport.update({
+  id: '/students',
+  path: '/students',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardQuizzesRoute = DashboardQuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardPaymentsRoute = DashboardPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLiveRoute = DashboardLiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAssignmentsRoute = DashboardAssignmentsRouteImport.update({
+  id: '/assignments',
+  path: '/assignments',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAbTestsRoute = DashboardAbTestsRouteImport.update({
+  id: '/ab-tests',
+  path: '/ab-tests',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
+  id: '/$courseId',
+  path: '/$courseId',
+  getParentRoute: () => CoursesRoute,
+} as any)
+const ApiAiTranscribeRoute = ApiAiTranscribeRouteImport.update({
+  id: '/api/ai/transcribe',
+  path: '/api/ai/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assignments': typeof AssignmentsRoute
+  '/auth': typeof AuthRoute
+  '/courses': typeof CoursesRouteWithChildren
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/live': typeof LiveRoute
+  '/me': typeof MeRoute
+  '/quizzes': typeof QuizzesRoute
+  '/courses/$courseId': typeof CoursesCourseIdRoute
+  '/dashboard/ab-tests': typeof DashboardAbTestsRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/assignments': typeof DashboardAssignmentsRoute
+  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/live': typeof DashboardLiveRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
+  '/dashboard/quizzes': typeof DashboardQuizzesRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
+  '/dashboard/students': typeof DashboardStudentsRoute
+  '/dashboard/videos': typeof DashboardVideosRoute
+  '/subscribe/$courseId': typeof SubscribeCourseIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/api/ai/transcribe': typeof ApiAiTranscribeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assignments': typeof AssignmentsRoute
+  '/auth': typeof AuthRoute
+  '/courses': typeof CoursesRouteWithChildren
+  '/live': typeof LiveRoute
+  '/me': typeof MeRoute
+  '/quizzes': typeof QuizzesRoute
+  '/courses/$courseId': typeof CoursesCourseIdRoute
+  '/dashboard/ab-tests': typeof DashboardAbTestsRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/assignments': typeof DashboardAssignmentsRoute
+  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/live': typeof DashboardLiveRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
+  '/dashboard/quizzes': typeof DashboardQuizzesRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
+  '/dashboard/students': typeof DashboardStudentsRoute
+  '/dashboard/videos': typeof DashboardVideosRoute
+  '/subscribe/$courseId': typeof SubscribeCourseIdRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/api/ai/transcribe': typeof ApiAiTranscribeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assignments': typeof AssignmentsRoute
+  '/auth': typeof AuthRoute
+  '/courses': typeof CoursesRouteWithChildren
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/live': typeof LiveRoute
+  '/me': typeof MeRoute
+  '/quizzes': typeof QuizzesRoute
+  '/courses/$courseId': typeof CoursesCourseIdRoute
+  '/dashboard/ab-tests': typeof DashboardAbTestsRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/assignments': typeof DashboardAssignmentsRoute
+  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/live': typeof DashboardLiveRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
+  '/dashboard/quizzes': typeof DashboardQuizzesRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
+  '/dashboard/students': typeof DashboardStudentsRoute
+  '/dashboard/videos': typeof DashboardVideosRoute
+  '/subscribe/$courseId': typeof SubscribeCourseIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/api/ai/transcribe': typeof ApiAiTranscribeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/assignments'
+    | '/auth'
+    | '/courses'
+    | '/dashboard'
+    | '/live'
+    | '/me'
+    | '/quizzes'
+    | '/courses/$courseId'
+    | '/dashboard/ab-tests'
+    | '/dashboard/analytics'
+    | '/dashboard/assignments'
+    | '/dashboard/courses'
+    | '/dashboard/live'
+    | '/dashboard/messages'
+    | '/dashboard/payments'
+    | '/dashboard/quizzes'
+    | '/dashboard/reports'
+    | '/dashboard/students'
+    | '/dashboard/videos'
+    | '/subscribe/$courseId'
+    | '/dashboard/'
+    | '/api/ai/transcribe'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/assignments'
+    | '/auth'
+    | '/courses'
+    | '/live'
+    | '/me'
+    | '/quizzes'
+    | '/courses/$courseId'
+    | '/dashboard/ab-tests'
+    | '/dashboard/analytics'
+    | '/dashboard/assignments'
+    | '/dashboard/courses'
+    | '/dashboard/live'
+    | '/dashboard/messages'
+    | '/dashboard/payments'
+    | '/dashboard/quizzes'
+    | '/dashboard/reports'
+    | '/dashboard/students'
+    | '/dashboard/videos'
+    | '/subscribe/$courseId'
+    | '/dashboard'
+    | '/api/ai/transcribe'
+  id:
+    | '__root__'
+    | '/'
+    | '/assignments'
+    | '/auth'
+    | '/courses'
+    | '/dashboard'
+    | '/live'
+    | '/me'
+    | '/quizzes'
+    | '/courses/$courseId'
+    | '/dashboard/ab-tests'
+    | '/dashboard/analytics'
+    | '/dashboard/assignments'
+    | '/dashboard/courses'
+    | '/dashboard/live'
+    | '/dashboard/messages'
+    | '/dashboard/payments'
+    | '/dashboard/quizzes'
+    | '/dashboard/reports'
+    | '/dashboard/students'
+    | '/dashboard/videos'
+    | '/subscribe/$courseId'
+    | '/dashboard/'
+    | '/api/ai/transcribe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssignmentsRoute: typeof AssignmentsRoute
+  AuthRoute: typeof AuthRoute
+  CoursesRoute: typeof CoursesRouteWithChildren
+  DashboardRoute: typeof DashboardRouteWithChildren
+  LiveRoute: typeof LiveRoute
+  MeRoute: typeof MeRoute
+  QuizzesRoute: typeof QuizzesRoute
+  SubscribeCourseIdRoute: typeof SubscribeCourseIdRoute
+  ApiAiTranscribeRoute: typeof ApiAiTranscribeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/quizzes': {
+      id: '/quizzes'
+      path: '/quizzes'
+      fullPath: '/quizzes'
+      preLoaderRoute: typeof QuizzesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses': {
+      id: '/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assignments': {
+      id: '/assignments'
+      path: '/assignments'
+      fullPath: '/assignments'
+      preLoaderRoute: typeof AssignmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +372,171 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/subscribe/$courseId': {
+      id: '/subscribe/$courseId'
+      path: '/subscribe/$courseId'
+      fullPath: '/subscribe/$courseId'
+      preLoaderRoute: typeof SubscribeCourseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/videos': {
+      id: '/dashboard/videos'
+      path: '/videos'
+      fullPath: '/dashboard/videos'
+      preLoaderRoute: typeof DashboardVideosRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/students': {
+      id: '/dashboard/students'
+      path: '/students'
+      fullPath: '/dashboard/students'
+      preLoaderRoute: typeof DashboardStudentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/reports': {
+      id: '/dashboard/reports'
+      path: '/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/quizzes': {
+      id: '/dashboard/quizzes'
+      path: '/quizzes'
+      fullPath: '/dashboard/quizzes'
+      preLoaderRoute: typeof DashboardQuizzesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/payments': {
+      id: '/dashboard/payments'
+      path: '/payments'
+      fullPath: '/dashboard/payments'
+      preLoaderRoute: typeof DashboardPaymentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/messages': {
+      id: '/dashboard/messages'
+      path: '/messages'
+      fullPath: '/dashboard/messages'
+      preLoaderRoute: typeof DashboardMessagesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/live': {
+      id: '/dashboard/live'
+      path: '/live'
+      fullPath: '/dashboard/live'
+      preLoaderRoute: typeof DashboardLiveRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/courses': {
+      id: '/dashboard/courses'
+      path: '/courses'
+      fullPath: '/dashboard/courses'
+      preLoaderRoute: typeof DashboardCoursesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/assignments': {
+      id: '/dashboard/assignments'
+      path: '/assignments'
+      fullPath: '/dashboard/assignments'
+      preLoaderRoute: typeof DashboardAssignmentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/ab-tests': {
+      id: '/dashboard/ab-tests'
+      path: '/ab-tests'
+      fullPath: '/dashboard/ab-tests'
+      preLoaderRoute: typeof DashboardAbTestsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/courses/$courseId': {
+      id: '/courses/$courseId'
+      path: '/$courseId'
+      fullPath: '/courses/$courseId'
+      preLoaderRoute: typeof CoursesCourseIdRouteImport
+      parentRoute: typeof CoursesRoute
+    }
+    '/api/ai/transcribe': {
+      id: '/api/ai/transcribe'
+      path: '/api/ai/transcribe'
+      fullPath: '/api/ai/transcribe'
+      preLoaderRoute: typeof ApiAiTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface CoursesRouteChildren {
+  CoursesCourseIdRoute: typeof CoursesCourseIdRoute
+}
+
+const CoursesRouteChildren: CoursesRouteChildren = {
+  CoursesCourseIdRoute: CoursesCourseIdRoute,
+}
+
+const CoursesRouteWithChildren =
+  CoursesRoute._addFileChildren(CoursesRouteChildren)
+
+interface DashboardRouteChildren {
+  DashboardAbTestsRoute: typeof DashboardAbTestsRoute
+  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
+  DashboardAssignmentsRoute: typeof DashboardAssignmentsRoute
+  DashboardCoursesRoute: typeof DashboardCoursesRoute
+  DashboardLiveRoute: typeof DashboardLiveRoute
+  DashboardMessagesRoute: typeof DashboardMessagesRoute
+  DashboardPaymentsRoute: typeof DashboardPaymentsRoute
+  DashboardQuizzesRoute: typeof DashboardQuizzesRoute
+  DashboardReportsRoute: typeof DashboardReportsRoute
+  DashboardStudentsRoute: typeof DashboardStudentsRoute
+  DashboardVideosRoute: typeof DashboardVideosRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAbTestsRoute: DashboardAbTestsRoute,
+  DashboardAnalyticsRoute: DashboardAnalyticsRoute,
+  DashboardAssignmentsRoute: DashboardAssignmentsRoute,
+  DashboardCoursesRoute: DashboardCoursesRoute,
+  DashboardLiveRoute: DashboardLiveRoute,
+  DashboardMessagesRoute: DashboardMessagesRoute,
+  DashboardPaymentsRoute: DashboardPaymentsRoute,
+  DashboardQuizzesRoute: DashboardQuizzesRoute,
+  DashboardReportsRoute: DashboardReportsRoute,
+  DashboardStudentsRoute: DashboardStudentsRoute,
+  DashboardVideosRoute: DashboardVideosRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssignmentsRoute: AssignmentsRoute,
+  AuthRoute: AuthRoute,
+  CoursesRoute: CoursesRouteWithChildren,
+  DashboardRoute: DashboardRouteWithChildren,
+  LiveRoute: LiveRoute,
+  MeRoute: MeRoute,
+  QuizzesRoute: QuizzesRoute,
+  SubscribeCourseIdRoute: SubscribeCourseIdRoute,
+  ApiAiTranscribeRoute: ApiAiTranscribeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
