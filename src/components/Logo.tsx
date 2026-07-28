@@ -32,11 +32,11 @@ export function Logo({
     <Link
       to={to}
       className={`flex flex-col items-center leading-none ${className}`}
-      aria-label="شعار منصة السيد عبدالعاطي"
+      aria-label="شعار منصة المستر"
     >
       <img
         src={logoMark}
-        alt="شعار منصة السيد عبدالعاطي"
+        alt="شعار منصة المستر"
         width={1024}
         height={1024}
         className={`${dims[size]} drop-shadow-md`}
@@ -45,7 +45,7 @@ export function Logo({
         <span
           className={`mt-1 font-display font-black tracking-tight text-primary ${text[size]}`}
         >
-          السيد عبدالعاطي
+          المستر
         </span>
       )}
     </Link>

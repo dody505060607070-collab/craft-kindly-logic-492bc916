@@ -11,7 +11,7 @@ export const Route = createFileRoute("/courses")({
   head: () => ({
     meta: [
       { title: "الكورسات | منصة المستر" },
-      { name: "description", content: "استعرض كل الكورسات المتاحة على منصة السيد عبدالعاطي." },
+      { name: "description", content: "استعرض كل الكورسات المتاحة على منصة المستر." },
       { property: "og:title", content: "الكورسات | منصة المستر" },
       { property: "og:description", content: "كورسات برمجة وذكاء اصطناعي." },
       { property: "og:type", content: "website" },
