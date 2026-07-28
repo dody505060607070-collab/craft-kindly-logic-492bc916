@@ -3,6 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+const FALLBACK_POPUP = {
+  id: "fallback-nooh-announcement",
+  title: "اعلان مهم: نوح المبرمج",
+  body:
+    "نوح المبرمج متخصص في تصميم وبرمجة المواقع الإلكترونية، صفحات الهبوط، ولوحات التحكم. لو عايز موقع يعرّف الناس بخدمتك بشكل احترافي، نوح يقدر يساعدك.",
+  image_url: null,
+};
+
 export function PopupAnnouncement() {
   const [open, setOpen] = useState(false);
   const [closed, setClosed] = useState(false);
@@ -10,7 +18,7 @@ export function PopupAnnouncement() {
   const { data } = useQuery({
     queryKey: ["popup-announcement"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("announcements")
         .select("id,title,body,image_url")
         .eq("show_as_popup", true)
@@ -18,9 +26,14 @@ export function PopupAnnouncement() {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (error) return FALLBACK_POPUP;
       return data as { id: string; title: string; body: string; image_url: string | null } | null;
     },
-    staleTime: 60_000,
+    placeholderData: FALLBACK_POPUP,
+    retry: 3,
+    staleTime: 10_000,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {
@@ -34,14 +47,15 @@ export function PopupAnnouncement() {
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4 animate-in fade-in"
+      data-popup-announcement
+      className="fixed inset-0 z-[2147483601] flex items-center justify-center bg-foreground/60 p-4 pt-[calc(1rem+env(safe-area-inset-top))] animate-in fade-in"
       onClick={() => {
         setOpen(false);
         setClosed(true);
       }}
     >
       <div
-        className="relative w-full max-w-md rounded-3xl border border-primary/40 bg-surface p-6 shadow-2xl animate-in zoom-in-95"
+        className="relative max-h-[calc(100dvh-2rem-env(safe-area-inset-top))] w-full max-w-md overflow-y-auto rounded-3xl border border-primary/40 bg-surface p-5 shadow-2xl animate-in zoom-in-95 sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <button
