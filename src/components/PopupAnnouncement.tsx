@@ -25,11 +25,7 @@ export function PopupAnnouncement() {
 
   useEffect(() => {
     if (!data || closed) return;
-    if (typeof window === "undefined") return;
-    const key = `popup-seen-${data.id}`;
-    if (sessionStorage.getItem(key)) return;
     setOpen(true);
-    sessionStorage.setItem(key, "1");
     const t = setTimeout(() => setOpen(false), 5000);
     return () => clearTimeout(t);
   }, [data, closed]);
