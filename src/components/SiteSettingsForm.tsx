@@ -3,6 +3,7 @@ import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AiWriteButton } from "@/components/AiWriteButton";
 
 export function SiteSettingsForm() {
   const qc = useQueryClient();
