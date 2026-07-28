@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { MessageCircle, PlayCircle, ShieldCheck, Sparkles } from "lucide-react";
 
 import logoMark from "@/assets/logo-mark.png";
+import logoMarkDark from "@/assets/logo-mark-dark.png";
 import teacherHero from "@/assets/teacher-hero.png";
 import teacherThumbs from "@/assets/teacher-thumbsup.png";
 import teacherPoint from "@/assets/teacher-point.png";
