@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 export const Route = createFileRoute("/dashboard/videos")({
   head: () => ({
@@ -114,41 +115,56 @@ function VideosPage() {
       </header>
 
       {isAdmin && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <Uploader bucket="course-videos" label="رفع فيديو درس" />
-          <Uploader bucket="course-videos" label="رفع ملف PDF / عرض تقديمي" />
+        <div>
+          <SectionHint title="رفع الفيديوهات والملفات">
+            اختار الملف من جهازك، استنى ينتهي الرفع، ونسخ الرابط اللي هيطلعلك. الرابط ده اللي هتحطه في خانة "رابط الفيديو" جوا الدرس تحت، أو في "رابط الملف" جوا الملفات المرفقة. البدائل: تقدر ترفع الفيديو على YouTube (unlisted) وتحط رابط الـembed هنا.
+          </SectionHint>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Uploader bucket="course-videos" label="رفع فيديو درس" />
+            <Uploader bucket="course-videos" label="رفع ملف PDF / عرض تقديمي" />
+          </div>
         </div>
       )}
 
-      <CrudSection
-        table="lessons"
-        title="الدروس"
-        description="كل درس مرتبط بكورس، وله رابط فيديو ومدة."
-        orderBy="sort_order"
-        ascending
-        fields={[
-          { key: "title", label: "عنوان الدرس" },
-          { key: "course_id", label: "معرّف الكورس (UUID)" },
-          { key: "video_url", label: "رابط الفيديو" },
-          { key: "duration_seconds", label: "المدة (ثانية)", type: "number", default: 0 },
-          { key: "is_free_preview", label: "معاينة مجانية", type: "bool", default: false },
-          { key: "is_published", label: "منشور", type: "bool", default: true },
-          { key: "description", label: "الوصف", type: "textarea", hideInTable: true },
-          { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
-        ]}
-      />
+      <div>
+        <SectionHint title="الدروس">
+          كل درس لازم ينتمي لكورس (حط "معرّف الكورس UUID"). حط رابط الفيديو (اللي جبته من الرفع فوق أو من يوتيوب)، والمدة بالثواني. فعّل "معاينة مجانية" لو عايز الطالب يشوف الدرس ده قبل الاشتراك (مفيد لأول درس عشان يجذبه). "منشور = لا" بيخفي الدرس.
+        </SectionHint>
+        <CrudSection
+          table="lessons"
+          title="الدروس"
+          description="كل درس مرتبط بكورس، وله رابط فيديو ومدة."
+          orderBy="sort_order"
+          ascending
+          fields={[
+            { key: "title", label: "عنوان الدرس" },
+            { key: "course_id", label: "معرّف الكورس (UUID)" },
+            { key: "video_url", label: "رابط الفيديو" },
+            { key: "duration_seconds", label: "المدة (ثانية)", type: "number", default: 0 },
+            { key: "is_free_preview", label: "معاينة مجانية", type: "bool", default: false },
+            { key: "is_published", label: "منشور", type: "bool", default: true },
+            { key: "description", label: "الوصف", type: "textarea", hideInTable: true },
+            { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
+          ]}
+        />
+      </div>
 
-      <CrudSection
-        table="materials"
-        title="الملفات المرفقة"
-        description="ملفات PDF والعروض التقديمية المرتبطة بالدروس."
-        fields={[
-          { key: "title", label: "اسم الملف" },
-          { key: "file_url", label: "رابط الملف" },
-          { key: "file_type", label: "النوع", default: "pdf" },
-          { key: "lesson_id", label: "معرّف الدرس (UUID)", hideInTable: true },
-        ]}
-      />
+      <div>
+        <SectionHint title="الملفات المرفقة (PDF / عروض)">
+          مذكرات أو ملازم بترفقها مع الدروس. حط "معرّف الدرس" اللي الملف يخصه، ورابط الملف من الرفع فوق. الطالب هيشوف الملف تحت الفيديو في صفحة الدرس.
+        </SectionHint>
+        <CrudSection
+          table="materials"
+          title="الملفات المرفقة"
+          description="ملفات PDF والعروض التقديمية المرتبطة بالدروس."
+          fields={[
+            { key: "title", label: "اسم الملف" },
+            { key: "file_url", label: "رابط الملف" },
+            { key: "file_type", label: "النوع", default: "pdf" },
+            { key: "lesson_id", label: "معرّف الدرس (UUID)", hideInTable: true },
+          ]}
+        />
+      </div>
     </div>
   );
 }

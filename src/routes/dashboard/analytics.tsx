@@ -19,6 +19,8 @@ import {
   YAxis,
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 export const Route = createFileRoute("/dashboard/analytics")({
   head: () => ({
@@ -204,40 +206,45 @@ function AnalyticsPage() {
         </ChartCard>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title="توزيع طلبات AI حسب النوع">
-          {aiByKind.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">لا توجد بيانات بعد.</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie data={aiByKind} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={3}>
-                  {aiByKind.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Legend />
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
+      <div>
+        <SectionHint title="تحليل الاستخدام والكورسات الأعلى">
+          يسار: أنواع طلبات AI اللي الطلاب بيستخدموها أكتر (شرح / تلخيص / تصحيح…). يمين: أشهر كورسات على المنصة من حيث عدد الاشتراكات — دي كورسات ركز عليها في التسويق.
+        </SectionHint>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ChartCard title="توزيع طلبات AI حسب النوع">
+            {aiByKind.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">لا توجد بيانات بعد.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie data={aiByKind} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={3}>
+                    {aiByKind.map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
 
-        <ChartCard title="أعلى الكورسات إقبالًا">
-          {(topCourses.data ?? []).length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">لا يوجد اشتراكات بعد.</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={topCourses.data ?? []} layout="vertical" margin={{ left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                <XAxis type="number" fontSize={11} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" fontSize={11} width={140} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#f59e0b" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </ChartCard>
+          <ChartCard title="أعلى الكورسات إقبالًا">
+            {(topCourses.data ?? []).length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">لا يوجد اشتراكات بعد.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={topCourses.data ?? []} layout="vertical" margin={{ left: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+                  <XAxis type="number" fontSize={11} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" fontSize={11} width={140} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#f59e0b" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </ChartCard>
+        </div>
       </div>
     </div>
   );

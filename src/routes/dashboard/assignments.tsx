@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { gradeAssignment } from "@/lib/ai.functions";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 
 export const Route = createFileRoute("/dashboard/assignments")({
@@ -53,6 +54,9 @@ function AiGrader() {
       <p className="mb-4 text-sm text-muted-foreground">
         الذكاء الاصطناعي يصحح الإجابة ويكتب ملاحظات فورية للطالب.
       </p>
+      <SectionHint title="إزاي تستخدم التصحيح الذكي">
+        الصق نص السؤال في الخانة الشمال، وإجابة الطالب في اليمين، واضغط "صحّح الإجابة". الـAI هيدي درجة من ١٠ وملاحظات مفصلة. كل ما تحط نموذج إجابة في الواجب نفسه (تحت)، كل ما التصحيح يبقى أدق.
+      </SectionHint>
       <div className="grid gap-3 md:grid-cols-2">
         <textarea
           value={question}
@@ -124,34 +128,44 @@ function AssignmentsPage() {
 
       <AiGrader />
 
-      <CrudSection
-        table="assignments"
-        title="الواجبات"
-        description="أضف واجب بموعد تسليم ودرجة."
-        fields={[
-          { key: "title", label: "عنوان الواجب" },
-          { key: "instructions", label: "التعليمات", type: "textarea", hideInTable: true },
-          { key: "model_answer", label: "نموذج الإجابة (للـ AI)", type: "textarea", hideInTable: true },
-          { key: "course_id", label: "معرّف الكورس (UUID)" },
-          { key: "due_at", label: "موعد التسليم", type: "datetime" },
-          { key: "max_score", label: "الدرجة القصوى", type: "number", default: 10 },
-          { key: "is_published", label: "منشور", type: "bool", default: true },
-        ]}
-      />
+      <div>
+        <SectionHint title="إنشاء واجب جديد">
+          املأ العنوان والتعليمات (اللي الطالب هيقراها). "معرّف الكورس" بتاخده من صفحة الكورسات. حدّد موعد التسليم والدرجة القصوى. "نموذج الإجابة" مهم جدًا — الـAI بيقارن بيه إجابة الطالب. لو "منشور = لا" الطالب مش هيشوف الواجب.
+        </SectionHint>
+        <CrudSection
+          table="assignments"
+          title="الواجبات"
+          description="أضف واجب بموعد تسليم ودرجة."
+          fields={[
+            { key: "title", label: "عنوان الواجب" },
+            { key: "instructions", label: "التعليمات", type: "textarea", hideInTable: true },
+            { key: "model_answer", label: "نموذج الإجابة (للـ AI)", type: "textarea", hideInTable: true },
+            { key: "course_id", label: "معرّف الكورس (UUID)" },
+            { key: "due_at", label: "موعد التسليم", type: "datetime" },
+            { key: "max_score", label: "الدرجة القصوى", type: "number", default: 10 },
+            { key: "is_published", label: "منشور", type: "bool", default: true },
+          ]}
+        />
+      </div>
 
-      <CrudSection
-        table="assignment_submissions"
-        title="تسليمات الطلاب"
-        description="راجع التسليمات وضع الدرجة والملاحظات."
-        allowCreate={false}
-        fields={[
-          { key: "assignment_id", label: "معرّف الواجب" },
-          { key: "user_id", label: "معرّف الطالب" },
-          { key: "content", label: "الإجابة", type: "textarea", hideInTable: true },
-          { key: "score", label: "الدرجة", type: "number" },
-          { key: "ai_feedback", label: "الملاحظات", type: "textarea", hideInTable: true },
-        ]}
-      />
+      <div>
+        <SectionHint title="تسليمات الطلاب">
+          هنا بتظهرلك كل تسليمات الطلاب للواجبات. افتح التسليم، شوف إجابة الطالب، وحط الدرجة يدويًا أو استخدم التصحيح الذكي فوق وانسخ نتيجته. اكتب ملاحظات في "الملاحظات" عشان الطالب يشوفها.
+        </SectionHint>
+        <CrudSection
+          table="assignment_submissions"
+          title="تسليمات الطلاب"
+          description="راجع التسليمات وضع الدرجة والملاحظات."
+          allowCreate={false}
+          fields={[
+            { key: "assignment_id", label: "معرّف الواجب" },
+            { key: "user_id", label: "معرّف الطالب" },
+            { key: "content", label: "الإجابة", type: "textarea", hideInTable: true },
+            { key: "score", label: "الدرجة", type: "number" },
+            { key: "ai_feedback", label: "الملاحظات", type: "textarea", hideInTable: true },
+          ]}
+        />
+      </div>
     </div>
   );
 }

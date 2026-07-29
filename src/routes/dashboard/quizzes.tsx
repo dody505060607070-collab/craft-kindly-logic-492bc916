@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 export const Route = createFileRoute("/dashboard/quizzes")({
   head: () => ({
@@ -52,46 +53,56 @@ function QuizzesPage() {
         />
       </div>
 
-      <CrudSection
-        table="quizzes"
-        title="الاختبارات"
-        description="حدد المدة ودرجة النجاح لكل اختبار."
-        fields={[
-          { key: "title", label: "عنوان الاختبار" },
-          { key: "course_id", label: "معرّف الكورس (UUID)" },
-          { key: "lesson_id", label: "معرّف الدرس (اختياري)", hideInTable: true },
-          { key: "duration_minutes", label: "المدة (دقيقة)", type: "number", default: 15 },
-          { key: "pass_score", label: "درجة النجاح %", type: "number", default: 50 },
-          { key: "is_published", label: "منشور", type: "bool", default: true },
-        ]}
-      />
+      <div>
+        <SectionHint title="١. الاختبارات">
+          الخطوة الأولى: اعمل الاختبار نفسه (شل / كيان). حدّد "معرّف الكورس" و(اختياري) "معرّف الدرس" لو الاختبار مربوط بدرس معين. "المدة بالدقايق" هي الوقت اللي الطالب هيمتحن فيه. "درجة النجاح %" هي أقل نسبة للنجاح. لازم "منشور = نعم".
+        </SectionHint>
+        <CrudSection
+          table="quizzes"
+          title="الاختبارات"
+          description="حدد المدة ودرجة النجاح لكل اختبار."
+          fields={[
+            { key: "title", label: "عنوان الاختبار" },
+            { key: "course_id", label: "معرّف الكورس (UUID)" },
+            { key: "lesson_id", label: "معرّف الدرس (اختياري)", hideInTable: true },
+            { key: "duration_minutes", label: "المدة (دقيقة)", type: "number", default: 15 },
+            { key: "pass_score", label: "درجة النجاح %", type: "number", default: 50 },
+            { key: "is_published", label: "منشور", type: "bool", default: true },
+          ]}
+        />
+      </div>
 
-      <CrudSection
-        table="quiz_questions"
-        title="بنك الأسئلة"
-        description="أضف السؤال والاختيارات والإجابة الصحيحة."
-        orderBy="sort_order"
-        ascending
-        fields={[
-          { key: "quiz_id", label: "معرّف الاختبار (UUID)" },
-          { key: "prompt", label: "نص السؤال", type: "textarea" },
-          {
-            key: "type",
-            label: "النوع",
-            type: "select",
-            default: "mcq",
-            options: [
-              { value: "mcq", label: "اختيار من متعدد" },
-              { value: "truefalse", label: "صح وخطأ" },
-              { value: "essay", label: "مقالي" },
-            ],
-          },
-          { key: "choices", label: 'الاختيارات (JSON مثل ["أ","ب"])', type: "textarea", hideInTable: true },
-          { key: "correct_answer", label: "الإجابة الصحيحة (JSON)", hideInTable: true },
-          { key: "points", label: "الدرجة", type: "number", default: 1 },
-          { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
-        ]}
-      />
+      <div>
+        <SectionHint title="٢. بنك الأسئلة">
+          بعد ما تعمل الاختبار انسخ الـUUID بتاعه وحطه هنا. اختار نوع السؤال: MCQ (اختيار من متعدد) — الاختيارات JSON زي <code className="rounded bg-card px-1">["أ","ب","ج"]</code> والإجابة رقم الاختيار (0 أو 1…). صح/خطأ — الإجابة <code className="rounded bg-card px-1">true</code> أو <code className="rounded bg-card px-1">false</code>. مقالي — الـAI هيصححه.
+        </SectionHint>
+        <CrudSection
+          table="quiz_questions"
+          title="بنك الأسئلة"
+          description="أضف السؤال والاختيارات والإجابة الصحيحة."
+          orderBy="sort_order"
+          ascending
+          fields={[
+            { key: "quiz_id", label: "معرّف الاختبار (UUID)" },
+            { key: "prompt", label: "نص السؤال", type: "textarea" },
+            {
+              key: "type",
+              label: "النوع",
+              type: "select",
+              default: "mcq",
+              options: [
+                { value: "mcq", label: "اختيار من متعدد" },
+                { value: "truefalse", label: "صح وخطأ" },
+                { value: "essay", label: "مقالي" },
+              ],
+            },
+            { key: "choices", label: 'الاختيارات (JSON مثل ["أ","ب"])', type: "textarea", hideInTable: true },
+            { key: "correct_answer", label: "الإجابة الصحيحة (JSON)", hideInTable: true },
+            { key: "points", label: "الدرجة", type: "number", default: 1 },
+            { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
+          ]}
+        />
+      </div>
     </div>
   );
 }

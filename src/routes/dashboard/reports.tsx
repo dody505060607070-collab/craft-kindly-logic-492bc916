@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 export const Route = createFileRoute("/dashboard/reports")({
   head: () => ({
@@ -81,17 +82,26 @@ function ReportsPage() {
         />
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((c) => (
-          <div key={c.label} className="card-3d glass rounded-2xl p-5">
-            <p className="font-display text-3xl font-black text-primary">{c.value}</p>
-            <p className="text-xs text-muted-foreground">{c.label}</p>
-          </div>
-        ))}
-      </div>
+      <section>
+        <SectionHint title="مؤشرات الأداء العامة">
+          الأرقام دي بتلخصلك حالة الطلاب: متوسط درجاتهم في الاختبارات، عدد الدروس اللي خلّصوها، وساعات مشاهدة الفيديوهات. مفيدة عشان تعرف بسرعة إذا كانت المنصة نشطة ولا محتاجة تحفيز.
+        </SectionHint>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.map((c) => (
+            <div key={c.label} className="card-3d glass rounded-2xl p-5">
+              <p className="font-display text-3xl font-black text-primary">{c.value}</p>
+              <p className="text-xs text-muted-foreground">{c.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <section className="glass overflow-hidden rounded-2xl">
-        <h2 className="border-b border-border/50 px-5 py-4 font-bold">آخر محاولات الاختبارات</h2>
+      <div>
+        <SectionHint title="آخر محاولات الاختبارات">
+          سجل مباشر بآخر ٢٠ محاولة اختبار على المنصة مع الدرجة والتاريخ. استخدمه لمتابعة نشاط الطلاب ومعرفة مين محتاج مراجعة.
+        </SectionHint>
+        <section className="glass overflow-hidden rounded-2xl">
+          <h2 className="border-b border-border/50 px-5 py-4 font-bold">آخر محاولات الاختبارات</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-right text-sm">
             <thead className="bg-surface text-xs text-muted-foreground">
@@ -118,8 +128,9 @@ function ReportsPage() {
               )}
             </tbody>
           </table>
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

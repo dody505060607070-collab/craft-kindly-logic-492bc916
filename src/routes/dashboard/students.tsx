@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 export const Route = createFileRoute("/dashboard/students")({
   head: () => ({
@@ -48,46 +49,61 @@ function StudentsPage() {
         />
       </div>
 
-      <CrudSection
-        table="profiles"
-        title="حسابات الطلاب"
-        description="بيانات الطالب ورقم ولي الأمر والصف الدراسي."
-        allowCreate={false}
-        fields={[
-          { key: "full_name", label: "الاسم" },
-          { key: "phone", label: "رقم الهاتف" },
-          { key: "parent_phone", label: "رقم ولي الأمر" },
-          { key: "grade", label: "الصف" },
-          { key: "points", label: "النقاط", type: "number", default: 0 },
-          { key: "is_active", label: "نشط", type: "bool", default: true },
-        ]}
-      />
+      <div>
+        <SectionHint title="حسابات الطلاب">
+          دي كل حسابات الطلاب المسجلين. مش بتقدر تضيف طالب من هنا (الطلاب بيسجلوا بنفسهم من صفحة التسجيل)، بس تقدر تعدّل بياناتهم (الاسم، الصف، رقم ولي الأمر) أو توقف الحساب بـ"نشط = لا". النقاط بتظهر للطالب كتحفيز.
+        </SectionHint>
+        <CrudSection
+          table="profiles"
+          title="حسابات الطلاب"
+          description="بيانات الطالب ورقم ولي الأمر والصف الدراسي."
+          allowCreate={false}
+          fields={[
+            { key: "full_name", label: "الاسم" },
+            { key: "phone", label: "رقم الهاتف" },
+            { key: "parent_phone", label: "رقم ولي الأمر" },
+            { key: "grade", label: "الصف" },
+            { key: "points", label: "النقاط", type: "number", default: 0 },
+            { key: "is_active", label: "نشط", type: "bool", default: true },
+          ]}
+        />
+      </div>
 
-      <CrudSection
-        table="enrollments"
-        title="الاشتراكات في الكورسات"
-        description="افتح كورس لطالب أو حدّد تاريخ انتهاء اشتراكه."
-        fields={[
-          { key: "user_id", label: "معرّف الطالب (UUID)" },
-          { key: "course_id", label: "معرّف الكورس (UUID)" },
-          { key: "progress", label: "نسبة التقدم %", type: "number", default: 0 },
-          { key: "expires_at", label: "ينتهي في", type: "datetime" },
-        ]}
-      />
+      <div>
+        <SectionHint title="الاشتراكات في الكورسات">
+          هنا بتفتح كورس لطالب يدويًا (من غير ما يدفع). حط UUID الطالب و UUID الكورس، وحدّد تاريخ انتهاء الاشتراك (شهر / سنة / سيبها فاضية = مفتوح). لو الطالب دفع، النظام بيضيفه هنا تلقائيًا لما تعتمد الدفع في صفحة "المدفوعات".
+        </SectionHint>
+        <CrudSection
+          table="enrollments"
+          title="الاشتراكات في الكورسات"
+          description="افتح كورس لطالب أو حدّد تاريخ انتهاء اشتراكه."
+          fields={[
+            { key: "user_id", label: "معرّف الطالب (UUID)" },
+            { key: "course_id", label: "معرّف الكورس (UUID)" },
+            { key: "progress", label: "نسبة التقدم %", type: "number", default: 0 },
+            { key: "expires_at", label: "ينتهي في", type: "datetime" },
+          ]}
+        />
+      </div>
 
-      <CrudSection
-        table="user_devices"
-        title="الأجهزة المسجلة"
-        description="مراقبة أجهزة الطلاب لمنع مشاركة الحسابات."
-        allowCreate={false}
-        orderBy="last_seen_at"
-        fields={[
-          { key: "user_id", label: "معرّف الطالب" },
-          { key: "device_name", label: "الجهاز" },
-          { key: "device_fingerprint", label: "بصمة الجهاز", hideInTable: true },
-          { key: "is_blocked", label: "محظور", type: "bool", default: false },
-        ]}
-      />
+      <div>
+        <SectionHint title="الأجهزة المسجلة">
+          كل جهاز دخل بيه الطالب بيتسجل هنا (لمنع مشاركة الحسابات). لو شكيت إن حساب متشارك بين ناس (أجهزة كتير غريبة)، فعّل "محظور = نعم" على الجهاز، والطالب مش هيقدر يدخل منه تاني.
+        </SectionHint>
+        <CrudSection
+          table="user_devices"
+          title="الأجهزة المسجلة"
+          description="مراقبة أجهزة الطلاب لمنع مشاركة الحسابات."
+          allowCreate={false}
+          orderBy="last_seen_at"
+          fields={[
+            { key: "user_id", label: "معرّف الطالب" },
+            { key: "device_name", label: "الجهاز" },
+            { key: "device_fingerprint", label: "بصمة الجهاز", hideInTable: true },
+            { key: "is_blocked", label: "محظور", type: "bool", default: false },
+          ]}
+        />
+      </div>
     </div>
   );
 }
