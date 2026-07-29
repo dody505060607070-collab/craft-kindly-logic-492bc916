@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { Loader2, Lock, Phone, User } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Loader2, Lock, Mail, Phone, User } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { phoneToEmail, useAuth } from "@/lib/auth";
-import { SITE } from "@/lib/site";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -13,10 +12,10 @@ export const Route = createFileRoute("/auth")({
       { title: "تسجيل الدخول | منصة المستر" },
       {
         name: "description",
-        content: "سجّل دخولك أو أنشئ حساب جديد على منصة المستر برقم الهاتف فقط، بدون بريد إلكتروني.",
+        content: "سجّل دخولك أو أنشئ حساب جديد على منصة المستر بالبريد الإلكتروني.",
       },
       { property: "og:title", content: "تسجيل الدخول | منصة المستر" },
-      { property: "og:description", content: "الدخول لمنصة المستر برقم الهاتف." },
+      { property: "og:description", content: "الدخول لمنصة المستر بالبريد الإلكتروني." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -36,6 +35,7 @@ const GRADES = [
 
 function AuthPage() {
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -46,23 +46,35 @@ function AuthPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const clean = phone.replace(/\D/g, "");
-    if (clean.length < 8) return toast.error("اكتب رقم هاتف صحيح");
+    const cleanEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return toast.error("اكتب بريد إلكتروني صحيح");
     if (password.length < 6) return toast.error("كلمة السر لازم تكون 6 حروف/أرقام على الأقل");
 
     setBusy(true);
     try {
       if (mode === "signup") {
+        const cleanPhone = phone.replace(/\D/g, "");
+        if (cleanPhone.length < 8) {
+          setBusy(false);
+          return toast.error("اكتب رقم هاتف صحيح");
+        }
+        if (!fullName.trim()) {
+          setBusy(false);
+          return toast.error("اكتب اسمك بالكامل");
+        }
         const { error } = await supabase.auth.signUp({
-          email: phoneToEmail(clean),
+          email: cleanEmail,
           password,
-          options: { data: { phone: clean, full_name: fullName || `طالب ${clean}`, grade } },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { phone: cleanPhone, full_name: fullName.trim(), grade },
+          },
         });
         if (error) throw error;
         toast.success("تم إنشاء الحساب بنجاح");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email: phoneToEmail(clean),
+          email: cleanEmail,
           password,
         });
         if (error) throw error;
@@ -70,14 +82,13 @@ function AuthPage() {
       }
       await refresh();
       navigate({ to: "/" });
-
     } catch (err) {
       const msg = err instanceof Error ? err.message : "حصلت مشكلة";
       toast.error(
         msg.includes("Invalid login")
-          ? "الرقم أو كلمة السر غير صحيحة"
-          : msg.includes("already registered")
-            ? "الرقم ده مسجل بالفعل، سجّل دخول"
+          ? "البريد أو كلمة السر غير صحيحة"
+          : msg.includes("already registered") || msg.includes("already been registered")
+            ? "البريد ده مسجل بالفعل، سجّل دخول"
             : msg,
       );
     } finally {
@@ -91,7 +102,6 @@ function AuthPage() {
         <div className="mb-6 flex justify-center">
           <Logo size="md" />
         </div>
-
 
         <div className="glass rounded-3xl p-6">
           <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-surface p-1">
@@ -118,6 +128,18 @@ function AuthPage() {
                     placeholder="اكتب اسمك"
                     className="w-full bg-transparent text-sm outline-none"
                     maxLength={80}
+                    required
+                  />
+                </Field>
+                <Field icon={Phone} label="رقم الهاتف">
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    inputMode="numeric"
+                    placeholder="01xxxxxxxxx"
+                    className="w-full bg-transparent text-sm outline-none"
+                    maxLength={15}
+                    required
                   />
                 </Field>
                 <div>
@@ -139,14 +161,15 @@ function AuthPage() {
               </>
             )}
 
-            <Field icon={Phone} label="رقم الهاتف">
+            <Field icon={Mail} label="البريد الإلكتروني">
               <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                inputMode="numeric"
-                placeholder="01xxxxxxxxx"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@email.com"
                 className="w-full bg-transparent text-sm outline-none"
-                maxLength={15}
+                maxLength={120}
+                dir="ltr"
                 required
               />
             </Field>
@@ -173,7 +196,9 @@ function AuthPage() {
           </form>
 
           <p className="mt-5 text-center text-xs leading-relaxed text-muted-foreground">
-            الدخول بالرقم فقط — من غير بريد إلكتروني.
+            {mode === "signup"
+              ? "التسجيل بالاسم والبريد الإلكتروني ورقم الهاتف."
+              : "الدخول بالبريد الإلكتروني وكلمة السر."}
           </p>
         </div>
       </div>
