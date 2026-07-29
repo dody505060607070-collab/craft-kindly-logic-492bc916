@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { PLATFORM_SECTIONS, SITE } from "@/lib/site";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 import { AIAdminPanel } from "@/components/AIAdminPanel";
 
 export const Route = createFileRoute("/dashboard/")({
@@ -85,20 +86,35 @@ function Overview() {
         />
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="card-3d glass rounded-2xl p-5">
-            <s.icon className="mb-3 size-5 text-primary" />
-            <p className="font-display text-3xl font-black">{s.value}</p>
-            <p className="text-xs text-muted-foreground">{s.label}</p>
-          </div>
-        ))}
-      </div>
+      <section>
+        <SectionHint title="الأرقام السريعة">
+          دي إحصائيات مباشرة من قاعدة بيانات المنصة: عدد الطلاب المسجلين، عدد الكورسات المنشورة، عدد حصص البث، وإجمالي المدفوعات المعتمدة. الأرقام بتتحدث تلقائيًا لما تضيف أو تعتمد أي حاجة من الصفحات التانية.
+        </SectionHint>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((s) => (
+            <div key={s.label} className="card-3d glass rounded-2xl p-5">
+              <s.icon className="mb-3 size-5 text-primary" />
+              <p className="font-display text-3xl font-black">{s.value}</p>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {isAdmin && <AIAdminPanel />}
+      {isAdmin && (
+        <section>
+          <SectionHint title="المساعد الذكي (Groq AI)">
+            ده مساعدك الشخصي داخل لوحة التحكم. تقدر تسأله أي حاجة عن المنصة بالعربي (مثل: "وريني الطلاب اللي مدفعوش" أو "اكتبلي إعلان عن حصة الجمعة") وهيرد عليك فورًا. مفيد جدًا لكتابة الإعلانات والرسائل بسرعة.
+          </SectionHint>
+          <AIAdminPanel />
+        </section>
+      )}
 
       <section>
         <h2 className="mb-4 font-display text-xl font-black">أقسام المنصة</h2>
+        <SectionHint title="اختصار للأقسام">
+          كل بطاقة تحت دي بتوديك لصفحة إدارية مختلفة. اضغط على أي قسم عشان تدخل تعدّل فيه. كل صفحة فيها زر "شرح الصفحة" فوق على اليمين يشرحلك كل حاجة بالتفصيل.
+        </SectionHint>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PLATFORM_SECTIONS.map((s, i) => (
             <Link key={s.key} to={s.to} className="card-3d glass block rounded-2xl p-5">

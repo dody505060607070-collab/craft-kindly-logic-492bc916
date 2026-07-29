@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 import { SITE } from "@/lib/site";
 import { SiteSettingsForm } from "@/components/SiteSettingsForm";
 import { PaymentProofsReview } from "@/components/PaymentProofsReview";
@@ -56,49 +57,69 @@ function PaymentsPage() {
         </div>
       </div>
 
-      <SiteSettingsForm />
+      <div>
+        <SectionHint title="إعدادات المنصة والمحفظة">
+          هنا بتحدد رقم المحفظة اللي الطلاب يحوّلوا عليها (فودافون كاش / إنستاباي)، واسم المنصة، والشعار. أي تغيير هنا بيظهر للطلاب على طول في صفحة الدفع.
+        </SectionHint>
+        <SiteSettingsForm />
+      </div>
 
-      <PaymentProofsReview />
+      <div>
+        <SectionHint title="مراجعة إيصالات الدفع">
+          كل طالب يرفع screenshot تحويل بيظهرلك هنا. افتح الإيصال، اتأكد من الرقم والمبلغ، واضغط "اعتماد" — النظام يفتح الكورس تلقائيًا للطالب. لو الإيصال غلط اضغط "رفض" وهيوصله إشعار.
+        </SectionHint>
+        <PaymentProofsReview />
+      </div>
 
-      <CrudSection
-        table="payments"
-        title="عمليات الدفع"
-        description="اعتمد أو ارفض تحويلات الطلاب."
-        fields={[
-          { key: "user_id", label: "معرّف الطالب" },
-          { key: "course_id", label: "معرّف الكورس", hideInTable: true },
-          { key: "amount", label: "المبلغ", type: "number", default: 0 },
-          { key: "method", label: "وسيلة الدفع", default: "vodafone_cash" },
-          { key: "reference", label: "رقم العملية" },
-          { key: "coupon_code", label: "كوبون", hideInTable: true },
-          { key: "proof_url", label: "رابط الإيصال", hideInTable: true },
-          {
-            key: "status",
-            label: "الحالة",
-            type: "select",
-            default: "pending",
-            options: [
-              { value: "pending", label: "قيد المراجعة" },
-              { value: "paid", label: "مدفوع" },
-              { value: "failed", label: "مرفوض" },
-              { value: "refunded", label: "مسترجع" },
-            ],
-          },
-        ]}
-      />
+      <div>
+        <SectionHint title="عمليات الدفع (سجل كامل)">
+          كل عمليات الدفع (المعتمدة والمرفوضة والمعلقة). تقدر تعدّل الحالة يدويًا لو محتاج، بس الأفضل تستخدم "مراجعة الإيصالات" فوق. الحالات: pending = قيد المراجعة | paid = مدفوع (يفعّل الاشتراك) | failed = مرفوض | refunded = مسترجع.
+        </SectionHint>
+        <CrudSection
+          table="payments"
+          title="عمليات الدفع"
+          description="اعتمد أو ارفض تحويلات الطلاب."
+          fields={[
+            { key: "user_id", label: "معرّف الطالب" },
+            { key: "course_id", label: "معرّف الكورس", hideInTable: true },
+            { key: "amount", label: "المبلغ", type: "number", default: 0 },
+            { key: "method", label: "وسيلة الدفع", default: "vodafone_cash" },
+            { key: "reference", label: "رقم العملية" },
+            { key: "coupon_code", label: "كوبون", hideInTable: true },
+            { key: "proof_url", label: "رابط الإيصال", hideInTable: true },
+            {
+              key: "status",
+              label: "الحالة",
+              type: "select",
+              default: "pending",
+              options: [
+                { value: "pending", label: "قيد المراجعة" },
+                { value: "paid", label: "مدفوع" },
+                { value: "failed", label: "مرفوض" },
+                { value: "refunded", label: "مسترجع" },
+              ],
+            },
+          ]}
+        />
+      </div>
 
-      <CrudSection
-        table="coupons"
-        title="أكواد الخصم"
-        description="اعمل كوبونات خصم بنسبة أو مبلغ ثابت."
-        fields={[
-          { key: "code", label: "الكود" },
-          { key: "discount_percent", label: "نسبة الخصم %", type: "number", default: 0 },
-          { key: "max_uses", label: "أقصى استخدام", type: "number", default: 100 },
-          { key: "expires_at", label: "ينتهي في", type: "datetime" },
-          { key: "is_active", label: "مفعّل", type: "bool", default: true },
-        ]}
-      />
+      <div>
+        <SectionHint title="أكواد الخصم (كوبونات)">
+          اعمل كوبون بنسبة خصم (مثلًا SUMMER = 20%)، وحدّد "أقصى استخدام" وتاريخ انتهاء. الطالب يكتب الكود عند الدفع، والخصم يتطبق تلقائيًا. "مفعّل = لا" بيوقف الكود مؤقتًا.
+        </SectionHint>
+        <CrudSection
+          table="coupons"
+          title="أكواد الخصم"
+          description="اعمل كوبونات خصم بنسبة أو مبلغ ثابت."
+          fields={[
+            { key: "code", label: "الكود" },
+            { key: "discount_percent", label: "نسبة الخصم %", type: "number", default: 0 },
+            { key: "max_uses", label: "أقصى استخدام", type: "number", default: 100 },
+            { key: "expires_at", label: "ينتهي في", type: "datetime" },
+            { key: "is_active", label: "مفعّل", type: "bool", default: true },
+          ]}
+        />
+      </div>
     </div>
   );
 }

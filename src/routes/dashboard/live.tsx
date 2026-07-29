@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 export const Route = createFileRoute("/dashboard/live")({
   head: () => ({
@@ -108,6 +109,9 @@ function LivePage() {
           />
         </div>
 
+        <SectionHint title="اختار حصة">
+          دي كل الحصص اللي عملتها من الجدول تحت. دوس على أي حصة عشان تشوف بثها والشات بتاعها. لو لسه ما عملتش حصة، انزل تحت لـ"إدارة حصص البث" وأضف واحدة.
+        </SectionHint>
         <div className="mt-4 flex flex-wrap gap-2">
           {(sessions ?? []).map((s) => (
             <button
@@ -179,30 +183,35 @@ function LivePage() {
         )}
       </section>
 
-      <CrudSection
-        table="live_sessions"
-        title="إدارة حصص البث"
-        description="أضف حصة جديدة برابط البث، وبعد انتهائها ضع رابط التسجيل."
-        orderBy="starts_at"
-        fields={[
-          { key: "title", label: "عنوان الحصة" },
-          { key: "description", label: "الوصف", type: "textarea", hideInTable: true },
-          { key: "stream_url", label: "رابط البث (embed)" },
-          { key: "recording_url", label: "رابط التسجيل", hideInTable: true },
-          { key: "starts_at", label: "موعد البدء", type: "datetime" },
-          {
-            key: "status",
-            label: "الحالة",
-            type: "select",
-            default: "scheduled",
-            options: [
-              { value: "scheduled", label: "مجدولة" },
-              { value: "live", label: "جارية الآن" },
-              { value: "ended", label: "انتهت" },
-            ],
-          },
-        ]}
-      />
+      <div>
+        <SectionHint title="إدارة حصص البث">
+          هنا بتضيف حصة جديدة. "رابط البث" لازم يكون رابط <b>embed</b> (مش رابط عادي) — من YouTube: <code className="rounded bg-card px-1">https://www.youtube.com/embed/VIDEO_ID</code>. حدّد موعد البدء والحالة (مجدولة → جارية → انتهت). بعد الحصة، حط "رابط التسجيل" عشان الطلاب اللي فاتتهم يشوفوها.
+        </SectionHint>
+        <CrudSection
+          table="live_sessions"
+          title="إدارة حصص البث"
+          description="أضف حصة جديدة برابط البث، وبعد انتهائها ضع رابط التسجيل."
+          orderBy="starts_at"
+          fields={[
+            { key: "title", label: "عنوان الحصة" },
+            { key: "description", label: "الوصف", type: "textarea", hideInTable: true },
+            { key: "stream_url", label: "رابط البث (embed)" },
+            { key: "recording_url", label: "رابط التسجيل", hideInTable: true },
+            { key: "starts_at", label: "موعد البدء", type: "datetime" },
+            {
+              key: "status",
+              label: "الحالة",
+              type: "select",
+              default: "scheduled",
+              options: [
+                { value: "scheduled", label: "مجدولة" },
+                { value: "live", label: "جارية الآن" },
+                { value: "ended", label: "انتهت" },
+              ],
+            },
+          ]}
+        />
+      </div>
     </div>
   );
 }

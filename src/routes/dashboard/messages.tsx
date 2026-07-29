@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 export const Route = createFileRoute("/dashboard/messages")({
   head: () => ({
@@ -48,45 +49,60 @@ function MessagesPage() {
         />
       </div>
 
-      <CrudSection
-        table="announcements"
-        title="الإعلانات العامة"
-        description="تظهر لكل الطلاب على المنصة. فعّل 'إظهار كإعلان منبثق' لعرضه لمدة 5 ثواني عند فتح الموقع."
-        fields={[
-          { key: "title", label: "العنوان" },
-          { key: "body", label: "المحتوى", type: "textarea" },
-          { key: "image_url", label: "رابط صورة (اختياري) — تظهر تحت الإعلان المنبثق" },
-          { key: "is_pinned", label: "مثبت", type: "bool", default: false },
-          { key: "show_as_popup", label: "إظهار كإعلان منبثق (5 ثواني)", type: "bool", default: false },
-          { key: "is_active", label: "مفعّل", type: "bool", default: true },
-        ]}
-        aiHelpers={{
-          title: { purpose: "عنوان إعلان قصير وجذاب (أقل من 60 حرف)" },
-          body: { purpose: "محتوى إعلان تعليمي واضح ومختصر لطلاب منصة المستر" },
-        }}
-      />
+      <div>
+        <SectionHint title="الإعلانات العامة (Popup + Marquee)">
+          الإعلان بيظهر لكل الطلاب. فعّل "إظهار كإعلان منبثق" ليطلع للطالب أول ما يفتح الموقع لمدة 5 ثواني. "مثبت" بيخليه فوق قايمة الإعلانات. تقدر ترفق صورة (اختياري) — بتظهر تحت النص في الـpopup. اضغط زر AI جنب العنوان/النص عشان الذكاء الاصطناعي يكتبلك الإعلان.
+        </SectionHint>
+        <CrudSection
+          table="announcements"
+          title="الإعلانات العامة"
+          description="تظهر لكل الطلاب على المنصة. فعّل 'إظهار كإعلان منبثق' لعرضه لمدة 5 ثواني عند فتح الموقع."
+          fields={[
+            { key: "title", label: "العنوان" },
+            { key: "body", label: "المحتوى", type: "textarea" },
+            { key: "image_url", label: "رابط صورة (اختياري) — تظهر تحت الإعلان المنبثق" },
+            { key: "is_pinned", label: "مثبت", type: "bool", default: false },
+            { key: "show_as_popup", label: "إظهار كإعلان منبثق (5 ثواني)", type: "bool", default: false },
+            { key: "is_active", label: "مفعّل", type: "bool", default: true },
+          ]}
+          aiHelpers={{
+            title: { purpose: "عنوان إعلان قصير وجذاب (أقل من 60 حرف)" },
+            body: { purpose: "محتوى إعلان تعليمي واضح ومختصر لطلاب منصة المستر" },
+          }}
+        />
+      </div>
 
-      <CrudSection
-        table="notifications"
-        title="الإشعارات"
-        description="إشعار موجه لطالب معيّن."
-        fields={[
-          { key: "user_id", label: "معرّف الطالب (UUID)" },
-          { key: "title", label: "العنوان" },
-          { key: "body", label: "النص", type: "textarea" },
-          { key: "is_read", label: "مقروء", type: "bool", default: false },
-        ]}
-      />
+      <div>
+        <SectionHint title="الإشعارات الفردية">
+          إشعار موجّه لطالب واحد بس (بيظهر جرس أحمر فوق حسابه). حط UUID الطالب من صفحة "الطلاب". مفيد للتنبيهات الشخصية زي "لسه ما سلمتش الواجب" أو "الاشتراك قرب يخلص".
+        </SectionHint>
+        <CrudSection
+          table="notifications"
+          title="الإشعارات"
+          description="إشعار موجه لطالب معيّن."
+          fields={[
+            { key: "user_id", label: "معرّف الطالب (UUID)" },
+            { key: "title", label: "العنوان" },
+            { key: "body", label: "النص", type: "textarea" },
+            { key: "is_read", label: "مقروء", type: "bool", default: false },
+          ]}
+        />
+      </div>
 
-      <CrudSection
-        table="messages"
-        title="الرسائل الداخلية"
-        description="محادثات بين المدرس والطلاب وأولياء الأمور."
-        fields={[
-          { key: "recipient_id", label: "معرّف المستلم (UUID)" },
-          { key: "content", label: "الرسالة", type: "textarea" },
-        ]}
-      />
+      <div>
+        <SectionHint title="الرسائل الداخلية">
+          دردشة خاصة مع طالب معين — يقدر يرد عليك من صفحته. حط UUID المستلم. مفيد لو طالب سألك سؤال خاص وعايز ترد عليه من غير ما بقية الطلاب يشوفوا.
+        </SectionHint>
+        <CrudSection
+          table="messages"
+          title="الرسائل الداخلية"
+          description="محادثات بين المدرس والطلاب وأولياء الأمور."
+          fields={[
+            { key: "recipient_id", label: "معرّف المستلم (UUID)" },
+            { key: "content", label: "الرسالة", type: "textarea" },
+          ]}
+        />
+      </div>
     </div>
   );
 }

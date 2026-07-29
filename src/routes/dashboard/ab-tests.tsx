@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Beaker, Pencil, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminHelp } from "@/components/AdminHelp";
+import { SectionHint } from "@/components/SectionHint";
 
 export const Route = createFileRoute("/dashboard/ab-tests")({
   head: () => ({
@@ -118,17 +120,34 @@ function AbTestsPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex items-center gap-3">
-        <Beaker className="size-6 text-primary" />
-        <div>
-          <h1 className="font-display text-3xl font-black">اختبارات A/B</h1>
-          <p className="text-sm text-muted-foreground">
-            جرّب نسخ مختلفة من عنوان الكورس، السعر، الوصف، والغلاف — والمنصة بتوزع الزوار وبتقيس التحويل تلقائي.
-          </p>
+      <header className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Beaker className="size-6 text-primary" />
+          <div>
+            <h1 className="font-display text-3xl font-black">اختبارات A/B</h1>
+            <p className="text-sm text-muted-foreground">
+              جرّب نسخ مختلفة من عنوان الكورس، السعر، الوصف، والغلاف — والمنصة بتوزع الزوار وبتقيس التحويل تلقائي.
+            </p>
+          </div>
         </div>
+        <AdminHelp
+          title="شرح اختبارات A/B"
+          intro="بتقارن نسخ مختلفة من نفس الكورس عشان تعرف أنهي أفضل في التحويل."
+          items={[
+            { title: "الفكرة", body: "بدل ما تحزر أنهي عنوان أو سعر يجذب الطلاب، بتعمل نسختين أو أكتر، والنظام بيوزع الزوار عليها ويحسبلك النتايج." },
+            { title: "Control", body: "دي النسخة الأصلية بتاعة الكورس (اللي في صفحة الكورسات). دايمًا بتظهر ومفيش تعديل عليها." },
+            { title: "النسخ (Variants)", body: "كل نسخة لها اسم داخلي (للتنظيم) وتقدر تغيّر فيها العنوان أو السعر أو الوصف أو الغلاف." },
+            { title: "الوزن (Weight)", body: "نسبة الزوار اللي هيشوفوا النسخة دي. وزن 1 على 1 = توزيع متساوي. وزن 2 على 1 = ضعف الزوار." },
+            { title: "CTR و CVR", body: "CTR = نسبة اللي ضغطوا من إجمالي المشاهدات. CVR = نسبة اللي اشتركوا فعلاً — ده الرقم الأهم." },
+            { title: "شغّالة/موقوفة", body: "لما تلاقي نسخة أفضل، أوقف الباقي وخلّي بس اللي كسب." },
+          ]}
+        />
       </header>
 
       <section className="card-3d glass rounded-2xl p-5">
+        <SectionHint title="اختار كورس">
+          اختار الكورس اللي عايز تختبر عليه نسخ مختلفة. النتايج والنسخ اللي تحت بتخص الكورس المختار فقط.
+        </SectionHint>
         <label className="mb-2 block text-xs font-bold text-muted-foreground">اختر كورس</label>
         <select
           value={selected ?? ""}
@@ -144,6 +163,9 @@ function AbTestsPage() {
 
       {selected && (
         <section className="space-y-4">
+          <SectionHint title="النسخ ونتائج التحويل">
+            أضف نسخة جديدة (زر "نسخة جديدة") وسيب النظام يعرضها للزوار. جدول النتائج بيقارن كل نسخة بـControl. ركّز على عمود CVR% (نسبة الاشتراك) — الأعلى هو الفايز.
+          </SectionHint>
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl font-black">النسخ المختلفة</h2>
             <button
