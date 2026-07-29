@@ -238,7 +238,7 @@ function Home() {
           <div className="relative mx-auto w-full max-w-md">
             <div className="blob morphy absolute inset-6 -z-10" />
             <motion.img
-              src={teacherHero}
+              src={teacherPoint}
               alt="الأستاذ المستر"
               width={1024}
               height={1024}
@@ -306,7 +306,7 @@ function Home() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2">
           <Reveal>
             <img
-              src={teacherPoint}
+              src={teacherHero}
               alt="الأستاذ المستر بيشرح"
               loading="lazy"
               width={1024}
