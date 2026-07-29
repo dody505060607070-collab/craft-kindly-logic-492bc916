@@ -306,7 +306,7 @@ function Home() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2">
           <Reveal>
             <img
-              src={teacherPoint}
+              src={teacherHero}
               alt="الأستاذ المستر بيشرح"
               loading="lazy"
               width={1024}
