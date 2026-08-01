@@ -1025,6 +1025,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_payment: {
+        Args: { _payment_id: string; _status: string }
+        Returns: undefined
+      }
       get_lessons_catalog: {
         Args: { _course_id: string }
         Returns: {
@@ -1053,6 +1057,18 @@ export type Database = {
           id: string
           transcript: string
           video_url: string
+        }[]
+      }
+      get_quizzes_catalog: {
+        Args: never
+        Returns: {
+          course_id: string
+          description: string
+          duration_minutes: number
+          id: string
+          pass_score: number
+          question_count: number
+          title: string
         }[]
       }
       has_role: {
