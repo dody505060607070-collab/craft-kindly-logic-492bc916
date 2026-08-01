@@ -332,8 +332,11 @@ export const summarizeLiveSession = createServerFn({ method: "POST" })
 // 17) Suggest 3 message replies
 // ================================================================
 export const suggestReplies = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ message: z.string().min(1).max(3000), tone: z.enum(["ودود","رسمي","مختصر"]).default("ودود") }).parse(i))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { data: replyAdmin } = await context.supabase.rpc("is_admin");
+    if (!replyAdmin) throw new Error("للأدمن فقط");
     return await groqJSON<{ suggestions: string[] }>({
       system: "أنت مساعد أدمن تعليمي. أعِد JSON: {suggestions:[3 ردود قصيرة بالعربي المصري بأسلوب مختلف]}",
       user: `رسالة الطالب: "${data.message}"\nأسلوب الرد: ${data.tone}`,
