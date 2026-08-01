@@ -22,12 +22,16 @@ function QuizzesPage() {
   const { data } = useQuery({
     queryKey: ["quizzes-public"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("quizzes")
-        .select("*, courses(title), quiz_questions(id)")
-        .eq("is_published", true)
-        .order("created_at", { ascending: false });
-      return data ?? [];
+      const [quizzes, courses] = await Promise.all([
+        supabase.rpc("get_quizzes_catalog"),
+        supabase.from("courses").select("id, title"),
+      ]);
+      if (quizzes.error) throw quizzes.error;
+      const titles = new Map((courses.data ?? []).map((c) => [c.id, c.title]));
+      return (quizzes.data ?? []).map((q) => ({
+        ...q,
+        courseTitle: q.course_id ? (titles.get(q.course_id) ?? null) : null,
+      }));
     },
   });
 
