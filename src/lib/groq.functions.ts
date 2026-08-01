@@ -290,8 +290,11 @@ export const generateCoursePlan = createServerFn({ method: "POST" })
 // 15) Course description + SEO
 // ================================================================
 export const generateCourseSeo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ title: z.string().min(3).max(200), notes: z.string().max(1000).optional() }).parse(i))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { data: seoAdmin } = await context.supabase.rpc("is_admin");
+    if (!seoAdmin) throw new Error("للأدمن فقط");
     return await groqJSON<{ short: string; long: string; tags: string[]; seo_title: string; seo_description: string }>({
       system: "أنت متخصص SEO تعليمي مصري. أعِد JSON: {short, long, tags:[...], seo_title, seo_description}.",
       user: `عنوان: ${data.title}\n${data.notes ? `ملاحظات: ${data.notes}` : ""}\nاكتب short (سطر جذاب), long (فقرة تسويقية), tags, seo_title (60 حرف), seo_description (155 حرف).`,
@@ -307,6 +310,8 @@ export const summarizeLiveSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ sessionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
+    const { data: liveAdmin } = await context.supabase.rpc("is_admin");
+    if (!liveAdmin) throw new Error("للأدمن فقط");
     const [s, msgs] = await Promise.all([
       context.supabase.from("live_sessions").select("*").eq("id", data.sessionId).maybeSingle(),
       context.supabase.from("live_messages").select("content, created_at").eq("session_id", data.sessionId).order("created_at").limit(500),
@@ -327,8 +332,11 @@ export const summarizeLiveSession = createServerFn({ method: "POST" })
 // 17) Suggest 3 message replies
 // ================================================================
 export const suggestReplies = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ message: z.string().min(1).max(3000), tone: z.enum(["ودود","رسمي","مختصر"]).default("ودود") }).parse(i))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { data: replyAdmin } = await context.supabase.rpc("is_admin");
+    if (!replyAdmin) throw new Error("للأدمن فقط");
     return await groqJSON<{ suggestions: string[] }>({
       system: "أنت مساعد أدمن تعليمي. أعِد JSON: {suggestions:[3 ردود قصيرة بالعربي المصري بأسلوب مختلف]}",
       user: `رسالة الطالب: "${data.message}"\nأسلوب الرد: ${data.tone}`,

@@ -22,12 +22,16 @@ function QuizzesPage() {
   const { data } = useQuery({
     queryKey: ["quizzes-public"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("quizzes")
-        .select("*, courses(title), quiz_questions(id)")
-        .eq("is_published", true)
-        .order("created_at", { ascending: false });
-      return data ?? [];
+      const [quizzes, courses] = await Promise.all([
+        supabase.rpc("get_quizzes_catalog"),
+        supabase.from("courses").select("id, title"),
+      ]);
+      if (quizzes.error) throw quizzes.error;
+      const titles = new Map((courses.data ?? []).map((c) => [c.id, c.title]));
+      return (quizzes.data ?? []).map((q) => ({
+        ...q,
+        courseTitle: q.course_id ? (titles.get(q.course_id) ?? null) : null,
+      }));
     },
   });
 
@@ -48,17 +52,15 @@ function QuizzesPage() {
                 <ListChecks className="size-5" />
               </span>
               <h3 className="mt-3 font-black">{q.title}</h3>
-              {q.courses && (
-                <p className="mt-1 text-xs font-bold text-primary">
-                  {(q.courses as { title: string }).title}
-                </p>
+              {q.courseTitle && (
+                <p className="mt-1 text-xs font-bold text-primary">{q.courseTitle}</p>
               )}
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 <span className="rounded-full bg-card px-2 py-1 font-bold">
                   المدة: {q.duration_minutes} دقيقة
                 </span>
                 <span className="rounded-full bg-card px-2 py-1 font-bold">
-                  الأسئلة: {(q.quiz_questions as unknown[])?.length ?? 0}
+                  الأسئلة: {q.question_count ?? 0}
                 </span>
                 <span className="rounded-full bg-card px-2 py-1 font-bold">
                   النجاح: {q.pass_score}%

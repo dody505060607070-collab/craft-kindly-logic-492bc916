@@ -1,5 +1,6 @@
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 
@@ -10,8 +11,12 @@ const GradeInput = z.object({
 });
 
 export const gradeAssignment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => GradeInput.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { data: adminChk } = await context.supabase.rpc("is_admin");
+    if (!adminChk) throw new Error("للأدمن فقط");
+
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("خدمة الذكاء الاصطناعي غير مهيأة");
 
@@ -40,6 +45,7 @@ const ChatInput = z.object({
 });
 
 export const askTutor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ChatInput.parse(input))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;

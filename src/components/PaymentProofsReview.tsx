@@ -69,20 +69,12 @@ export function PaymentProofsReview() {
   const setStatus = async (p: Payment, status: "paid" | "failed") => {
     setBusyId(p.id);
     try {
-      const { error } = await supabase.from("payments").update({ status }).eq("id", p.id);
+      const { error } = await supabase.rpc("approve_payment", { _payment_id: p.id, _status: status });
       if (error) throw error;
-      if (status === "paid" && p.course_id) {
-        const days = p.plan === "year" ? 365 : 30;
-        const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
-        const { error: enrollmentError } = await supabase.from("enrollments").upsert(
-          { user_id: p.user_id, course_id: p.course_id, progress: 0, expires_at: expiresAt },
-          { onConflict: "user_id,course_id" },
-        );
-        if (enrollmentError) throw enrollmentError;
-      }
       toast.success(status === "paid" ? "تم اعتماد الدفع وتفعيل الاشتراك" : "تم الرفض");
       qc.invalidateQueries({ queryKey: ["pending-payments"] });
       qc.invalidateQueries({ queryKey: ["crud", "payments"] });
+      qc.invalidateQueries({ queryKey: ["crud", "enrollments"] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "حصل خطأ");
     } finally {

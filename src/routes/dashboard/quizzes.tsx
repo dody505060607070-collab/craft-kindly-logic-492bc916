@@ -82,7 +82,7 @@ function QuizzesPage() {
           orderBy="sort_order"
           ascending
           fields={[
-            { key: "quiz_id", label: "معرّف الاختبار (UUID)" },
+            { key: "quiz_id", label: "الاختبار", required: true, relation: { table: "quizzes", label: "title" } },
             { key: "question", label: "نص السؤال", type: "textarea", required: true },
             { key: "options", label: 'الاختيارات (JSON مثل ["أ","ب"])', type: "textarea", hideInTable: true },
             { key: "correct_index", label: "رقم الاختيار الصحيح (يبدأ من 0)", type: "number", default: 0 },
