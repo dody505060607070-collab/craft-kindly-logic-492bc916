@@ -78,8 +78,8 @@ function StudentsPage() {
           title="الاشتراكات في الكورسات"
           description="افتح كورس لطالب أو حدّد تاريخ انتهاء اشتراكه."
           fields={[
-            { key: "user_id", label: "معرّف الطالب (UUID)" },
-            { key: "course_id", label: "معرّف الكورس (UUID)" },
+            { key: "user_id", label: "الطالب", required: true, relation: { table: "profiles", label: "full_name" } },
+            { key: "course_id", label: "الكورس", required: true, relation: { table: "courses", label: "title" } },
             { key: "progress", label: "نسبة التقدم %", type: "number", default: 0 },
             { key: "expires_at", label: "ينتهي في", type: "datetime" },
           ]}

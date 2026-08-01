@@ -25,6 +25,8 @@ export type Field = {
   options?: { value: string; label: string }[];
   hideInTable?: boolean;
   default?: unknown;
+  required?: boolean;
+  relation?: { table: "courses" | "subjects" | "chapters" | "lessons" | "assignments" | "quizzes" | "profiles"; label: string };
 };
 
 type Row = Record<string, unknown>;
@@ -58,6 +60,22 @@ export function CrudSection({
   const canEdit = isAdmin && !readOnly;
   const canCreate = canEdit && allowCreate;
 
+  const relationFields = fields.filter((field) => field.relation);
+  const { data: relationOptions = {} } = useQuery({
+    queryKey: ["crud-relations", table, relationFields.map((field) => `${field.key}:${field.relation?.table}`).join("|")],
+    enabled: relationFields.length > 0,
+    queryFn: async () => {
+      const entries = await Promise.all(relationFields.map(async (field) => {
+        const relation = field.relation;
+        if (!relation) return [field.key, []] as const;
+        const { data, error } = await db(relation.table).select(`id,${relation.label}`).order(relation.label).limit(500);
+        if (error) throw error;
+        return [field.key, (data ?? []) as Row[]] as const;
+      }));
+      return Object.fromEntries(entries) as Record<string, Row[]>;
+    },
+  });
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["crud", table],
@@ -80,6 +98,8 @@ export function CrudSection({
         if (f.type === "number" && v !== null) v = Number(v);
         payload[f.key] = v;
       }
+      const missing = fields.find((field) => field.required && (payload[field.key] === null || payload[field.key] === ""));
+      if (missing) throw new Error(`اكتب ${missing.label}`);
       if (row.id) {
         const { error } = await db(table).update(payload).eq("id", row.id as string);
         if (error) throw error;
@@ -153,7 +173,18 @@ export function CrudSection({
                     />
                   )}
                 </div>
-                {f.type === "textarea" ? (
+                {f.relation ? (
+                  <select
+                    value={String(editing[f.key] ?? "")}
+                    onChange={(e) => setEditing({ ...editing, [f.key]: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-surface px-3 py-2 text-sm outline-none"
+                  >
+                    <option value="">— اختر {f.label} —</option>
+                    {(relationOptions[f.key] ?? []).map((option) => (
+                      <option key={String(option.id)} value={String(option.id)}>{String(option[f.relation?.label ?? "id"] ?? option.id)}</option>
+                    ))}
+                  </select>
+                ) : f.type === "textarea" ? (
                   <textarea
                     rows={3}
                     value={String(editing[f.key] ?? "")}

@@ -85,7 +85,6 @@ function PaymentsPage() {
             { key: "amount", label: "المبلغ", type: "number", default: 0 },
             { key: "method", label: "وسيلة الدفع", default: "vodafone_cash" },
             { key: "reference", label: "رقم العملية" },
-            { key: "coupon_code", label: "كوبون", hideInTable: true },
             { key: "proof_url", label: "رابط الإيصال", hideInTable: true },
             {
               key: "status",
