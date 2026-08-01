@@ -13,6 +13,7 @@ type Payment = {
   reference: string | null;
   proof_url: string | null;
   status: string;
+  plan: string | null;
   created_at: string;
 };
 
@@ -71,7 +72,13 @@ export function PaymentProofsReview() {
       const { error } = await supabase.from("payments").update({ status }).eq("id", p.id);
       if (error) throw error;
       if (status === "paid" && p.course_id) {
-        await supabase.from("enrollments").insert({ user_id: p.user_id, course_id: p.course_id, progress: 0 });
+        const days = p.plan === "year" ? 365 : 30;
+        const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
+        const { error: enrollmentError } = await supabase.from("enrollments").upsert(
+          { user_id: p.user_id, course_id: p.course_id, progress: 0, expires_at: expiresAt },
+          { onConflict: "user_id,course_id" },
+        );
+        if (enrollmentError) throw enrollmentError;
       }
       toast.success(status === "paid" ? "تم اعتماد الدفع وتفعيل الاشتراك" : "تم الرفض");
       qc.invalidateQueries({ queryKey: ["pending-payments"] });
@@ -111,6 +118,7 @@ export function PaymentProofsReview() {
               </div>
               <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
                 <span className="rounded-full bg-card px-2 py-0.5">{p.method}</span>
+                <span className="rounded-full bg-card px-2 py-0.5">{p.plan === "year" ? "سنة" : "شهر"}</span>
                 {p.reference && <span dir="ltr" className="rounded-full bg-card px-2 py-0.5">#{p.reference}</span>}
                 <span className="rounded-full bg-card px-2 py-0.5">
                   {new Date(p.created_at).toLocaleString("ar-EG")}

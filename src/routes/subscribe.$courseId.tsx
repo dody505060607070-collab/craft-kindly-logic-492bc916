@@ -27,6 +27,7 @@ function Subscribe() {
   const { user } = useAuth();
   const [reference, setReference] = useState("");
   const [method, setMethod] = useState("vodafone_cash");
+  const [plan, setPlan] = useState<"month" | "year">("month");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -67,11 +68,12 @@ function Subscribe() {
       const { error } = await supabase.from("payments").insert({
         user_id: user.id,
         course_id: courseId,
-        amount: course?.price ?? 0,
+        amount: plan === "year" ? (course?.price_year ?? course?.price ?? 0) : (course?.price ?? 0),
         method,
         reference,
         proof_url: proofUrl,
         status: "pending",
+        plan,
       });
       if (error) throw error;
       setDone(true);
@@ -114,7 +116,7 @@ function Subscribe() {
         {course && (
           <p className="mt-2 text-sm text-muted-foreground">
             كورس: <span className="font-bold text-foreground">{course.title}</span> — السعر:{" "}
-            <span className="font-black text-primary">{course.price} ج.م</span>
+            <span className="font-black text-primary">{plan === "year" ? (course.price_year ?? course.price) : course.price} ج.م</span>
           </p>
         )}
 
@@ -155,6 +157,14 @@ function Subscribe() {
 
           <form onSubmit={submit} className="glass space-y-4 rounded-2xl p-5">
             <h2 className="font-black">تأكيد الدفع</h2>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-bold text-muted-foreground">مدة الاشتراك</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setPlan("month")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "month" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>شهر — {course?.price ?? 0} ج.م</button>
+                <button type="button" onClick={() => setPlan("year")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "year" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>سنة — {course?.price_year ?? course?.price ?? 0} ج.م</button>
+              </div>
+            </div>
 
             <div>
               <label className="mb-1.5 block text-xs font-bold text-muted-foreground">

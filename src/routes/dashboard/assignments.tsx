@@ -37,7 +37,7 @@ function AiGrader() {
     }
     setBusy(true);
     try {
-      const res = await grade({ data: { question, answer, maxScore: 10 } });
+        const res = await grade({ data: { question, answer, maxScore: 10 } });
       setResult({ score: res.score, feedback: res.feedback });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر التصحيح الآن");
