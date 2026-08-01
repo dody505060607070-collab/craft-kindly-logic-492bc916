@@ -77,6 +77,7 @@ export type Database = {
       assignment_submissions: {
         Row: {
           assignment_id: string
+          attachment_path: string | null
           content: string | null
           created_at: string
           feedback: string | null
@@ -88,6 +89,7 @@ export type Database = {
         }
         Insert: {
           assignment_id: string
+          attachment_path?: string | null
           content?: string | null
           created_at?: string
           feedback?: string | null
@@ -99,6 +101,7 @@ export type Database = {
         }
         Update: {
           assignment_id?: string
+          attachment_path?: string | null
           content?: string | null
           created_at?: string
           feedback?: string | null
