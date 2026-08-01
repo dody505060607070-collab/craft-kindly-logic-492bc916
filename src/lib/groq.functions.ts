@@ -310,6 +310,8 @@ export const summarizeLiveSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ sessionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
+    const { data: liveAdmin } = await context.supabase.rpc("is_admin");
+    if (!liveAdmin) throw new Error("للأدمن فقط");
     const [s, msgs] = await Promise.all([
       context.supabase.from("live_sessions").select("*").eq("id", data.sessionId).maybeSingle(),
       context.supabase.from("live_messages").select("content, created_at").eq("session_id", data.sessionId).order("created_at").limit(500),
