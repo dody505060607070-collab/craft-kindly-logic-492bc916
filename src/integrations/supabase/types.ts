@@ -197,6 +197,42 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          discount_percent: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_percent?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_percent?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
       course_variants: {
         Row: {
           course_id: string
@@ -257,6 +293,7 @@ export type Database = {
           price_year: number | null
           slug: string | null
           sort_order: number
+          subject_id: string | null
           title: string
           updated_at: string
         }
@@ -272,6 +309,7 @@ export type Database = {
           price_year?: number | null
           slug?: string | null
           sort_order?: number
+          subject_id?: string | null
           title: string
           updated_at?: string
         }
@@ -287,10 +325,19 @@ export type Database = {
           price_year?: number | null
           slug?: string | null
           sort_order?: number
+          subject_id?: string | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       enrollments: {
         Row: {
@@ -499,6 +546,44 @@ export type Database = {
         }
         Relationships: []
       }
+      materials: {
+        Row: {
+          created_at: string
+          file_path: string
+          file_type: string
+          id: string
+          lesson_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          file_type?: string
+          id?: string
+          lesson_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          file_type?: string
+          id?: string
+          lesson_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -614,6 +699,7 @@ export type Database = {
           grade: string | null
           id: string
           is_active: boolean
+          parent_phone: string | null
           phone: string | null
           points: number
           updated_at: string
@@ -625,6 +711,7 @@ export type Database = {
           grade?: string | null
           id: string
           is_active?: boolean
+          parent_phone?: string | null
           phone?: string | null
           points?: number
           updated_at?: string
@@ -636,6 +723,7 @@ export type Database = {
           grade?: string | null
           id?: string
           is_active?: boolean
+          parent_phone?: string | null
           phone?: string | null
           points?: number
           updated_at?: string
@@ -807,6 +895,77 @@ export type Database = {
         }
         Relationships: []
       }
+      subjects: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_published: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_published?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_devices: {
+        Row: {
+          created_at: string
+          device_fingerprint: string
+          device_name: string
+          id: string
+          is_blocked: boolean
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint: string
+          device_name: string
+          id?: string
+          is_blocked?: boolean
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string
+          device_name?: string
+          id?: string
+          is_blocked?: boolean
+          last_seen_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_devices_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -883,6 +1042,14 @@ export type Database = {
           id: string
           starts_at: string
           title: string
+        }[]
+      }
+      get_playable_lessons: {
+        Args: { _course_id: string }
+        Returns: {
+          id: string
+          transcript: string
+          video_url: string
         }[]
       }
       has_role: {
