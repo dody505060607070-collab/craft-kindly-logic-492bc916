@@ -290,8 +290,11 @@ export const generateCoursePlan = createServerFn({ method: "POST" })
 // 15) Course description + SEO
 // ================================================================
 export const generateCourseSeo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({ title: z.string().min(3).max(200), notes: z.string().max(1000).optional() }).parse(i))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { data: seoAdmin } = await context.supabase.rpc("is_admin");
+    if (!seoAdmin) throw new Error("للأدمن فقط");
     return await groqJSON<{ short: string; long: string; tags: string[]; seo_title: string; seo_description: string }>({
       system: "أنت متخصص SEO تعليمي مصري. أعِد JSON: {short, long, tags:[...], seo_title, seo_description}.",
       user: `عنوان: ${data.title}\n${data.notes ? `ملاحظات: ${data.notes}` : ""}\nاكتب short (سطر جذاب), long (فقرة تسويقية), tags, seo_title (60 حرف), seo_description (155 حرف).`,
