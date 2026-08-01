@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { gradeAssignment } from "@/lib/ai.functions";
+import { gradeStudentAnswer } from "@/lib/groq.functions";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/dashboard/assignments")({
 });
 
 function AiGrader() {
-  const grade = useServerFn(gradeAssignment);
+  const grade = useServerFn(gradeStudentAnswer);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,8 +37,8 @@ function AiGrader() {
     }
     setBusy(true);
     try {
-      const res = await grade({ data: { question, answer, maxScore: 10 } });
-      setResult(res);
+        const res = await grade({ data: { question, answer, maxScore: 10 } });
+      setResult({ score: res.score, feedback: res.feedback });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "تعذر التصحيح الآن");
     } finally {
@@ -115,8 +115,8 @@ function AssignmentsPage() {
               body: "املأ العنوان والتعليمات ومعرّف الكورس. حدّد موعد التسليم والدرجة القصوى. لو مش منشور، الطالب مش هيشوفه.",
             },
             {
-              title: "نموذج الإجابة (model_answer)",
-              body: "أضف نموذج إجابة مثالي — الـ AI هيقارن بيه إجابة الطالب ويصحح بدقة أعلى.",
+              title: "وصف أو نموذج الإجابة",
+              body: "أضف نموذج إجابة مثالي داخل الوصف — واستخدمه مع أداة التصحيح الذكي للحصول على نتيجة أدق.",
             },
             {
               title: "تسليمات الطلاب",
@@ -139,8 +139,8 @@ function AssignmentsPage() {
           fields={[
             { key: "title", label: "عنوان الواجب" },
             { key: "instructions", label: "التعليمات", type: "textarea", hideInTable: true },
-            { key: "model_answer", label: "نموذج الإجابة (للـ AI)", type: "textarea", hideInTable: true },
-            { key: "course_id", label: "معرّف الكورس (UUID)" },
+            { key: "description", label: "وصف أو نموذج إجابة للـ AI", type: "textarea", hideInTable: true },
+            { key: "course_id", label: "الكورس", relation: { table: "courses", label: "title" } },
             { key: "due_at", label: "موعد التسليم", type: "datetime" },
             { key: "max_score", label: "الدرجة القصوى", type: "number", default: 10 },
             { key: "is_published", label: "منشور", type: "bool", default: true },
@@ -161,8 +161,8 @@ function AssignmentsPage() {
             { key: "assignment_id", label: "معرّف الواجب" },
             { key: "user_id", label: "معرّف الطالب" },
             { key: "content", label: "الإجابة", type: "textarea", hideInTable: true },
-            { key: "score", label: "الدرجة", type: "number" },
-            { key: "ai_feedback", label: "الملاحظات", type: "textarea", hideInTable: true },
+            { key: "grade", label: "الدرجة", type: "number" },
+            { key: "feedback", label: "الملاحظات", type: "textarea", hideInTable: true },
           ]}
         />
       </div>

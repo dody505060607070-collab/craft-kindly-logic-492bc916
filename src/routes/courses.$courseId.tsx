@@ -30,31 +30,30 @@ function toYoutubeEmbed(url: string | null): string | null {
 
 function CourseDetail() {
   const { courseId } = useParams({ from: "/courses/$courseId" });
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
   const sessionKey = getSessionKey();
 
   const { data } = useQuery({
-    queryKey: ["course-detail", courseId],
+    queryKey: ["course-detail", courseId, user?.id, isAdmin],
     queryFn: async () => {
       const [c, chapters, catalog, playable, enroll, variantRows] = await Promise.all([
         supabase.from("courses").select("*").eq("id", courseId).maybeSingle(),
         supabase.from("chapters").select("*").eq("course_id", courseId).order("sort_order"),
         supabase.rpc("get_lessons_catalog", { _course_id: courseId }),
-        supabase
-          .from("lessons")
-          .select("id, video_url, transcript")
-          .eq("course_id", courseId)
-          .eq("is_published", true),
+        supabase.rpc("get_playable_lessons", { _course_id: courseId }),
         user
           ? supabase.from("enrollments").select("*").eq("course_id", courseId).eq("user_id", user.id).maybeSingle()
           : Promise.resolve({ data: null }),
         supabase.from("course_variants").select("*").eq("course_id", courseId).eq("is_active", true),
       ]);
-      const playMap = new Map(
-        ((playable.data ?? []) as Array<{ id: string; video_url: string | null; transcript: string | null }>)
-          .map((r) => [r.id, r]),
-      );
+      const playableRows = (playable.data ?? []) as Array<{ id: string; video_url: string | null; transcript: string | null }>;
+      const signedPlayable = await Promise.all(playableRows.map(async (row) => {
+        if (!row.video_url?.startsWith("storage:")) return row;
+        const { data: signed } = await supabase.storage.from("course-videos").createSignedUrl(row.video_url.slice(8), 3600);
+        return { ...row, video_url: signed?.signedUrl ?? null };
+      }));
+      const playMap = new Map(signedPlayable.map((row) => [row.id, row]));
       const catalogRows = (catalog.data ?? []) as Array<Record<string, unknown> & { id: string }>;
       const merged = catalogRows.map((l) => ({
         ...l,
@@ -66,7 +65,7 @@ function CourseDetail() {
         course: c.data,
         chapters: chapters.data ?? [],
         lessons: merged as Array<any>,
-        enrolled: !!enroll.data,
+        enrollment: enroll.data,
         variants: (variantRows.data ?? []) as CourseVariant[],
       };
     },
@@ -94,11 +93,12 @@ function CourseDetail() {
 
   const rawCourse = data.course;
   const course = applyVariant(rawCourse, variant);
-  const { chapters, lessons, enrolled } = data;
-  const canWatch = enrolled || course.is_free;
+  const { chapters, lessons, enrollment } = data;
+  const enrolled = Boolean(enrollment && (!enrollment.expires_at || new Date(enrollment.expires_at) > new Date()));
+  const canWatch = isAdmin || enrolled || course.is_free;
   const current = activeLesson
     ? lessons.find((l) => l.id === activeLesson)
-    : lessons.find((l) => canWatch || l.is_free_preview) || lessons[0];
+    : lessons.find((l) => canWatch || l.is_free) || lessons[0];
 
   return (
     <StudentShell>
@@ -127,7 +127,7 @@ function CourseDetail() {
           {/* Video / paywall */}
           <div className="space-y-4">
             <div className="aspect-video overflow-hidden rounded-2xl bg-black">
-              {current && (canWatch || current.is_free_preview) && current.video_url ? (
+              {current && (canWatch || current.is_free) && current.video_url ? (
                 <iframe
                   key={current.id}
                   src={toYoutubeEmbed(current.video_url)!}
@@ -168,7 +168,7 @@ function CourseDetail() {
                 )}
               </div>
             )}
-            {current && (canWatch || current.is_free_preview) && (
+            {current && (canWatch || current.is_free) && (
               <AILessonToolbox
                 lessonTitle={current.title}
                 lessonText={[current.description, current.summary, current.transcript].filter(Boolean).join("\n\n")}
@@ -190,7 +190,7 @@ function CourseDetail() {
                     <p className="mb-2 text-xs font-black text-primary">{ch.title}</p>
                     <div className="space-y-1">
                       {chLessons.map((l) => {
-                        const unlocked = canWatch || l.is_free_preview;
+                        const unlocked = canWatch || l.is_free;
                         const isActive = current?.id === l.id;
                         return (
                           <button
@@ -208,7 +208,7 @@ function CourseDetail() {
                               <Lock className="size-4 shrink-0 opacity-60" />
                             )}
                             <span className="line-clamp-1 flex-1">{l.title}</span>
-                            {l.is_free_preview && !enrolled && (
+                            {l.is_free && !enrolled && (
                               <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-500">
                                 مجاني
                               </span>
@@ -231,7 +231,7 @@ function CourseDetail() {
                         onClick={() => setActiveLesson(l.id)}
                         className="flex w-full items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-right text-xs font-bold"
                       >
-                        <PlayCircle className="size-4" />
+                        {canWatch || l.is_free ? <PlayCircle className="size-4" /> : <Lock className="size-4 opacity-60" />}
                         {l.title}
                       </button>
                     ))}

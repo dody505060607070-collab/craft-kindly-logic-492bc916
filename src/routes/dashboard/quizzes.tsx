@@ -63,8 +63,7 @@ function QuizzesPage() {
           description="حدد المدة ودرجة النجاح لكل اختبار."
           fields={[
             { key: "title", label: "عنوان الاختبار" },
-            { key: "course_id", label: "معرّف الكورس (UUID)" },
-            { key: "lesson_id", label: "معرّف الدرس (اختياري)", hideInTable: true },
+            { key: "course_id", label: "الكورس", relation: { table: "courses", label: "title" } },
             { key: "duration_minutes", label: "المدة (دقيقة)", type: "number", default: 15 },
             { key: "pass_score", label: "درجة النجاح %", type: "number", default: 50 },
             { key: "is_published", label: "منشور", type: "bool", default: true },
@@ -84,20 +83,9 @@ function QuizzesPage() {
           ascending
           fields={[
             { key: "quiz_id", label: "معرّف الاختبار (UUID)" },
-            { key: "prompt", label: "نص السؤال", type: "textarea" },
-            {
-              key: "type",
-              label: "النوع",
-              type: "select",
-              default: "mcq",
-              options: [
-                { value: "mcq", label: "اختيار من متعدد" },
-                { value: "truefalse", label: "صح وخطأ" },
-                { value: "essay", label: "مقالي" },
-              ],
-            },
-            { key: "choices", label: 'الاختيارات (JSON مثل ["أ","ب"])', type: "textarea", hideInTable: true },
-            { key: "correct_answer", label: "الإجابة الصحيحة (JSON)", hideInTable: true },
+            { key: "question", label: "نص السؤال", type: "textarea", required: true },
+            { key: "options", label: 'الاختيارات (JSON مثل ["أ","ب"])', type: "textarea", hideInTable: true },
+            { key: "correct_index", label: "رقم الاختيار الصحيح (يبدأ من 0)", type: "number", default: 0 },
             { key: "points", label: "الدرجة", type: "number", default: 1 },
             { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
           ]}

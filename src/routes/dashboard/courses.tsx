@@ -48,7 +48,7 @@ function CoursesPage() {
             },
             {
               title: "نصيحة سريعة",
-              body: "لجذب الطلاب فعّل 'is_free_preview' في أول درس عشان يقدر يشوفه قبل الاشتراك.",
+              body: "لجذب الطلاب فعّل 'معاينة مجانية' في أول درس عشان يقدر يشوفه قبل الاشتراك.",
             },
           ]}
         />
@@ -87,9 +87,10 @@ function CoursesPage() {
           fields={[
             { key: "title", label: "عنوان الكورس" },
             { key: "description", label: "الوصف", type: "textarea" },
-            { key: "subject_id", label: "معرّف المادة (UUID)", hideInTable: true },
+            { key: "subject_id", label: "المادة", relation: { table: "subjects", label: "name" } },
             { key: "grade", label: "الصف الدراسي" },
             { key: "price", label: "السعر (ج.م)", type: "number", default: 0 },
+            { key: "price_year", label: "سعر السنة (ج.م)", type: "number" },
             { key: "is_free", label: "مجاني", type: "bool", default: false },
             { key: "is_published", label: "منشور", type: "bool", default: true },
             { key: "cover_url", label: "رابط صورة الغلاف", hideInTable: true },
@@ -104,19 +105,6 @@ function CoursesPage() {
         </SectionHint>
         <CoverUploader />
       </div>
-      <CrudSection
-        table="chapters"
-        title="الفصول الدراسية"
-        description="تقسيم الكورس لفصول ووحدات."
-        orderBy="sort_order"
-        ascending
-        fields={[
-          { key: "title", label: "عنوان الفصل" },
-          { key: "course_id", label: "معرّف الكورس (UUID)" },
-          { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
-        ]}
-      />
-
       <div>
         <SectionHint title="الفصول الدراسية">
           كل كورس ممكن يتقسم لفصول (Chapters) عشان تنظّم الدروس. حط "معرّف الكورس" اللي الفصل يخصه، والترتيب. مش لازم — تقدر تسيب كل الدروس تحت الكورس مباشرة من غير فصول.
@@ -129,7 +117,7 @@ function CoursesPage() {
           ascending
           fields={[
             { key: "title", label: "عنوان الفصل" },
-            { key: "course_id", label: "معرّف الكورس (UUID)" },
+            { key: "course_id", label: "الكورس", required: true, relation: { table: "courses", label: "title" } },
             { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
           ]}
         />
@@ -148,11 +136,11 @@ function CoursesPage() {
           fields={[
             { key: "title", label: "عنوان الدرس" },
             { key: "description", label: "الوصف", type: "textarea", hideInTable: true },
-            { key: "course_id", label: "معرّف الكورس (UUID)" },
-            { key: "chapter_id", label: "معرّف الفصل (UUID)", hideInTable: true },
+            { key: "course_id", label: "الكورس", required: true, relation: { table: "courses", label: "title" } },
+            { key: "chapter_id", label: "الفصل", relation: { table: "chapters", label: "title" } },
             { key: "video_url", label: "رابط الفيديو (YouTube/mp4)", hideInTable: true },
-            { key: "duration_seconds", label: "المدة (ثانية)", type: "number", default: 0 },
-            { key: "is_free_preview", label: "معاينة مجانية", type: "bool", default: false },
+            { key: "duration_min", label: "المدة (دقيقة)", type: "number", default: 0 },
+            { key: "is_free", label: "معاينة مجانية", type: "bool", default: false },
             { key: "is_published", label: "منشور", type: "bool", default: true },
             { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
           ]}
