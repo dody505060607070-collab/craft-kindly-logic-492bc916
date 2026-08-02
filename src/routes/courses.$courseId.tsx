@@ -114,7 +114,7 @@ function CourseDetail() {
 
   const rawCourse = data.course;
   const course = applyVariant(rawCourse, variant);
-  const { chapters, lessons, enrollment } = data;
+  const { chapters, lessons, enrollment, materials } = data;
   const enrolled = Boolean(enrollment && (!enrollment.expires_at || new Date(enrollment.expires_at) > new Date()));
   const canWatch = isAdmin || enrolled || course.is_free;
   const current = activeLesson
