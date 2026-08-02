@@ -8,7 +8,10 @@ import logoMarkDark from "@/assets/logo-mark-dark.png";
 import teacherHero from "@/assets/teacher-hero.png";
 import teacherThumbs from "@/assets/teacher-thumbsup.png";
 import teacherPoint from "@/assets/teacher-point.png";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import coursePython from "@/assets/course-python.jpg";
+
 import courseWeb from "@/assets/course-web.jpg";
 import courseAi from "@/assets/course-ai.jpg";
 import { SITE } from "@/lib/site";
@@ -181,6 +184,8 @@ const FEATURES = [
   { icon: Sparkles, title: "شرح مبسط", desc: "كود خطوة بخطوة من غير تعقيد." },
 ];
 
+const FALLBACK_IMAGES = [coursePython, courseWeb, courseAi];
+
 function Home() {
   const { user } = useAuth();
   const heroRef = useRef<HTMLElement | null>(null);
@@ -192,6 +197,33 @@ function Home() {
   });
   const heroY = useTransform(heroProgress, [0, 1], [0, 90]);
   const heroFade = useTransform(heroProgress, [0, 1], [1, 0.15]);
+
+  const { data: liveCourses } = useQuery({
+    queryKey: ["home-courses"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, title, description, cover_url, price, grade")
+        .eq("is_published", true)
+        .order("sort_order")
+        .limit(6);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const cards: Array<{ id: string | null; title: string; grade: string; img: string; price: string }> =
+    liveCourses && liveCourses.length > 0
+      ? liveCourses.map((course, index) => ({
+          id: course.id,
+          title: course.title,
+          grade: course.grade || course.description?.slice(0, 40) || "كورس برمجة",
+          img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
+          price: Number(course.price) > 0 ? `${Number(course.price)} جنيه` : "مجانًا",
+        }))
+      : COURSES.map((course) => ({ id: null, ...course }));
+
+
 
   return (
     <div className="min-h-screen overflow-x-hidden">
@@ -271,8 +303,8 @@ function Home() {
         </Reveal>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {COURSES.map((c, i) => (
-            <Reveal key={c.title} delay={i * 0.12}>
+          {cards.map((c, i) => (
+            <Reveal key={c.id ?? c.title} delay={i * 0.12}>
               <article className="soft-card h-full overflow-hidden rounded-3xl">
                 <img
                   src={c.img}
@@ -287,12 +319,22 @@ function Home() {
                   <h3 className="mt-1 text-lg font-black">{c.title}</h3>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-sm font-bold text-muted-foreground">{c.price}</span>
-                    <Link
-                      to={user ? "/courses" : "/auth"}
-                      className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
-                    >
-                      ادخل الكورس
-                    </Link>
+                    {c.id ? (
+                      <Link
+                        to="/courses/$courseId"
+                        params={{ courseId: c.id }}
+                        className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+                      >
+                        ادخل الكورس
+                      </Link>
+                    ) : (
+                      <Link
+                        to={user ? "/courses" : "/auth"}
+                        className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+                      >
+                        ادخل الكورس
+                      </Link>
+                    )}
                   </div>
                 </div>
               </article>
@@ -300,6 +342,7 @@ function Home() {
           ))}
         </div>
       </section>
+
 
       {/* Features */}
       <section className="bg-surface/70 py-16">

@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
+import { StudentsManager } from "@/components/StudentsManager";
+
 
 export const Route = createFileRoute("/dashboard/students")({
   head: () => ({
@@ -50,9 +52,17 @@ function StudentsPage() {
       </div>
 
       <div>
-        <SectionHint title="حسابات الطلاب">
+        <SectionHint title="إدارة سريعة للطلاب (الأسهل)">
+          ابحث باسم الطالب أو رقمه، افتح كارت الطالب، وبعدين بدوسة واحدة افتح له أي كورس <b>لشهر أو لسنة</b> أو تلغي اشتراكه، وكمان تشوف واجباته ودرجاته. مفيش UUID ولا تعقيد.
+        </SectionHint>
+        <StudentsManager />
+      </div>
+
+      <div>
+        <SectionHint title="حسابات الطلاب (تعديل البيانات)">
           دي كل حسابات الطلاب المسجلين. مش بتقدر تضيف طالب من هنا (الطلاب بيسجلوا بنفسهم من صفحة التسجيل)، بس تقدر تعدّل بياناتهم (الاسم، الصف، رقم ولي الأمر) أو توقف الحساب بـ"نشط = لا". النقاط بتظهر للطالب كتحفيز.
         </SectionHint>
+
         <CrudSection
           table="profiles"
           title="حسابات الطلاب"

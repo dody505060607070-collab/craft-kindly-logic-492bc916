@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
-import { CoverUploader } from "@/components/CoverUploader";
 
 export const Route = createFileRoute("/dashboard/courses")({
   head: () => ({
@@ -93,18 +92,19 @@ function CoursesPage() {
             { key: "price_year", label: "سعر السنة (ج.م)", type: "number" },
             { key: "is_free", label: "مجاني", type: "bool", default: false },
             { key: "is_published", label: "منشور", type: "bool", default: true },
-            { key: "cover_url", label: "رابط صورة الغلاف", hideInTable: true },
+            {
+              key: "cover_url",
+              label: "صورة الغلاف",
+              hideInTable: true,
+              upload: { bucket: "course-covers", mode: "signed", accept: "image/*", prefix: "covers", label: "ارفع صورة الغلاف من جهازك" },
+              hint: "ارفع الصورة من الزر وهي هتتحط تلقائيًا، أو الصق رابط صورة جاهز.",
+            },
             { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
           ]}
         />
       </div>
 
-      <div>
-        <SectionHint title="رافع صور الأغلفة">
-          ارفع صورة غلاف للكورس من جهازك، وبعد الرفع هيطلعلك رابط. انسخه وحطه في خانة "رابط صورة الغلاف" جوا الكورس اللي فوق.
-        </SectionHint>
-        <CoverUploader />
-      </div>
+
       <div>
         <SectionHint title="الفصول الدراسية">
           كل كورس ممكن يتقسم لفصول (Chapters) عشان تنظّم الدروس. حط "معرّف الكورس" اللي الفصل يخصه، والترتيب. مش لازم — تقدر تسيب كل الدروس تحت الكورس مباشرة من غير فصول.

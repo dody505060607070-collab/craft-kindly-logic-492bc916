@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
-import { CourseMediaUploader } from "@/components/CourseMediaUploader";
 
 export const Route = createFileRoute("/dashboard/videos")({
   head: () => ({
@@ -23,78 +22,91 @@ function VideosPage() {
     <div className="space-y-12">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-black">سيرفر رفع الفيديوهات والملفات</h1>
+          <h1 className="font-display text-2xl font-black">الفيديوهات والملفات</h1>
           <p className="text-sm text-muted-foreground">
-            ارفع الفيديو أو ملف PDF، وانسخ الرابط الناتج وحطه في بيانات الدرس.
+            صفحة واحدة: تضيف الدرس، ترفع الفيديو أو تحط رابط يوتيوب، وترفع الملفات المرفقة.
           </p>
         </div>
         <AdminHelp
-          title="شرح سيرفر الفيديوهات"
-          intro="ترفع فيديو أو ملف مرة واحدة، وتستخدم الرابط الناتج في أي عدد من الدروس."
+          title="شرح صفحة الفيديوهات"
+          intro="كل حاجة بقت في مكان واحد — مفيش نسخ روابط ولا لزق."
           items={[
             {
-              title: "رفع فيديو درس",
-              body: "اختار ملف mp4/mkv. بعد الرفع هيطلعلك رابط، انسخه وحطه في خانة 'رابط الفيديو' جوا الدرس.",
+              title: "١. أضف درس",
+              body: "دوس 'إضافة جديد'، اختار الكورس من القائمة، اكتب عنوان الدرس ووصفه.",
             },
             {
-              title: "رفع ملف PDF أو عرض",
-              body: "نفس الطريقة — استخدم رابط الملف في قسم 'الملفات المرفقة'.",
+              title: "٢. الفيديو",
+              body: "إما تدوس 'ارفع فيديو الدرس' وتختار الملف من جهازك (بيترفع على سيرفرنا ومحمي)، أو تلزق رابط يوتيوب عادي في نفس الخانة.",
             },
             {
-              title: "بديل: YouTube",
-              body: "لو ما عندكش استضافة كبيرة، ارفع الفيديو على يوتيوب (unlisted) وحط رابط الـ embed هنا.",
+              title: "٣. الملفات المرفقة",
+              body: "من جدول 'الملفات المرفقة' تحت: اختار الدرس، ارفع الـPDF، والطالب هيلاقيه تحت الفيديو مباشرة.",
             },
             {
-              title: "الدروس والملفات في الأسفل",
-              body: "تقدر تدير الدروس والملفات المرفقة مباشرة من هنا كمان.",
+              title: "٤. الحفظ",
+              body: "دوس 'حفظ'. الوصف والفيديو بيظهروا للطالب فورًا في صفحة الكورس.",
+            },
+            {
+              title: "معاينة مجانية",
+              body: "فعّلها في أول درس عشان الطالب يشوفه قبل ما يدفع.",
             },
           ]}
         />
       </header>
 
       <div>
-          <SectionHint title="رفع الفيديوهات والملفات">
-            اختار الملف من جهازك، استنى ينتهي الرفع، ونسخ الرابط اللي هيطلعلك. الرابط ده اللي هتحطه في خانة "رابط الفيديو" جوا الدرس تحت، أو في "رابط الملف" جوا الملفات المرفقة. البدائل: تقدر ترفع الفيديو على YouTube (unlisted) وتحط رابط الـembed هنا.
-          </SectionHint>
-          <CourseMediaUploader />
-      </div>
-
-      <div>
-        <SectionHint title="الدروس">
-          كل درس لازم ينتمي لكورس (حط "معرّف الكورس UUID"). حط رابط الفيديو (اللي جبته من الرفع فوق أو من يوتيوب)، والمدة بالثواني. فعّل "معاينة مجانية" لو عايز الطالب يشوف الدرس ده قبل الاشتراك (مفيد لأول درس عشان يجذبه). "منشور = لا" بيخفي الدرس.
+        <SectionHint title="الدروس والفيديوهات">
+          اختار الكورس من القائمة المنسدلة (مش UUID)، اكتب العنوان والوصف، وبعدين إما ترفع الفيديو من جهازك بزر الرفع أو تلزق رابط يوتيوب. الوصف اللي بتكتبه هنا هو اللي الطالب بيشوفه تحت الفيديو.
         </SectionHint>
         <CrudSection
           table="lessons"
           title="الدروس"
-          description="كل درس مرتبط بكورس، وله رابط فيديو ومدة."
+          description="عنوان + وصف + فيديو (رفع أو رابط) لكل درس."
           orderBy="sort_order"
           ascending
           fields={[
             { key: "title", label: "عنوان الدرس" },
             { key: "course_id", label: "الكورس", required: true, relation: { table: "courses", label: "title" } },
-            { key: "video_url", label: "رابط الفيديو" },
+            { key: "chapter_id", label: "الفصل (اختياري)", hideInTable: true, relation: { table: "chapters", label: "title" } },
+            {
+              key: "description",
+              label: "وصف الدرس (يظهر للطالب)",
+              type: "textarea",
+              hideInTable: true,
+            },
+            {
+              key: "video_url",
+              label: "الفيديو",
+              upload: { bucket: "course-videos", mode: "storage", accept: "video/*", prefix: "lessons", label: "ارفع فيديو الدرس من جهازك" },
+              hint: "ارفع الفيديو بالزر، أو الصق رابط يوتيوب هنا.",
+            },
             { key: "duration_min", label: "المدة (دقيقة)", type: "number", default: 0 },
             { key: "is_free", label: "معاينة مجانية", type: "bool", default: false },
             { key: "is_published", label: "منشور", type: "bool", default: true },
-            { key: "description", label: "الوصف", type: "textarea", hideInTable: true },
             { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
           ]}
         />
       </div>
 
       <div>
-        <SectionHint title="الملفات المرفقة (PDF / عروض)">
-          مذكرات أو ملازم بترفقها مع الدروس. حط "معرّف الدرس" اللي الملف يخصه، ورابط الملف من الرفع فوق. الطالب هيشوف الملف تحت الفيديو في صفحة الدرس.
+        <SectionHint title="الملفات المرفقة (PDF / عروض / مذكرات)">
+          اختار الدرس من القائمة، ارفع الملف بالزر، وهو هيظهر للطالب تحت الفيديو مباشرة في صفحة الكورس. الملفات محمية — الطالب المشترك بس هو اللي يفتحها.
         </SectionHint>
         <CrudSection
           table="materials"
           title="الملفات المرفقة"
-          description="ملفات PDF والعروض التقديمية المرتبطة بالدروس."
+          description="ملفات PDF والعروض المرتبطة بكل درس."
           fields={[
             { key: "title", label: "اسم الملف" },
-            { key: "file_path", label: "مسار الملف", hideInTable: true },
-            { key: "file_type", label: "النوع", default: "pdf" },
             { key: "lesson_id", label: "الدرس", required: true, relation: { table: "lessons", label: "title" } },
+            {
+              key: "file_path",
+              label: "الملف",
+              upload: { bucket: "course-videos", mode: "path", accept: ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,image/*", prefix: "materials", label: "ارفع الملف من جهازك" },
+              hint: "ارفع الملف بالزر، أو الصق رابط خارجي (درايف مثلًا).",
+            },
+            { key: "file_type", label: "النوع", default: "pdf" },
           ]}
         />
       </div>

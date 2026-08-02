@@ -26,6 +26,12 @@ export const Route = createFileRoute("/dashboard/live")({
 type LiveSession = { id: string; title: string; stream_url: string | null; status: string };
 type LiveMsg = { id: string; content: string; user_id: string; created_at: string };
 
+function toEmbed(url: string): string {
+  const match = url.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/)([\w-]{6,})/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+}
+
+
 function LivePage() {
   const { user } = useAuth();
   const [active, setActive] = useState<LiveSession | null>(null);
@@ -136,7 +142,7 @@ function LivePage() {
             <div className="glass overflow-hidden rounded-2xl">
               {active.stream_url ? (
                 <iframe
-                  src={active.stream_url}
+                  src={toEmbed(active.stream_url)}
                   title={active.title}
                   allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
@@ -195,7 +201,7 @@ function LivePage() {
           fields={[
             { key: "title", label: "عنوان الحصة" },
             { key: "description", label: "الوصف", type: "textarea", hideInTable: true },
-            { key: "stream_url", label: "رابط البث (embed)" },
+            { key: "stream_url", label: "رابط البث (يوتيوب أو embed)", hint: "الصق رابط اليوتيوب العادي — النظام بيحوّله تلقائيًا." },
             { key: "recording_url", label: "رابط التسجيل", hideInTable: true },
             { key: "starts_at", label: "موعد البدء", type: "datetime" },
             {

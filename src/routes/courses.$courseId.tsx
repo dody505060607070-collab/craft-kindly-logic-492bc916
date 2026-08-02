@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle2, Download, FileText, Lock, PlayCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { StudentShell } from "@/components/StudentShell";
@@ -22,11 +22,26 @@ export const Route = createFileRoute("/courses/$courseId")({
   component: CourseDetail,
 });
 
+function isYoutube(url: string) {
+  return /youtube\.com|youtu\.be/.test(url);
+}
+
 function toYoutubeEmbed(url: string | null): string | null {
   if (!url) return null;
   const m = url.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/)([\w-]{6,})/);
   return m ? `https://www.youtube.com/embed/${m[1]}` : url;
 }
+
+async function openMaterial(filePath: string) {
+  if (/^https?:\/\//.test(filePath)) {
+    window.open(filePath, "_blank", "noreferrer");
+    return;
+  }
+  const path = filePath.startsWith("storage:") ? filePath.slice(8) : filePath;
+  const { data } = await supabase.storage.from("course-videos").createSignedUrl(path, 3600);
+  if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noreferrer");
+}
+
 
 function CourseDetail() {
   const { courseId } = useParams({ from: "/courses/$courseId" });
@@ -61,13 +76,19 @@ function CourseDetail() {
         transcript: playMap.get(l.id)?.transcript ?? null,
         unlocked: playMap.has(l.id),
       }));
+      const lessonIds = catalogRows.map((l) => l.id);
+      const materials = lessonIds.length
+        ? await supabase.from("materials").select("id, title, file_path, file_type, lesson_id").in("lesson_id", lessonIds)
+        : { data: [] };
       return {
         course: c.data,
         chapters: chapters.data ?? [],
         lessons: merged as Array<any>,
+        materials: (materials.data ?? []) as Array<{ id: string; title: string; file_path: string; file_type: string; lesson_id: string }>,
         enrollment: enroll.data,
         variants: (variantRows.data ?? []) as CourseVariant[],
       };
+
     },
   });
 
@@ -93,7 +114,7 @@ function CourseDetail() {
 
   const rawCourse = data.course;
   const course = applyVariant(rawCourse, variant);
-  const { chapters, lessons, enrollment } = data;
+  const { chapters, lessons, enrollment, materials } = data;
   const enrolled = Boolean(enrollment && (!enrollment.expires_at || new Date(enrollment.expires_at) > new Date()));
   const canWatch = isAdmin || enrolled || course.is_free;
   const current = activeLesson
@@ -128,15 +149,26 @@ function CourseDetail() {
           <div className="space-y-4">
             <div className="aspect-video overflow-hidden rounded-2xl bg-black">
               {current && (canWatch || current.is_free) && current.video_url ? (
-                <iframe
-                  key={current.id}
-                  src={toYoutubeEmbed(current.video_url)!}
-                  className="h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={current.title}
-                />
+                isYoutube(current.video_url) ? (
+                  <iframe
+                    key={current.id}
+                    src={toYoutubeEmbed(current.video_url)!}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={current.title}
+                  />
+                ) : (
+                  <video
+                    key={current.id}
+                    src={current.video_url}
+                    controls
+                    controlsList="nodownload"
+                    className="h-full w-full"
+                  />
+                )
               ) : (
+
                 <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white">
                   <Lock className="size-10 opacity-70" />
                   <p className="font-bold">هذا المحتوى مغلق — اشترك لتفعيل الوصول</p>
@@ -168,6 +200,30 @@ function CourseDetail() {
                 )}
               </div>
             )}
+            {current && (canWatch || current.is_free) && materials.filter((m) => m.lesson_id === current.id).length > 0 && (
+              <div className="soft-card rounded-2xl p-4">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-black">
+                  <FileText className="size-4 text-primary" /> ملفات الدرس
+                </h3>
+                <div className="space-y-2">
+                  {materials
+                    .filter((m) => m.lesson_id === current.id)
+                    .map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => void openMaterial(m.file_path)}
+                        className="flex w-full items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-right text-xs font-bold hover:bg-primary/10"
+                      >
+                        <Download className="size-4 shrink-0 text-primary" />
+                        <span className="line-clamp-1 flex-1">{m.title}</span>
+                        <span className="text-[10px] text-muted-foreground">{m.file_type}</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {current && (canWatch || current.is_free) && (
               <AILessonToolbox
                 lessonTitle={current.title}
