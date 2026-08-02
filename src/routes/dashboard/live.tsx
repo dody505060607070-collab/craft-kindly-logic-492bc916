@@ -26,6 +26,12 @@ export const Route = createFileRoute("/dashboard/live")({
 type LiveSession = { id: string; title: string; stream_url: string | null; status: string };
 type LiveMsg = { id: string; content: string; user_id: string; created_at: string };
 
+function toEmbed(url: string): string {
+  const match = url.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/)([\w-]{6,})/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+}
+
+
 function LivePage() {
   const { user } = useAuth();
   const [active, setActive] = useState<LiveSession | null>(null);
