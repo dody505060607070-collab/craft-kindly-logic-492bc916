@@ -76,13 +76,19 @@ function CourseDetail() {
         transcript: playMap.get(l.id)?.transcript ?? null,
         unlocked: playMap.has(l.id),
       }));
+      const lessonIds = catalogRows.map((l) => l.id);
+      const materials = lessonIds.length
+        ? await supabase.from("materials").select("id, title, file_path, file_type, lesson_id").in("lesson_id", lessonIds)
+        : { data: [] };
       return {
         course: c.data,
         chapters: chapters.data ?? [],
         lessons: merged as Array<any>,
+        materials: (materials.data ?? []) as Array<{ id: string; title: string; file_path: string; file_type: string; lesson_id: string }>,
         enrollment: enroll.data,
         variants: (variantRows.data ?? []) as CourseVariant[],
       };
+
     },
   });
 
