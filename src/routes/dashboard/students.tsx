@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
+import { StudentsManager } from "@/components/StudentsManager";
+
 
 export const Route = createFileRoute("/dashboard/students")({
   head: () => ({
