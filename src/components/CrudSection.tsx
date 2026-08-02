@@ -231,7 +231,19 @@ export function CrudSection({
                     className="w-full rounded-xl border border-input bg-surface px-3 py-2 text-sm outline-none"
                   />
                 )}
+                {f.upload && (
+                  <UploadField
+                    bucket={f.upload.bucket}
+                    mode={f.upload.mode}
+                    accept={f.upload.accept}
+                    prefix={f.upload.prefix ?? table}
+                    label={f.upload.label}
+                    onDone={(value) => setEditing({ ...editing, [f.key]: value })}
+                  />
+                )}
+                {f.hint && <p className="mt-1 text-[11px] text-muted-foreground">{f.hint}</p>}
               </div>
+
             ))}
           </div>
           <button
