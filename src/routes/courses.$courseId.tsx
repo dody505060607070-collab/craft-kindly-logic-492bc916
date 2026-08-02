@@ -200,6 +200,30 @@ function CourseDetail() {
                 )}
               </div>
             )}
+            {current && (canWatch || current.is_free) && materials.filter((m) => m.lesson_id === current.id).length > 0 && (
+              <div className="soft-card rounded-2xl p-4">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-black">
+                  <FileText className="size-4 text-primary" /> ملفات الدرس
+                </h3>
+                <div className="space-y-2">
+                  {materials
+                    .filter((m) => m.lesson_id === current.id)
+                    .map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => void openMaterial(m.file_path)}
+                        className="flex w-full items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-right text-xs font-bold hover:bg-primary/10"
+                      >
+                        <Download className="size-4 shrink-0 text-primary" />
+                        <span className="line-clamp-1 flex-1">{m.title}</span>
+                        <span className="text-[10px] text-muted-foreground">{m.file_type}</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {current && (canWatch || current.is_free) && (
               <AILessonToolbox
                 lessonTitle={current.title}
