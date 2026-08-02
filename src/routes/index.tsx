@@ -271,8 +271,8 @@ function Home() {
         </Reveal>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {COURSES.map((c, i) => (
-            <Reveal key={c.title} delay={i * 0.12}>
+          {cards.map((c, i) => (
+            <Reveal key={c.id ?? c.title} delay={i * 0.12}>
               <article className="soft-card h-full overflow-hidden rounded-3xl">
                 <img
                   src={c.img}
@@ -287,12 +287,22 @@ function Home() {
                   <h3 className="mt-1 text-lg font-black">{c.title}</h3>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-sm font-bold text-muted-foreground">{c.price}</span>
-                    <Link
-                      to={user ? "/courses" : "/auth"}
-                      className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
-                    >
-                      ادخل الكورس
-                    </Link>
+                    {c.id ? (
+                      <Link
+                        to="/courses/$courseId"
+                        params={{ courseId: c.id }}
+                        className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+                      >
+                        ادخل الكورس
+                      </Link>
+                    ) : (
+                      <Link
+                        to={user ? "/courses" : "/auth"}
+                        className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+                      >
+                        ادخل الكورس
+                      </Link>
+                    )}
                   </div>
                 </div>
               </article>
@@ -300,6 +310,7 @@ function Home() {
           ))}
         </div>
       </section>
+
 
       {/* Features */}
       <section className="bg-surface/70 py-16">
