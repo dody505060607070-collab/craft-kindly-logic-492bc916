@@ -26,8 +26,11 @@ export type Field = {
   hideInTable?: boolean;
   default?: unknown;
   required?: boolean;
+  hint?: string;
+  upload?: { bucket: string; mode: UploadMode; accept?: string; prefix?: string; label?: string };
   relation?: { table: "courses" | "subjects" | "chapters" | "lessons" | "assignments" | "quizzes" | "profiles"; label: string };
 };
+
 
 type Row = Record<string, unknown>;
 
