@@ -22,11 +22,26 @@ export const Route = createFileRoute("/courses/$courseId")({
   component: CourseDetail,
 });
 
+function isYoutube(url: string) {
+  return /youtube\.com|youtu\.be/.test(url);
+}
+
 function toYoutubeEmbed(url: string | null): string | null {
   if (!url) return null;
   const m = url.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/)([\w-]{6,})/);
   return m ? `https://www.youtube.com/embed/${m[1]}` : url;
 }
+
+async function openMaterial(filePath: string) {
+  if (/^https?:\/\//.test(filePath)) {
+    window.open(filePath, "_blank", "noreferrer");
+    return;
+  }
+  const path = filePath.startsWith("storage:") ? filePath.slice(8) : filePath;
+  const { data } = await supabase.storage.from("course-videos").createSignedUrl(path, 3600);
+  if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noreferrer");
+}
+
 
 function CourseDetail() {
   const { courseId } = useParams({ from: "/courses/$courseId" });
