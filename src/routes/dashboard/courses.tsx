@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
-import { CoverUploader } from "@/components/CoverUploader";
 
 export const Route = createFileRoute("/dashboard/courses")({
   head: () => ({
