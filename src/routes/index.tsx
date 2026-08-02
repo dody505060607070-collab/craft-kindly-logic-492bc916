@@ -8,7 +8,10 @@ import logoMarkDark from "@/assets/logo-mark-dark.png";
 import teacherHero from "@/assets/teacher-hero.png";
 import teacherThumbs from "@/assets/teacher-thumbsup.png";
 import teacherPoint from "@/assets/teacher-point.png";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import coursePython from "@/assets/course-python.jpg";
+
 import courseWeb from "@/assets/course-web.jpg";
 import courseAi from "@/assets/course-ai.jpg";
 import { SITE } from "@/lib/site";
