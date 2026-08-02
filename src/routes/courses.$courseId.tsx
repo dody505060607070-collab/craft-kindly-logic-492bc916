@@ -149,15 +149,26 @@ function CourseDetail() {
           <div className="space-y-4">
             <div className="aspect-video overflow-hidden rounded-2xl bg-black">
               {current && (canWatch || current.is_free) && current.video_url ? (
-                <iframe
-                  key={current.id}
-                  src={toYoutubeEmbed(current.video_url)!}
-                  className="h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={current.title}
-                />
+                isYoutube(current.video_url) ? (
+                  <iframe
+                    key={current.id}
+                    src={toYoutubeEmbed(current.video_url)!}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={current.title}
+                  />
+                ) : (
+                  <video
+                    key={current.id}
+                    src={current.video_url}
+                    controls
+                    controlsList="nodownload"
+                    className="h-full w-full"
+                  />
+                )
               ) : (
+
                 <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white">
                   <Lock className="size-10 opacity-70" />
                   <p className="font-bold">هذا المحتوى مغلق — اشترك لتفعيل الوصول</p>
