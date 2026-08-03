@@ -27,6 +27,7 @@ import { Route as DashboardPaymentsRouteImport } from './routes/dashboard/paymen
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
 import { Route as DashboardLiveRouteImport } from './routes/dashboard/live'
 import { Route as DashboardCoursesRouteImport } from './routes/dashboard/courses'
+import { Route as DashboardCodesRouteImport } from './routes/dashboard/codes'
 import { Route as DashboardAssignmentsRouteImport } from './routes/dashboard/assignments'
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
 import { Route as DashboardAbTestsRouteImport } from './routes/dashboard/ab-tests'
@@ -124,6 +125,11 @@ const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
   path: '/courses',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCodesRoute = DashboardCodesRouteImport.update({
+  id: '/codes',
+  path: '/codes',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardAssignmentsRoute = DashboardAssignmentsRouteImport.update({
   id: '/assignments',
   path: '/assignments',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/ab-tests': typeof DashboardAbTestsRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/assignments': typeof DashboardAssignmentsRoute
+  '/dashboard/codes': typeof DashboardCodesRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
   '/dashboard/live': typeof DashboardLiveRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/dashboard/ab-tests': typeof DashboardAbTestsRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/assignments': typeof DashboardAssignmentsRoute
+  '/dashboard/codes': typeof DashboardCodesRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
   '/dashboard/live': typeof DashboardLiveRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/dashboard/ab-tests': typeof DashboardAbTestsRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/assignments': typeof DashboardAssignmentsRoute
+  '/dashboard/codes': typeof DashboardCodesRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
   '/dashboard/live': typeof DashboardLiveRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
@@ -248,6 +257,7 @@ export interface FileRouteTypes {
     | '/dashboard/ab-tests'
     | '/dashboard/analytics'
     | '/dashboard/assignments'
+    | '/dashboard/codes'
     | '/dashboard/courses'
     | '/dashboard/live'
     | '/dashboard/messages'
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/dashboard/ab-tests'
     | '/dashboard/analytics'
     | '/dashboard/assignments'
+    | '/dashboard/codes'
     | '/dashboard/courses'
     | '/dashboard/live'
     | '/dashboard/messages'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/dashboard/ab-tests'
     | '/dashboard/analytics'
     | '/dashboard/assignments'
+    | '/dashboard/codes'
     | '/dashboard/courses'
     | '/dashboard/live'
     | '/dashboard/messages'
@@ -454,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCoursesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/codes': {
+      id: '/dashboard/codes'
+      path: '/codes'
+      fullPath: '/dashboard/codes'
+      preLoaderRoute: typeof DashboardCodesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/assignments': {
       id: '/dashboard/assignments'
       path: '/assignments'
@@ -515,6 +534,7 @@ interface DashboardRouteChildren {
   DashboardAbTestsRoute: typeof DashboardAbTestsRoute
   DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
   DashboardAssignmentsRoute: typeof DashboardAssignmentsRoute
+  DashboardCodesRoute: typeof DashboardCodesRoute
   DashboardCoursesRoute: typeof DashboardCoursesRoute
   DashboardLiveRoute: typeof DashboardLiveRoute
   DashboardMessagesRoute: typeof DashboardMessagesRoute
@@ -530,6 +550,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAbTestsRoute: DashboardAbTestsRoute,
   DashboardAnalyticsRoute: DashboardAnalyticsRoute,
   DashboardAssignmentsRoute: DashboardAssignmentsRoute,
+  DashboardCodesRoute: DashboardCodesRoute,
   DashboardCoursesRoute: DashboardCoursesRoute,
   DashboardLiveRoute: DashboardLiveRoute,
   DashboardMessagesRoute: DashboardMessagesRoute,
