@@ -24,12 +24,20 @@ export const Route = createFileRoute("/subscribe/$courseId")({
   component: Subscribe,
 });
 
+type PlanOption = {
+  id: string;
+  name: string;
+  duration_days: number;
+  price: number;
+  discount_percent: number;
+};
+
 function Subscribe() {
   const { courseId } = useParams({ from: "/subscribe/$courseId" });
   const { user } = useAuth();
   const [reference, setReference] = useState("");
   const [method, setMethod] = useState("vodafone_cash");
-  const [plan, setPlan] = useState<"month" | "year">("month");
+  const [planId, setPlanId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -42,6 +50,19 @@ function Subscribe() {
     },
   });
 
+  const { data: dbPlans } = useQuery({
+    queryKey: ["course-plans", courseId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("course_plans")
+        .select("*")
+        .eq("course_id", courseId)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      return data ?? [];
+    },
+  });
+
   const { data: settings } = useQuery({
     queryKey: ["site-settings-public"],
     queryFn: async () => {
@@ -51,14 +72,39 @@ function Subscribe() {
   });
   const payPhone = settings?.payment_phone || SITE.phone;
   const payInsta = settings?.payment_instapay || SITE.phone;
-  const monthDeal = discounted(course?.price ?? 0, course?.discount_percent ?? 0);
-  const yearDeal = discounted(course?.price_year ?? course?.price ?? 0, course?.discount_percent ?? 0);
-  const priceMonth = monthDeal.final;
-  const priceYear = yearDeal.final;
+
+  const plans: PlanOption[] = (dbPlans && dbPlans.length > 0)
+    ? dbPlans.map((p) => ({
+        id: p.id,
+        name: p.name,
+        duration_days: Number(p.duration_days ?? 30),
+        price: Number(p.price ?? 0),
+        discount_percent: Number(p.discount_percent ?? course?.discount_percent ?? 0),
+      }))
+    : [
+        {
+          id: "month",
+          name: "شهر",
+          duration_days: 30,
+          price: Number(course?.price ?? 0),
+          discount_percent: Number(course?.discount_percent ?? 0),
+        },
+        {
+          id: "year",
+          name: "سنة",
+          duration_days: 365,
+          price: Number(course?.price_year ?? course?.price ?? 0),
+          discount_percent: Number(course?.discount_percent ?? 0),
+        },
+      ];
+
+  const selected = plans.find((p) => p.id === planId) ?? plans[0];
+  const deal = discounted(selected?.price ?? 0, selected?.discount_percent ?? 0);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return toast.error("سجّل دخولك أولاً");
+    if (!selected) return toast.error("اختر مدة الاشتراك");
     if (!reference.trim()) return toast.error("اكتب رقم عملية الدفع");
     setBusy(true);
     try {
@@ -74,12 +120,14 @@ function Subscribe() {
       const { error } = await supabase.from("payments").insert({
         user_id: user.id,
         course_id: courseId,
-        amount: plan === "year" ? priceYear : priceMonth,
+        amount: deal.final,
         method,
         reference,
         proof_url: proofUrl,
         status: "pending",
-        plan,
+        plan: selected.duration_days >= 365 ? "year" : selected.duration_days >= 300 ? "year" : "custom",
+        plan_name: selected.name,
+        duration_days: selected.duration_days,
       });
       if (error) throw error;
       setDone(true);
