@@ -113,11 +113,13 @@ export const generateAssessmentQuestions = createServerFn({ method: "POST" })
         ? 'كل الأسئلة لازم تكون "mcq" باختيارات 4.'
         : data.kind === "truefalse"
           ? 'كل الأسئلة لازم تكون "truefalse" (صح / خطأ).'
-          : 'نوّع بين "mcq" (4 اختيارات) و "truefalse" (صح / خطأ).';
+          : data.kind === "essay"
+            ? 'كل الأسئلة لازم تكون "essay" (سؤال مقالي يكتب الطالب إجابته بنفسه) ومعاها "model_answer" فيه الإجابة النموذجية بالتفصيل.'
+            : 'نوّع بين "mcq" (4 اختيارات) و "truefalse" (صح / خطأ) و "essay" (سؤال مقالي معاه model_answer).';
 
     const out = await groqJSON<{ questions: RawQuestion[] }>({
       system:
-        'أنت مصمم اختبارات تعليمي محترف بالعربي المصري. أعِد JSON فقط بالشكل: {"questions":[{"kind":"mcq"|"truefalse","question":"...","options":["..."],"answer":"نص الاختيار الصحيح أو صح/خطأ","explanation":"..."}]}',
+        'أنت مصمم اختبارات تعليمي محترف بالعربي المصري. أعِد JSON فقط بالشكل: {"questions":[{"kind":"mcq"|"truefalse"|"essay","question":"...","options":["..."],"answer":"نص الاختيار الصحيح أو صح/خطأ","model_answer":"الإجابة النموذجية للسؤال المقالي","explanation":"..."}]}. أسئلة essay بدون options ولازم يكون معاها model_answer.',
       user: `ولّد ${data.count} أسئلة من محتوى الدرس التالي. ${typeRule}\nالأسئلة لازم تكون مباشرة وواضحة ومناسبة لطالب مصري.\n\n${source}`,
       temperature: 0.4,
       maxTokens: 3500,
