@@ -79,13 +79,13 @@ function MePage() {
                 className="soft-card block rounded-2xl p-4"
               >
                 <p className="font-black">
-                  {(e.courses as { title: string } | null)?.title ?? "كورس"}
+                  {(e.courses as { title: string } | null)?.title ?? "درس"}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">التقدم: {e.progress}%</p>
               </Link>
             ))}
             {(data?.enrollments ?? []).length === 0 && (
-              <p className="text-sm text-muted-foreground">لسه مش مشترك في أي كورس.</p>
+              <p className="text-sm text-muted-foreground">لسه مش مشترك في أي درس.</p>
             )}
           </div>
         </section>

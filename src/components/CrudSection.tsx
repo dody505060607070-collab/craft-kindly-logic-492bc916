@@ -126,11 +126,11 @@ export function CrudSection({
       const { error } = await db(table).delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("تم الحذف");
-      qc.invalidateQueries({ queryKey: ["crud", table] });
+      await qc.invalidateQueries({ queryKey: ["crud", table], refetchType: "all" });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message || "الحذف مانجحش"),
   });
 
   const visible = fields.filter((f) => !f.hideInTable);
@@ -305,7 +305,11 @@ export function CrudSection({
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm("متأكد من الحذف؟")) remove.mutate(String(row.id));
+                            const msg =
+                              table === "courses"
+                                ? "هتتحذف الدرس ده وكل محتوياته (الفيديوهات، الفصول، الاختبارات، الواجبات، والاشتراكات). متأكد؟"
+                                : "متأكد من الحذف؟";
+                            if (confirm(msg)) remove.mutate(String(row.id));
                           }}
                           className="rounded-lg bg-surface p-2 text-destructive"
                           aria-label="حذف"

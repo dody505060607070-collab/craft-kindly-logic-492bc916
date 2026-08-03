@@ -20,7 +20,7 @@ export const PLATFORM_SECTIONS: FeatureItem[] = [
   {
     key: "platform",
     title: "منصة تعليمية متكاملة",
-    desc: "كورسات وفصول ودروس منظمة بالكامل",
+    desc: "دروس وفصول ودروس منظمة بالكامل",
     to: "/dashboard/courses",
   },
   {
