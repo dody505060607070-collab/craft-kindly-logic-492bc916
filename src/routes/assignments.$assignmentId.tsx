@@ -32,7 +32,7 @@ function AssignmentDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<string, number | string>>({});
   const [index, setIndex] = useState(0);
   const [started, setStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
