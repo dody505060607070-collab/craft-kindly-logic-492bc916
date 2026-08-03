@@ -249,25 +249,40 @@ function QuizDetailPage() {
           </h2>
 
           <div className="space-y-3">
-            {options.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => setAnswers({ ...answers, [currentQuestion.id]: idx })}
-                className={`w-full flex items-center gap-4 rounded-2xl p-4 text-right transition-all border-2 ${
-                  answers[currentQuestion.id] === idx
-                    ? 'border-primary bg-primary/5'
-                    : 'border-transparent bg-card hover:bg-primary/5'
-                }`}
-              >
-                <span className={`grid size-8 shrink-0 place-items-center rounded-xl font-black text-sm transition-colors ${
-                  answers[currentQuestion.id] === idx ? 'bg-primary text-primary-foreground' : 'bg-surface text-muted-foreground'
-                }`}>
-                  {String.fromCharCode(65 + idx)}
-                </span>
-                <span className="font-bold">{option}</span>
-              </button>
-            ))}
-          </div>
+          {isEssay ? (
+            <div>
+              <textarea
+                value={typeof answers[currentQuestion.id] === "string" ? (answers[currentQuestion.id] as string) : ""}
+                onChange={(event) => setAnswers({ ...answers, [currentQuestion.id]: event.target.value })}
+                rows={7}
+                className="w-full rounded-2xl border-2 border-border bg-card p-4 outline-none focus:border-primary"
+                placeholder="اكتب إجابتك بالتفصيل هنا…"
+              />
+              <p className="mt-2 text-xs text-muted-foreground">سؤال مقالي — التصحيح بالذكاء الاصطناعي بعد التسليم.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {options.map((option, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setAnswers({ ...answers, [currentQuestion.id]: idx })}
+                  className={`w-full flex items-center gap-4 rounded-2xl p-4 text-right transition-all border-2 ${
+                    answers[currentQuestion.id] === idx
+                      ? 'border-primary bg-primary/5'
+                      : 'border-transparent bg-card hover:bg-primary/5'
+                  }`}
+                >
+                  <span className={`grid size-8 shrink-0 place-items-center rounded-xl font-black text-sm transition-colors ${
+                    answers[currentQuestion.id] === idx ? 'bg-primary text-primary-foreground' : 'bg-surface text-muted-foreground'
+                  }`}>
+                    {String.fromCharCode(65 + idx)}
+                  </span>
+                  <span className="font-bold">{option}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
 
           <div className="mt-10 flex items-center justify-between">
             <button
