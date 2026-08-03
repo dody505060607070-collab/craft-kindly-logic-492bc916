@@ -119,7 +119,9 @@ function CourseDetail() {
   const canWatch = isAdmin || enrolled || course.is_free;
   const current = activeLesson
     ? lessons.find((l) => l.id === activeLesson)
-    : lessons.find((l) => canWatch || l.is_free) || lessons[0];
+    : lessons.find((l) => (canWatch || l.is_free) && l.video_url) ||
+      lessons.find((l) => canWatch || l.is_free) ||
+      lessons[0];
 
   return (
     <StudentShell>
