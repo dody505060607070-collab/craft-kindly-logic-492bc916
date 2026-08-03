@@ -305,7 +305,11 @@ export function CrudSection({
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm("متأكد من الحذف؟")) remove.mutate(String(row.id));
+                            const msg =
+                              table === "courses"
+                                ? "هتتحذف الدرس ده وكل محتوياته (الفيديوهات، الفصول، الاختبارات، الواجبات، والاشتراكات). متأكد؟"
+                                : "متأكد من الحذف؟";
+                            if (confirm(msg)) remove.mutate(String(row.id));
                           }}
                           className="rounded-lg bg-surface p-2 text-destructive"
                           aria-label="حذف"
