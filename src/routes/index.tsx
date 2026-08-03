@@ -53,7 +53,8 @@ function HomeHeader() {
                 </Link>
               )}
               <Link
-                to="/courses"
+                to="/"
+                hash="courses"
                 className="hidden items-center gap-1.5 rounded-xl bg-card px-3 py-2 text-xs font-bold sm:flex"
               >
                 <BookOpen className="size-4" /> الدروس
@@ -286,7 +287,8 @@ function Home() {
                 شوف الدروس
               </a>
               <Link
-                to={user ? "/courses" : "/auth"}
+                to={user ? "/" : "/auth"}
+                hash={user ? "courses" : undefined}
                 className="rounded-2xl border border-border bg-card px-6 py-3 font-bold transition hover:-translate-y-0.5"
               >
                 ابدأ دلوقتي
