@@ -26,7 +26,7 @@ function QuizDetailPage() {
   const queryClient = useQueryClient();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<string, number | string>>({});
   const [isStarted, setIsStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
