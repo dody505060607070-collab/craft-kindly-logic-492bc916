@@ -24,12 +24,20 @@ export const Route = createFileRoute("/subscribe/$courseId")({
   component: Subscribe,
 });
 
+type PlanOption = {
+  id: string;
+  name: string;
+  duration_days: number;
+  price: number;
+  discount_percent: number;
+};
+
 function Subscribe() {
   const { courseId } = useParams({ from: "/subscribe/$courseId" });
   const { user } = useAuth();
   const [reference, setReference] = useState("");
   const [method, setMethod] = useState("vodafone_cash");
-  const [plan, setPlan] = useState<"month" | "year">("month");
+  const [planId, setPlanId] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -42,6 +50,19 @@ function Subscribe() {
     },
   });
 
+  const { data: dbPlans } = useQuery({
+    queryKey: ["course-plans", courseId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("course_plans")
+        .select("*")
+        .eq("course_id", courseId)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      return data ?? [];
+    },
+  });
+
   const { data: settings } = useQuery({
     queryKey: ["site-settings-public"],
     queryFn: async () => {
@@ -51,14 +72,39 @@ function Subscribe() {
   });
   const payPhone = settings?.payment_phone || SITE.phone;
   const payInsta = settings?.payment_instapay || SITE.phone;
-  const monthDeal = discounted(course?.price ?? 0, course?.discount_percent ?? 0);
-  const yearDeal = discounted(course?.price_year ?? course?.price ?? 0, course?.discount_percent ?? 0);
-  const priceMonth = monthDeal.final;
-  const priceYear = yearDeal.final;
+
+  const plans: PlanOption[] = (dbPlans && dbPlans.length > 0)
+    ? dbPlans.map((p) => ({
+        id: p.id,
+        name: p.name,
+        duration_days: Number(p.duration_days ?? 30),
+        price: Number(p.price ?? 0),
+        discount_percent: Number(p.discount_percent ?? course?.discount_percent ?? 0),
+      }))
+    : [
+        {
+          id: "month",
+          name: "شهر",
+          duration_days: 30,
+          price: Number(course?.price ?? 0),
+          discount_percent: Number(course?.discount_percent ?? 0),
+        },
+        {
+          id: "year",
+          name: "سنة",
+          duration_days: 365,
+          price: Number(course?.price_year ?? course?.price ?? 0),
+          discount_percent: Number(course?.discount_percent ?? 0),
+        },
+      ];
+
+  const selected = plans.find((p) => p.id === planId) ?? plans[0];
+  const deal = discounted(selected?.price ?? 0, selected?.discount_percent ?? 0);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return toast.error("سجّل دخولك أولاً");
+    if (!selected) return toast.error("اختر مدة الاشتراك");
     if (!reference.trim()) return toast.error("اكتب رقم عملية الدفع");
     setBusy(true);
     try {
@@ -74,12 +120,14 @@ function Subscribe() {
       const { error } = await supabase.from("payments").insert({
         user_id: user.id,
         course_id: courseId,
-        amount: plan === "year" ? priceYear : priceMonth,
+        amount: deal.final,
         method,
         reference,
         proof_url: proofUrl,
         status: "pending",
-        plan,
+        plan: selected.duration_days >= 365 ? "year" : selected.duration_days >= 300 ? "year" : "custom",
+        plan_name: selected.name,
+        duration_days: selected.duration_days,
       });
       if (error) throw error;
       setDone(true);
@@ -121,14 +169,14 @@ function Subscribe() {
         <h1 className="font-display text-2xl font-black sm:text-3xl">الاشتراك</h1>
         {course && (
           <p className="mt-2 text-sm text-muted-foreground">
-            درس: <span className="font-bold text-foreground">{course.title}</span> — السعر:{" "}
-            <span className="font-black text-primary">{plan === "year" ? priceYear : priceMonth} ج.م</span>
-            {monthDeal.pct > 0 && (
+            درس: <span className="font-bold text-foreground">{course.title}</span> — {selected?.name}:{" "}
+            <span className="font-black text-primary">{deal.final} ج.م</span>
+            {deal.pct > 0 && (
               <>
                 {" "}
-                <span className="line-through">{plan === "year" ? yearDeal.base : monthDeal.base} ج.م</span>{" "}
+                <span className="line-through">{deal.base} ج.م</span>{" "}
                 <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-black text-emerald-600">
-                  خصم {monthDeal.pct}%
+                  خصم {deal.pct}%
                 </span>
               </>
             )}
@@ -177,11 +225,26 @@ function Subscribe() {
 
             <div>
               <label className="mb-1.5 block text-xs font-bold text-muted-foreground">مدة الاشتراك</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setPlan("month")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "month" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>شهر — {priceMonth} ج.م</button>
-                <button type="button" onClick={() => setPlan("year")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "year" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>سنة — {priceYear} ج.م</button>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {plans.map((p) => {
+                  const d = discounted(p.price, p.discount_percent);
+                  const active = selected?.id === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPlanId(p.id)}
+                      className={`rounded-xl border p-3 text-sm font-bold ${active ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}
+                    >
+                      {p.name} — {d.final} ج.م
+                      {d.pct > 0 && <span className="ms-1 text-xs line-through opacity-70">{d.base}</span>}
+                      <span className="mt-0.5 block text-[11px] font-normal opacity-70">{p.duration_days} يوم</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
 
             <div>
               <label className="mb-1.5 block text-xs font-bold text-muted-foreground">
