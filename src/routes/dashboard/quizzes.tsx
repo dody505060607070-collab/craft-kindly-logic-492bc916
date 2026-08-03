@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
+import { QuizBuilder } from "@/components/QuizBuilder";
 
 export const Route = createFileRoute("/dashboard/quizzes")({
   head: () => ({
@@ -35,15 +36,15 @@ function QuizzesPage() {
             },
             {
               title: "٢. أضف الأسئلة",
-              body: "انسخ معرّف الاختبار (UUID)، بعدين روح لـ'بنك الأسئلة' وأضف السؤال. اختار نوعه: اختيار من متعدد أو صح/خطأ أو مقالي.",
+              body: "استخدم منشئ الاختبار السهل: اختر الاختبار، اكتب السؤال واختياراته، ثم علّم الإجابة الصحيحة واحفظ. ويمكن للذكاء الاصطناعي توليد الأسئلة كلها من موضوع الدرس.",
             },
             {
-              title: "الاختيارات (choices)",
-              body: 'للـ MCQ اكتبها كـ JSON مثل: ["إجابة أ","إجابة ب","إجابة ج"]. للـ true/false اتركها فاضية.',
+              title: "التوليد بالذكاء الاصطناعي",
+              body: "اكتب موضوع الاختبار أو الصق محتوى الدرس، حدد عدد الأسئلة واضغط توليد. راجع الأسئلة والإجابات ثم اضغط حفظ كل الأسئلة.",
             },
             {
               title: "الإجابة الصحيحة",
-              body: 'اكتبها كـ JSON. للـ MCQ رقم الاختيار (مثل 0 أو 1). لصح/خطأ true أو false. للمقالي اترك للمصحح الذكي.',
+              body: "اضغط الدائرة بجانب الاختيار الصحيح؛ الطالب لن يرى الإجابة، والتصحيح يتم تلقائيًا بعد إنهاء الاختبار.",
             },
             {
               title: "منشور؟",
@@ -52,6 +53,8 @@ function QuizzesPage() {
           ]}
         />
       </div>
+
+      <QuizBuilder />
 
       <div>
         <SectionHint title="١. الاختبارات">
@@ -72,8 +75,8 @@ function QuizzesPage() {
       </div>
 
       <div>
-        <SectionHint title="٢. بنك الأسئلة">
-          بعد ما تعمل الاختبار انسخ الـUUID بتاعه وحطه هنا. اختار نوع السؤال: MCQ (اختيار من متعدد) — الاختيارات JSON زي <code className="rounded bg-card px-1">["أ","ب","ج"]</code> والإجابة رقم الاختيار (0 أو 1…). صح/خطأ — الإجابة <code className="rounded bg-card px-1">true</code> أو <code className="rounded bg-card px-1">false</code>. مقالي — الـAI هيصححه.
+        <SectionHint title="٣. بنك الأسئلة المتقدم">
+          استخدم هذا الجدول فقط لو محتاج تعدّل البيانات الخام لسؤال قديم. للإضافة العادية استخدم "منشئ الاختبار السهل" فوق.
         </SectionHint>
         <CrudSection
           table="quiz_questions"
