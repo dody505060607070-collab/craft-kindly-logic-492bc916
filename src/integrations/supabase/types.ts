@@ -370,6 +370,53 @@ export type Database = {
         }
         Relationships: []
       }
+      course_plans: {
+        Row: {
+          course_id: string
+          created_at: string
+          discount_percent: number
+          duration_days: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          discount_percent?: number
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          discount_percent?: number
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_plans_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_variants: {
         Row: {
           course_id: string
@@ -786,9 +833,11 @@ export type Database = {
           amount: number
           course_id: string | null
           created_at: string
+          duration_days: number | null
           id: string
           method: string | null
           plan: string | null
+          plan_name: string | null
           proof_url: string | null
           reference: string | null
           status: string
@@ -799,9 +848,11 @@ export type Database = {
           amount?: number
           course_id?: string | null
           created_at?: string
+          duration_days?: number | null
           id?: string
           method?: string | null
           plan?: string | null
+          plan_name?: string | null
           proof_url?: string | null
           reference?: string | null
           status?: string
@@ -812,9 +863,11 @@ export type Database = {
           amount?: number
           course_id?: string | null
           created_at?: string
+          duration_days?: number | null
           id?: string
           method?: string | null
           plan?: string | null
+          plan_name?: string | null
           proof_url?: string | null
           reference?: string | null
           status?: string
