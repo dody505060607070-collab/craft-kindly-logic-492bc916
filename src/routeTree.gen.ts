@@ -13,7 +13,6 @@ import { Route as QuizzesRouteImport } from './routes/quizzes'
 import { Route as MeRouteImport } from './routes/me'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssignmentsRouteImport } from './routes/assignments'
 import { Route as IndexRouteImport } from './routes/index'
@@ -51,11 +50,6 @@ const LiveRoute = LiveRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CoursesRoute = CoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -139,9 +133,9 @@ const DashboardAbTestsRoute = DashboardAbTestsRouteImport.update({
   getParentRoute: () => DashboardRoute,
 } as any)
 const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
-  id: '/$courseId',
-  path: '/$courseId',
-  getParentRoute: () => CoursesRoute,
+  id: '/courses/$courseId',
+  path: '/courses/$courseId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAiTranscribeRoute = ApiAiTranscribeRouteImport.update({
   id: '/api/ai/transcribe',
@@ -153,7 +147,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/assignments': typeof AssignmentsRoute
   '/auth': typeof AuthRoute
-  '/courses': typeof CoursesRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/live': typeof LiveRoute
   '/me': typeof MeRoute
@@ -178,7 +171,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assignments': typeof AssignmentsRoute
   '/auth': typeof AuthRoute
-  '/courses': typeof CoursesRouteWithChildren
   '/live': typeof LiveRoute
   '/me': typeof MeRoute
   '/quizzes': typeof QuizzesRoute
@@ -203,7 +195,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/assignments': typeof AssignmentsRoute
   '/auth': typeof AuthRoute
-  '/courses': typeof CoursesRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/live': typeof LiveRoute
   '/me': typeof MeRoute
@@ -230,7 +221,6 @@ export interface FileRouteTypes {
     | '/'
     | '/assignments'
     | '/auth'
-    | '/courses'
     | '/dashboard'
     | '/live'
     | '/me'
@@ -255,7 +245,6 @@ export interface FileRouteTypes {
     | '/'
     | '/assignments'
     | '/auth'
-    | '/courses'
     | '/live'
     | '/me'
     | '/quizzes'
@@ -279,7 +268,6 @@ export interface FileRouteTypes {
     | '/'
     | '/assignments'
     | '/auth'
-    | '/courses'
     | '/dashboard'
     | '/live'
     | '/me'
@@ -305,11 +293,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssignmentsRoute: typeof AssignmentsRoute
   AuthRoute: typeof AuthRoute
-  CoursesRoute: typeof CoursesRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   LiveRoute: typeof LiveRoute
   MeRoute: typeof MeRoute
   QuizzesRoute: typeof QuizzesRoute
+  CoursesCourseIdRoute: typeof CoursesCourseIdRoute
   SubscribeCourseIdRoute: typeof SubscribeCourseIdRoute
   ApiAiTranscribeRoute: typeof ApiAiTranscribeRoute
 }
@@ -342,13 +330,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/courses': {
-      id: '/courses'
-      path: '/courses'
-      fullPath: '/courses'
-      preLoaderRoute: typeof CoursesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -465,10 +446,10 @@ declare module '@tanstack/react-router' {
     }
     '/courses/$courseId': {
       id: '/courses/$courseId'
-      path: '/$courseId'
+      path: '/courses/$courseId'
       fullPath: '/courses/$courseId'
       preLoaderRoute: typeof CoursesCourseIdRouteImport
-      parentRoute: typeof CoursesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/ai/transcribe': {
       id: '/api/ai/transcribe'
@@ -479,17 +460,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface CoursesRouteChildren {
-  CoursesCourseIdRoute: typeof CoursesCourseIdRoute
-}
-
-const CoursesRouteChildren: CoursesRouteChildren = {
-  CoursesCourseIdRoute: CoursesCourseIdRoute,
-}
-
-const CoursesRouteWithChildren =
-  CoursesRoute._addFileChildren(CoursesRouteChildren)
 
 interface DashboardRouteChildren {
   DashboardAbTestsRoute: typeof DashboardAbTestsRoute
@@ -529,11 +499,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssignmentsRoute: AssignmentsRoute,
   AuthRoute: AuthRoute,
-  CoursesRoute: CoursesRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
   LiveRoute: LiveRoute,
   MeRoute: MeRoute,
   QuizzesRoute: QuizzesRoute,
+  CoursesCourseIdRoute: CoursesCourseIdRoute,
   SubscribeCourseIdRoute: SubscribeCourseIdRoute,
   ApiAiTranscribeRoute: ApiAiTranscribeRoute,
 }

@@ -28,7 +28,7 @@ function isYoutube(url: string) {
 
 function toYoutubeEmbed(url: string | null): string | null {
   if (!url) return null;
-  const m = url.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/)([\w-]{6,})/);
+  const m = url.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/|\/shorts\/)([\w-]{6,})/);
   return m ? `https://www.youtube.com/embed/${m[1]}` : url;
 }
 
@@ -119,7 +119,9 @@ function CourseDetail() {
   const canWatch = isAdmin || enrolled || course.is_free;
   const current = activeLesson
     ? lessons.find((l) => l.id === activeLesson)
-    : lessons.find((l) => canWatch || l.is_free) || lessons[0];
+    : lessons.find((l) => (canWatch || l.is_free) && l.video_url) ||
+      lessons.find((l) => canWatch || l.is_free) ||
+      lessons[0];
 
   return (
     <StudentShell>

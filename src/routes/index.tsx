@@ -358,8 +358,8 @@ function Home() {
 
                   {c.contents.length > 0 && (
                     <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-                      {c.contents.slice(0, 3).map((t) => (
-                        <li key={t} className="flex items-center gap-1.5">
+                      {c.contents.slice(0, 3).map((t, ti) => (
+                        <li key={`${t}-${ti}`} className="flex items-center gap-1.5">
                           <PlayCircle className="size-3.5 shrink-0 text-primary" />
                           <span className="truncate">{t}</span>
                         </li>
