@@ -2,7 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { ListChecks, Loader2, Timer, AlertCircle, CheckCircle2, ChevronRight, ChevronLeft, Send } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { gradeEssayAnswers } from "@/lib/assessments.functions";
 import { useAuth } from "@/lib/auth";
 import { StudentShell } from "@/components/StudentShell";
 import { toast } from "sonner";
@@ -26,7 +28,7 @@ function QuizDetailPage() {
   const queryClient = useQueryClient();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<string, number | string>>({});
   const [isStarted, setIsStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
@@ -68,15 +70,31 @@ function QuizDetailPage() {
     },
   });
 
+  const gradeEssays = useServerFn(gradeEssayAnswers);
+
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!user || !quiz || !questions) return;
-      
-      if (Object.keys(answers).length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
+
+      const answered = questions.filter((q) => {
+        const value = answers[q.id];
+        return typeof value === "number" ? true : typeof value === "string" && value.trim().length > 0;
+      });
+      if (answered.length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
       const { data, error } = await supabase.rpc("submit_quiz_attempt", { _quiz_id: quizId, _answers: answers });
       if (error) throw error;
       const result = data?.[0];
       if (!result) throw new Error("تعذر حفظ النتيجة");
+
+      const hasEssay = questions.some((q) => q.kind === "essay");
+      if (hasEssay && result.attempt_id) {
+        try {
+          const graded = await gradeEssays({ data: { mode: "quiz" as const, recordId: String(result.attempt_id) } });
+          return { score: Number(graded.totalScore ?? result.score), maxScore: Number(graded.totalMax ?? result.max_score), passed: Boolean(graded.passed) };
+        } catch {
+          toast.message("تم التسليم — تصحيح الأسئلة المقالية هيظهر بعد شوية");
+        }
+      }
       return { score: Number(result.score), maxScore: Number(result.max_score), passed: result.passed };
     },
     onSuccess: (data) => {
@@ -199,7 +217,8 @@ function QuizDetailPage() {
   }
 
   const currentQuestion = questions![currentQuestionIndex];
-  const options = currentQuestion.options as string[];
+  const options = (currentQuestion.options ?? []) as string[];
+  const isEssay = currentQuestion.kind === "essay";
 
   return (
     <StudentShell>
@@ -229,26 +248,40 @@ function QuizDetailPage() {
             {currentQuestion.question}
           </h2>
 
-          <div className="space-y-3">
-            {options.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => setAnswers({ ...answers, [currentQuestion.id]: idx })}
-                className={`w-full flex items-center gap-4 rounded-2xl p-4 text-right transition-all border-2 ${
-                  answers[currentQuestion.id] === idx
-                    ? 'border-primary bg-primary/5'
-                    : 'border-transparent bg-card hover:bg-primary/5'
-                }`}
-              >
-                <span className={`grid size-8 shrink-0 place-items-center rounded-xl font-black text-sm transition-colors ${
-                  answers[currentQuestion.id] === idx ? 'bg-primary text-primary-foreground' : 'bg-surface text-muted-foreground'
-                }`}>
-                  {String.fromCharCode(65 + idx)}
-                </span>
-                <span className="font-bold">{option}</span>
-              </button>
-            ))}
-          </div>
+          {isEssay ? (
+            <div>
+              <textarea
+                value={typeof answers[currentQuestion.id] === "string" ? (answers[currentQuestion.id] as string) : ""}
+                onChange={(event) => setAnswers({ ...answers, [currentQuestion.id]: event.target.value })}
+                rows={7}
+                className="w-full rounded-2xl border-2 border-border bg-card p-4 outline-none focus:border-primary"
+                placeholder="اكتب إجابتك بالتفصيل هنا…"
+              />
+              <p className="mt-2 text-xs text-muted-foreground">سؤال مقالي — التصحيح بالذكاء الاصطناعي بعد التسليم.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {options.map((option, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setAnswers({ ...answers, [currentQuestion.id]: idx })}
+                  className={`w-full flex items-center gap-4 rounded-2xl p-4 text-right transition-all border-2 ${
+                    answers[currentQuestion.id] === idx
+                      ? 'border-primary bg-primary/5'
+                      : 'border-transparent bg-card hover:bg-primary/5'
+                  }`}
+                >
+                  <span className={`grid size-8 shrink-0 place-items-center rounded-xl font-black text-sm transition-colors ${
+                    answers[currentQuestion.id] === idx ? 'bg-primary text-primary-foreground' : 'bg-surface text-muted-foreground'
+                  }`}>
+                    {String.fromCharCode(65 + idx)}
+                  </span>
+                  <span className="font-bold">{option}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
 
           <div className="mt-10 flex items-center justify-between">
             <button

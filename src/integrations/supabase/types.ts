@@ -128,6 +128,7 @@ export type Database = {
           created_at: string
           id: string
           kind: string
+          model_answer: string | null
           options: Json
           points: number
           question: string
@@ -140,6 +141,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
+          model_answer?: string | null
           options?: Json
           points?: number
           question: string
@@ -152,6 +154,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
+          model_answer?: string | null
           options?: Json
           points?: number
           question?: string
@@ -917,6 +920,7 @@ export type Database = {
           correct_index: number
           id: string
           kind: string
+          model_answer: string | null
           options: Json
           points: number
           prompt: string | null
@@ -929,6 +933,7 @@ export type Database = {
           correct_index?: number
           id?: string
           kind?: string
+          model_answer?: string | null
           options?: Json
           points?: number
           prompt?: string | null
@@ -941,6 +946,7 @@ export type Database = {
           correct_index?: number
           id?: string
           kind?: string
+          model_answer?: string | null
           options?: Json
           points?: number
           prompt?: string | null

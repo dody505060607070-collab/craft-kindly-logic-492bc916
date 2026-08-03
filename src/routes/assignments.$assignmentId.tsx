@@ -2,7 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { FileCheck2, Loader2, Send, AlertCircle, CheckCircle2, Timer, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { gradeEssayAnswers } from "@/lib/assessments.functions";
 import { useAuth } from "@/lib/auth";
 import { StudentShell } from "@/components/StudentShell";
 import { toast } from "sonner";
@@ -32,7 +34,7 @@ function AssignmentDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<string, number | string>>({});
   const [index, setIndex] = useState(0);
   const [started, setStarted] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -88,13 +90,28 @@ function AssignmentDetailPage() {
     return () => { active = false; };
   }, [assignment?.questions_file_url]);
 
+  const gradeEssays = useServerFn(gradeEssayAnswers);
+
   const submitChoices = useMutation({
     mutationFn: async () => {
-      if (Object.keys(answers).length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
+      const answered = questions.filter((question) => {
+        const value = answers[question.id];
+        return typeof value === "number" ? true : typeof value === "string" && value.trim().length > 0;
+      });
+      if (answered.length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
       const { data, error } = await rpc("submit_assignment_answers", { _assignment_id: assignmentId, _answers: answers });
       if (error) throw error;
-      const row = (data as { score: number; max_score: number; passed: boolean }[] | null)?.[0];
+      const row = (data as { submission_id: string; score: number; max_score: number; passed: boolean }[] | null)?.[0];
       if (!row) throw new Error("تعذر حفظ النتيجة");
+
+      if (questions.some((question) => question.kind === "essay") && row.submission_id) {
+        try {
+          const graded = await gradeEssays({ data: { mode: "assignment" as const, recordId: row.submission_id } });
+          return { score: Number(graded.totalScore ?? row.score), max_score: Number(graded.totalMax ?? row.max_score), passed: Boolean(graded.passed) };
+        } catch {
+          toast.message("تم التسليم — تصحيح الأسئلة المقالية هيظهر بعد شوية");
+        }
+      }
       return row;
     },
     onSuccess: (row) => {
@@ -215,9 +232,21 @@ function AssignmentDetailPage() {
                 <section className="glass rounded-2xl p-6">
                   <div className="mb-4 flex items-center justify-between text-xs font-bold text-muted-foreground">
                     <span>سؤال {index + 1} من {questions.length}</span>
-                    <span>{current.kind === "truefalse" ? "صح وخطأ" : "اختيار من متعدد"}</span>
+                    <span>{current.kind === "truefalse" ? "صح وخطأ" : current.kind === "essay" ? "مقالي" : "اختيار من متعدد"}</span>
                   </div>
                   <h2 className="text-lg font-black">{current.question}</h2>
+                  {current.kind === "essay" ? (
+                    <div className="mt-4">
+                      <textarea
+                        value={typeof answers[current.id] === "string" ? (answers[current.id] as string) : ""}
+                        onChange={(event) => setAnswers((value) => ({ ...value, [current.id]: event.target.value }))}
+                        rows={7}
+                        className="w-full rounded-xl border border-input bg-surface p-4 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="اكتب إجابتك بالتفصيل هنا…"
+                      />
+                      <p className="mt-2 text-xs text-muted-foreground">سؤال مقالي — التصحيح بالذكاء الاصطناعي بعد التسليم.</p>
+                    </div>
+                  ) : (
                   <div className="mt-4 space-y-2">
                     {(current.options ?? []).map((option, optionIndex) => (
                       <button
@@ -231,6 +260,7 @@ function AssignmentDetailPage() {
                       </button>
                     ))}
                   </div>
+                  )}
                   <div className="mt-6 flex items-center justify-between gap-2">
                     <button type="button" onClick={() => setIndex((value) => Math.max(0, value - 1))} disabled={index === 0} className="flex items-center gap-1 rounded-xl border border-border px-4 py-2 text-sm font-bold disabled:opacity-40">
                       <ChevronRight className="size-4" /> السابق

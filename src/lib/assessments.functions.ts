@@ -6,10 +6,11 @@ import { groqJSON } from "./groq-helper.server";
 const TRUE_WORDS = ["true", "صح", "صحيح", "نعم"];
 
 export type GeneratedQuestion = {
-  kind: "mcq" | "truefalse";
+  kind: "mcq" | "truefalse" | "essay";
   question: string;
   options: string[];
   correctIndex: number;
+  modelAnswer?: string;
   explanation?: string;
 };
 
@@ -21,17 +22,26 @@ type RawQuestion = {
   choices?: unknown;
   options?: unknown;
   answer?: unknown;
+  model_answer?: unknown;
   explanation?: string;
 };
 
 function normalize(raw: RawQuestion[]): GeneratedQuestion[] {
   return raw
-    .map((item) => {
+    .map((item): GeneratedQuestion => {
       const kindRaw = String(item.kind ?? item.type ?? "mcq").toLowerCase();
-      const kind: "mcq" | "truefalse" =
-        kindRaw.includes("true") || kindRaw.includes("صح") ? "truefalse" : "mcq";
+      const kind: "mcq" | "truefalse" | "essay" =
+        kindRaw.includes("essay") || kindRaw.includes("مقال") || kindRaw.includes("written")
+          ? "essay"
+          : kindRaw.includes("true") || kindRaw.includes("صح")
+            ? "truefalse"
+            : "mcq";
       const question = String(item.question ?? item.prompt ?? "").trim();
       const answer = String(item.answer ?? "").trim().toLowerCase();
+      if (kind === "essay") {
+        const model = String(item.model_answer ?? item.answer ?? "").trim();
+        return { kind, question, options: [], correctIndex: 0, modelAnswer: model, explanation: item.explanation };
+      }
       if (kind === "truefalse") {
         return {
           kind,
@@ -49,10 +59,11 @@ function normalize(raw: RawQuestion[]): GeneratedQuestion[] {
       if (correctIndex < 0 || correctIndex >= list.length) correctIndex = 0;
       return { kind, question, options: list, correctIndex, explanation: item.explanation };
     })
-    .filter((item) => item.question && item.options.length >= 2);
+    .filter((item) => item.question && (item.kind === "essay" ? true : item.options.length >= 2));
 }
 
-/** ولّد أسئلة اختيار من متعدد و/أو صح وخطأ من محتوى درس معيّن أو من نص. */
+
+/** ولّد أسئلة اختيار من متعدد و/أو صح وخطأ و/أو مقالية من محتوى درس معيّن أو من نص. */
 export const generateAssessmentQuestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -61,7 +72,7 @@ export const generateAssessmentQuestions = createServerFn({ method: "POST" })
         lessonId: z.string().uuid().optional(),
         extra: z.string().max(20000).optional(),
         count: z.number().min(1).max(20).default(6),
-        kind: z.enum(["mcq", "truefalse", "mixed"]).default("mixed"),
+        kind: z.enum(["mcq", "truefalse", "essay", "mixed"]).default("mixed"),
       })
       .parse(input),
   )
@@ -102,11 +113,13 @@ export const generateAssessmentQuestions = createServerFn({ method: "POST" })
         ? 'كل الأسئلة لازم تكون "mcq" باختيارات 4.'
         : data.kind === "truefalse"
           ? 'كل الأسئلة لازم تكون "truefalse" (صح / خطأ).'
-          : 'نوّع بين "mcq" (4 اختيارات) و "truefalse" (صح / خطأ).';
+          : data.kind === "essay"
+            ? 'كل الأسئلة لازم تكون "essay" (سؤال مقالي يكتب الطالب إجابته بنفسه) ومعاها "model_answer" فيه الإجابة النموذجية بالتفصيل.'
+            : 'نوّع بين "mcq" (4 اختيارات) و "truefalse" (صح / خطأ) و "essay" (سؤال مقالي معاه model_answer).';
 
     const out = await groqJSON<{ questions: RawQuestion[] }>({
       system:
-        'أنت مصمم اختبارات تعليمي محترف بالعربي المصري. أعِد JSON فقط بالشكل: {"questions":[{"kind":"mcq"|"truefalse","question":"...","options":["..."],"answer":"نص الاختيار الصحيح أو صح/خطأ","explanation":"..."}]}',
+        'أنت مصمم اختبارات تعليمي محترف بالعربي المصري. أعِد JSON فقط بالشكل: {"questions":[{"kind":"mcq"|"truefalse"|"essay","question":"...","options":["..."],"answer":"نص الاختيار الصحيح أو صح/خطأ","model_answer":"الإجابة النموذجية للسؤال المقالي","explanation":"..."}]}. أسئلة essay بدون options ولازم يكون معاها model_answer.',
       user: `ولّد ${data.count} أسئلة من محتوى الدرس التالي. ${typeRule}\nالأسئلة لازم تكون مباشرة وواضحة ومناسبة لطالب مصري.\n\n${source}`,
       temperature: 0.4,
       maxTokens: 3500,
@@ -116,6 +129,117 @@ export const generateAssessmentQuestions = createServerFn({ method: "POST" })
     if (!questions.length) throw new Error("لم يتم توليد أسئلة صالحة، حاول مرة أخرى");
     return { questions };
   });
+
+interface LooseQuery extends PromiseLike<{ data: unknown; error: { message: string } | null }> {
+  select(query: string): LooseQuery;
+  eq(column: string, value: unknown): LooseQuery;
+  update(values: Record<string, unknown>): LooseQuery;
+  maybeSingle(): LooseQuery;
+}
+
+/** تصحيح الأسئلة المقالية للطالب بالذكاء الاصطناعي وإضافة درجتها للنتيجة. */
+export const gradeEssayAnswers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        mode: z.enum(["quiz", "assignment"]),
+        recordId: z.string().uuid(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const isQuiz = data.mode === "quiz";
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = (name: string) =>
+      (supabaseAdmin as unknown as { from: (t: string) => LooseQuery }).from(name);
+    const client = (name: string) =>
+      (context.supabase as unknown as { from: (t: string) => LooseQuery }).from(name);
+
+    const { data: record, error } = await client(isQuiz ? "quiz_attempts" : "assignment_submissions")
+      .select("*")
+      .eq("id", data.recordId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!record) throw new Error("النتيجة غير موجودة");
+    const row = record as Record<string, unknown>;
+    if (row["user_id"] !== context.userId) throw new Error("غير مصرح");
+
+    const parentId = String(isQuiz ? row["quiz_id"] : row["assignment_id"]);
+    const answers = (row["answers"] ?? {}) as Record<string, unknown>;
+
+    const { data: essayRows } = await admin(isQuiz ? "quiz_questions" : "assignment_questions")
+      .select("id, question, points, model_answer")
+      .eq(isQuiz ? "quiz_id" : "assignment_id", parentId)
+      .eq("kind", "essay");
+
+    const essays = (essayRows ?? []) as { id: string; question: string; points: number; model_answer: string | null }[];
+    if (!essays.length) {
+      return {
+        graded: 0,
+        essayScore: 0,
+        essayMax: 0,
+        totalScore: Number((isQuiz ? row["score"] : row["grade"]) ?? 0),
+        totalMax: Number(row["max_score"] ?? 0),
+        passed: Boolean(row["passed"]),
+        feedback: [] as { id: string; score: number; note: string }[],
+      };
+    }
+
+
+    const essayMax = essays.reduce((sum, item) => sum + Number(item.points || 1), 0);
+    const payload = essays.map((item, index) => ({
+      n: index + 1,
+      id: item.id,
+      question: item.question,
+      points: Number(item.points || 1),
+      model_answer: item.model_answer ?? "",
+      student_answer: String(answers[item.id] ?? "").slice(0, 4000),
+    }));
+
+    const out = await groqJSON<{ results: { id?: string; n?: number; score?: number; note?: string }[] }>({
+      system:
+        'أنت مصحّح تعليمي عادل بالعربي المصري. أعِد JSON فقط: {"results":[{"id":"...","score":number,"note":"..."}]} — score من 0 لحد points الخاصة بالسؤال، و note ملاحظة قصيرة للطالب. قارن إجابة الطالب بالإجابة النموذجية لو موجودة، وامنح درجة جزئية لو الإجابة صح جزئيًا.',
+      user: `صحّح الأسئلة المقالية التالية:\n${JSON.stringify(payload, null, 1)}`,
+      temperature: 0.2,
+      maxTokens: 2500,
+    });
+
+    const feedback = essays.map((item, index) => {
+      const match = (out.results ?? []).find((r) => r.id === item.id || r.n === index + 1);
+      const points = Number(item.points || 1);
+      const score = Math.max(0, Math.min(points, Number(match?.score) || 0));
+      return { id: item.id, score, note: String(match?.note ?? "") };
+    });
+    const essayScore = feedback.reduce((sum, item) => sum + item.score, 0);
+
+    const baseScore = Number((isQuiz ? row["score"] : row["grade"]) ?? 0);
+    const baseMax = Number(row["max_score"] ?? 0);
+    const totalScore = baseScore + essayScore;
+    const totalMax = baseMax + essayMax;
+
+    const { data: parent } = await admin(isQuiz ? "quizzes" : "assignments")
+      .select("pass_score")
+      .eq("id", parentId)
+      .maybeSingle();
+    const passScore = Number((parent as { pass_score?: number } | null)?.pass_score ?? 50);
+    const passed = totalMax > 0 ? (totalScore / totalMax) * 100 >= passScore : false;
+
+    const note = feedback.map((item, index) => `س${index + 1}: ${item.score} — ${item.note}`).join("\n");
+    if (isQuiz) {
+      await admin("quiz_attempts")
+        .update({ score: totalScore, max_score: totalMax, passed })
+        .eq("id", data.recordId);
+    } else {
+      await admin("assignment_submissions")
+        .update({ grade: totalScore, max_score: totalMax, passed, feedback: note, auto_graded: true })
+        .eq("id", data.recordId);
+    }
+
+
+    return { graded: essays.length, essayScore, essayMax, totalScore, totalMax, passed, feedback };
+  });
+
 
 /** تصحيح تسليم طالب بالذكاء الاصطناعي بالاعتماد على ملف/نص الإجابة الصحيحة. */
 export const gradeSubmissionWithAnswerKey = createServerFn({ method: "POST" })

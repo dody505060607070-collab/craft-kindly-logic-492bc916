@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { generateAssessmentQuestions } from "@/lib/assessments.functions";
 
-type Kind = "mcq" | "truefalse";
-type Draft = { kind: Kind; question: string; options: string[]; correctIndex: number };
+type Kind = "mcq" | "truefalse" | "essay";
+type Draft = { kind: Kind; question: string; options: string[]; correctIndex: number; modelAnswer?: string };
 
 const emptyMcq = (): Draft => ({ kind: "mcq", question: "", options: ["", "", "", ""], correctIndex: 0 });
 const emptyTf = (): Draft => ({ kind: "truefalse", question: "", options: ["صح", "خطأ"], correctIndex: 0 });
+const emptyEssay = (): Draft => ({ kind: "essay", question: "", options: [], correctIndex: 0, modelAnswer: "" });
 
 type AnyTable = {
   select: (q: string) => AnyTable;
@@ -32,7 +33,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
   const [courseId, setCourseId] = useState("");
   const [lessonId, setLessonId] = useState("");
   const [targetId, setTargetId] = useState("");
-  const [kind, setKind] = useState<"mcq" | "truefalse" | "mixed">("mixed");
+  const [kind, setKind] = useState<"mcq" | "truefalse" | "essay" | "mixed">("mixed");
   const [count, setCount] = useState(5);
   const [extra, setExtra] = useState("");
   const [drafts, setDrafts] = useState<Draft[]>([emptyMcq()]);
@@ -76,7 +77,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
       return generate({ data: { lessonId: lessonId || undefined, extra: extra.trim() || undefined, count, kind } });
     },
     onSuccess: (result) => {
-      setDrafts(result.questions.map((item) => ({ kind: item.kind, question: item.question, options: item.options, correctIndex: item.correctIndex })));
+      setDrafts(result.questions.map((item) => ({ kind: item.kind, question: item.question, options: item.options, correctIndex: item.correctIndex, modelAnswer: item.modelAnswer ?? "" })));
       toast.success("تم توليد الأسئلة — راجعها ثم احفظها");
     },
     onError: (error: Error) => toast.error(error.message),
@@ -85,14 +86,19 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
   const save = useMutation({
     mutationFn: async () => {
       if (!targetId) throw new Error(`اختر ${parentLabel} أولاً`);
-      const valid = drafts.filter((draft) => draft.question.trim() && draft.options.length >= 2 && draft.options.every((option) => option.trim()));
+      const valid = drafts.filter((draft) =>
+        draft.kind === "essay"
+          ? draft.question.trim().length > 0
+          : draft.question.trim() && draft.options.length >= 2 && draft.options.every((option) => option.trim()),
+      );
       if (valid.length !== drafts.length || !valid.length) throw new Error("اكتب السؤال وكل الاختيارات قبل الحفظ");
       const { error } = await table(questionsTable).insert(
         valid.map((draft, index) => ({
           [parentKey]: targetId,
           question: draft.question.trim(),
-          options: draft.options.map((option) => option.trim()),
-          correct_index: draft.correctIndex,
+          options: draft.kind === "essay" ? [] : draft.options.map((option) => option.trim()),
+          correct_index: draft.kind === "essay" ? 0 : draft.correctIndex,
+          model_answer: draft.kind === "essay" ? (draft.modelAnswer ?? "").trim() || null : null,
           kind: draft.kind,
           points: 1,
           sort_order: index,
@@ -157,6 +163,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
               <option value="mixed">متنوع</option>
               <option value="mcq">اختيار من متعدد</option>
               <option value="truefalse">صح وخطأ</option>
+              <option value="essay">مقالي (إجابة مكتوبة)</option>
             </select>
           </label>
           <label className="text-xs font-bold">
@@ -176,7 +183,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
               <h3 className="font-black">
                 السؤال {index + 1}
                 <span className="mr-2 rounded-full bg-surface px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
-                  {draft.kind === "truefalse" ? "صح وخطأ" : "اختيار من متعدد"}
+                  {draft.kind === "truefalse" ? "صح وخطأ" : draft.kind === "essay" ? "مقالي" : "اختيار من متعدد"}
                 </span>
               </h3>
               {drafts.length > 1 && (
@@ -186,21 +193,36 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
               )}
             </div>
             <textarea value={draft.question} onChange={(event) => update(index, { question: event.target.value })} rows={2} className="mt-3 w-full rounded-xl border border-input bg-surface p-3 outline-none" placeholder="اكتب السؤال…" />
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {draft.options.map((option, optionIndex) => (
-                <label key={optionIndex} className={`flex items-center gap-2 rounded-xl border p-2 ${draft.correctIndex === optionIndex ? "border-success bg-success/10" : "border-border"}`}>
-                  <input type="radio" name={`correct-${mode}-${index}`} checked={draft.correctIndex === optionIndex} onChange={() => update(index, { correctIndex: optionIndex })} aria-label={`الإجابة الصحيحة رقم ${optionIndex + 1}`} />
-                  <input
-                    value={option}
-                    readOnly={draft.kind === "truefalse"}
-                    onChange={(event) => update(index, { options: draft.options.map((value, i) => (i === optionIndex ? event.target.value : value)) })}
-                    className="min-w-0 flex-1 bg-transparent px-1 py-1 outline-none"
-                    placeholder={`الاختيار ${optionIndex + 1}`}
-                  />
-                </label>
-              ))}
-            </div>
-            <p className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground"><CircleCheck className="size-3" /> علّم الدائرة بجانب الإجابة الصحيحة.</p>
+            {draft.kind === "essay" ? (
+              <>
+                <textarea
+                  value={draft.modelAnswer ?? ""}
+                  onChange={(event) => update(index, { modelAnswer: event.target.value })}
+                  rows={3}
+                  className="mt-3 w-full rounded-xl border border-input bg-surface p-3 outline-none"
+                  placeholder="الإجابة النموذجية (الذكاء الاصطناعي هيصحح إجابة الطالب بالمقارنة بيها)…"
+                />
+                <p className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground"><CircleCheck className="size-3" /> الطالب هيكتب إجابته بنفسه والتصحيح أوتوماتيك بالذكاء الاصطناعي.</p>
+              </>
+            ) : (
+              <>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {draft.options.map((option, optionIndex) => (
+                    <label key={optionIndex} className={`flex items-center gap-2 rounded-xl border p-2 ${draft.correctIndex === optionIndex ? "border-success bg-success/10" : "border-border"}`}>
+                      <input type="radio" name={`correct-${mode}-${index}`} checked={draft.correctIndex === optionIndex} onChange={() => update(index, { correctIndex: optionIndex })} aria-label={`الإجابة الصحيحة رقم ${optionIndex + 1}`} />
+                      <input
+                        value={option}
+                        readOnly={draft.kind === "truefalse"}
+                        onChange={(event) => update(index, { options: draft.options.map((value, i) => (i === optionIndex ? event.target.value : value)) })}
+                        className="min-w-0 flex-1 bg-transparent px-1 py-1 outline-none"
+                        placeholder={`الاختيار ${optionIndex + 1}`}
+                      />
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground"><CircleCheck className="size-3" /> علّم الدائرة بجانب الإجابة الصحيحة.</p>
+              </>
+            )}
           </article>
         ))}
       </div>
@@ -208,6 +230,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" onClick={() => setDrafts((current) => [...current, emptyMcq()])}><Plus /> سؤال اختيار من متعدد</Button>
         <Button type="button" variant="outline" onClick={() => setDrafts((current) => [...current, emptyTf()])}><Plus /> سؤال صح وخطأ</Button>
+        <Button type="button" variant="outline" onClick={() => setDrafts((current) => [...current, emptyEssay()])}><Plus /> سؤال مقالي</Button>
         <Button type="button" onClick={() => save.mutate()} disabled={save.isPending}>
           {save.isPending ? <Loader2 className="animate-spin" /> : null} حفظ كل الأسئلة
         </Button>
