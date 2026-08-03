@@ -107,6 +107,28 @@ function CoursesPage() {
 
 
       <div>
+        <SectionHint title="خطط الاشتراك (شهر / ترم / سنة / أي مدة)">
+          هنا بتحدد لكل درس خطط الاشتراك اللي هتظهر للطالب. مثال: "شهر" مدتها 30 يوم بسعر 100، "الترم الدراسي" 120 يوم بسعر 300، "سنة" 365 يوم بسعر 500. تقدر تضيف أي مدة انت عايزها (مثلاً 15 يوم أو 90 يوم). لو خليت "ظاهرة للطالب = لا" الخطة مش هتظهر في صفحة الاشتراك. "الخصم %" بيخلي السعر يظهر مشطوب مع شارة خصم. لو مضفتش أي خطة، هيظهر للطالب سعر الشهر والسنة الافتراضيين من بيانات الكورس.
+        </SectionHint>
+        <CrudSection
+          table="course_plans"
+          title="خطط الاشتراك"
+          description="أي مدة وأي سعر لكل درس."
+          orderBy="sort_order"
+          ascending
+          fields={[
+            { key: "course_id", label: "الدرس", required: true, relation: { table: "courses", label: "title" } },
+            { key: "name", label: "اسم الخطة (شهر / ترم / سنة…)" },
+            { key: "duration_days", label: "المدة (بالأيام)", type: "number", default: 30 },
+            { key: "price", label: "السعر (ج.م)", type: "number", default: 0 },
+            { key: "discount_percent", label: "الخصم %", type: "number", default: 0 },
+            { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
+            { key: "is_active", label: "ظاهرة للطالب", type: "bool", default: true },
+          ]}
+        />
+      </div>
+
+      <div>
         <SectionHint title="الفصول الدراسية">
           كل كورس ممكن يتقسم لفصول (Chapters) عشان تنظّم الدروس. حط "معرّف الكورس" اللي الفصل يخصه، والترتيب. مش لازم — تقدر تسيب كل الدروس تحت الكورس مباشرة من غير فصول.
         </SectionHint>
