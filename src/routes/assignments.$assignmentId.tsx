@@ -171,15 +171,15 @@ function AssignmentDetailPage() {
                     <Loader2 className="size-5 animate-spin" />
                   ) : (
                     <Send className="size-5" />
+                  )}
+                  تسليم الواجب
+                </button>
+              </section>
              ) : (
                <section className="glass rounded-2xl p-6 text-center">
                  <p className="font-bold">سجّل دخولك أولاً عشان تقدر تسلّم الواجب.</p>
                  <button onClick={() => navigate({ to: "/auth" })} className="mt-4 rounded-xl bg-primary px-5 py-2.5 font-black text-primary-foreground">تسجيل الدخول</button>
                </section>
-             )}
-                  تسليم الواجب
-                </button>
-              </section>
             )}
           </div>
 
