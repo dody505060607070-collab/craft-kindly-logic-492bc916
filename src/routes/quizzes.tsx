@@ -66,7 +66,7 @@ function QuizzesPage() {
                   النجاح: {q.pass_score}%
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
           {(data ?? []).length === 0 && (
             <p className="col-span-full text-center text-muted-foreground">

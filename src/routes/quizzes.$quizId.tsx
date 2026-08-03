@@ -8,6 +8,14 @@ import { StudentShell } from "@/components/StudentShell";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/quizzes/$quizId")({
+  head: () => ({ meta: [
+    { title: "ابدأ الاختبار | منصة المستر" },
+    { name: "description", content: "اختبار اختيار من متعدد بتصحيح فوري." },
+    { property: "og:title", content: "ابدأ الاختبار | منصة المستر" },
+    { property: "og:description", content: "اختبار اختيار من متعدد بتصحيح فوري." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: QuizDetailPage,
 });
 
@@ -38,11 +46,7 @@ function QuizDetailPage() {
   const { data: questions, isLoading: isQuestionsLoading } = useQuery({
     queryKey: ["quiz-questions", quizId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("quiz_questions")
-        .select("*")
-        .eq("quiz_id", quizId)
-        .order("sort_order", { ascending: true });
+      const { data, error } = await supabase.rpc("get_quiz_questions_for_student", { _quiz_id: quizId });
       if (error) throw error;
       return data;
     },
@@ -68,30 +72,12 @@ function QuizDetailPage() {
     mutationFn: async () => {
       if (!user || !quiz || !questions) return;
       
-      let score = 0;
-      const results = questions.map(q => {
-        const selected = answers[q.id];
-        const isCorrect = selected === q.correct_index;
-        if (isCorrect) score += (q.points || 1);
-        return { questionId: q.id, selected, isCorrect };
-      });
-
-      const maxScore = questions.reduce((acc, q) => acc + (q.points || 1), 0);
-      const passPercentage = quiz.pass_score || 50;
-      const earnedPercentage = (score / maxScore) * 100;
-      const passed = earnedPercentage >= passPercentage;
-
-      const { error } = await supabase.from("quiz_attempts").insert({
-        quiz_id: quizId,
-        user_id: user.id,
-        answers: { results, summary: { score, maxScore, earnedPercentage } },
-        score,
-        max_score: maxScore,
-        passed,
-        submitted_at: new Date().toISOString(),
-      });
+      if (Object.keys(answers).length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
+      const { data, error } = await supabase.rpc("submit_quiz_attempt", { _quiz_id: quizId, _answers: answers });
       if (error) throw error;
-      return { score, maxScore, passed };
+      const result = data?.[0];
+      if (!result) throw new Error("تعذر حفظ النتيجة");
+      return { score: Number(result.score), maxScore: Number(result.max_score), passed: result.passed };
     },
     onSuccess: (data) => {
       if (!data) return;
@@ -201,9 +187,10 @@ function QuizDetailPage() {
 
             <button
               onClick={startQuiz}
+              disabled={!user || !questions?.length}
               className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-black text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
             >
-              ابدأ الاختبار الآن
+              {!user ? "سجّل الدخول لبدء الاختبار" : !questions?.length ? "لم تتم إضافة أسئلة بعد" : "ابدأ الاختبار الآن"}
             </button>
           </div>
         </div>

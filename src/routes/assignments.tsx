@@ -61,7 +61,7 @@ function AssignmentsPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
           {(data ?? []).length === 0 && (
             <p className="text-center text-muted-foreground">لا توجد واجبات حاليًا.</p>

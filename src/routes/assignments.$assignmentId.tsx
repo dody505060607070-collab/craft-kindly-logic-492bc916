@@ -8,6 +8,14 @@ import { StudentShell } from "@/components/StudentShell";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/assignments/$assignmentId")({
+  head: () => ({ meta: [
+    { title: "حل الواجب | منصة المستر" },
+    { name: "description", content: "اقرأ الواجب وأرسل إجابتك للمراجعة." },
+    { property: "og:title", content: "حل الواجب | منصة المستر" },
+    { property: "og:description", content: "اقرأ الواجب وأرسل إجابتك للمراجعة." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AssignmentDetailPage,
 });
 
@@ -48,12 +56,10 @@ function AssignmentDetailPage() {
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("يجب تسجيل الدخول أولاً");
-      const { error } = await supabase.from("assignment_submissions").upsert({
-        assignment_id: assignmentId,
-        user_id: user.id,
-        content,
-        updated_at: new Date().toISOString(),
-      });
+      const query = submission
+        ? supabase.from("assignment_submissions").update({ content, updated_at: new Date().toISOString() }).eq("id", submission.id)
+        : supabase.from("assignment_submissions").insert({ assignment_id: assignmentId, user_id: user.id, content });
+      const { error } = await query;
       if (error) throw error;
     },
     onSuccess: () => {
@@ -115,7 +121,7 @@ function AssignmentDetailPage() {
               </div>
             </section>
 
-            {submission ? (
+            {submission && !content ? (
               <section className="glass rounded-2xl border-emerald-500/20 bg-emerald-500/5 p-6">
                 <div className="flex items-center gap-2 text-emerald-500 mb-4">
                   <CheckCircle2 className="size-5" />
@@ -137,8 +143,7 @@ function AssignmentDetailPage() {
                     setContent(submission.content || "");
                     // We allow editing if not graded yet
                     if (submission.grade === null) {
-                      // reset submission to allow editing
-                      // Actually just a UI trick
+                       setContent(submission.content || "");
                       toast.info("يمكنك تعديل إجابتك الآن");
                     }
                   }}
@@ -148,7 +153,7 @@ function AssignmentDetailPage() {
                   تعديل التسليم
                 </button>
               </section>
-            ) : (
+             ) : user ? (
               <section className="glass rounded-2xl p-6">
                 <h2 className="mb-4 text-lg font-black">تسليم الواجب</h2>
                 <textarea
@@ -166,7 +171,12 @@ function AssignmentDetailPage() {
                     <Loader2 className="size-5 animate-spin" />
                   ) : (
                     <Send className="size-5" />
-                  )}
+             ) : (
+               <section className="glass rounded-2xl p-6 text-center">
+                 <p className="font-bold">سجّل دخولك أولاً عشان تقدر تسلّم الواجب.</p>
+                 <button onClick={() => navigate({ to: "/auth" })} className="mt-4 rounded-xl bg-primary px-5 py-2.5 font-black text-primary-foreground">تسجيل الدخول</button>
+               </section>
+             )}
                   تسليم الواجب
                 </button>
               </section>
