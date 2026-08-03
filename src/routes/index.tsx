@@ -342,21 +342,56 @@ function Home() {
                   className="h-44 w-full object-cover"
                 />
                 <div className="p-5">
-                  <p className="text-xs font-bold text-primary">{c.grade}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-bold text-primary">{c.grade}</p>
+                    <span
+                      className={`rounded-lg px-2 py-1 text-[11px] font-black ${
+                        c.isFree ? "bg-primary/10 text-primary" : "bg-accent/15 text-accent"
+                      }`}
+                    >
+                      {c.isFree ? "مجاني" : "باشتراك"}
+                    </span>
+                  </div>
                   <h3 className="mt-1 text-lg font-black">{c.title}</h3>
-                  <div className="mt-4 flex items-center justify-between">
+
+                  {c.contents.length > 0 && (
+                    <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                      {c.contents.slice(0, 3).map((t) => (
+                        <li key={t} className="flex items-center gap-1.5">
+                          <PlayCircle className="size-3.5 shrink-0 text-primary" />
+                          <span className="truncate">{t}</span>
+                        </li>
+                      ))}
+                      {c.contents.length > 3 && (
+                        <li className="text-[11px] font-bold">+ {c.contents.length - 3} محتوى إضافي</li>
+                      )}
+                    </ul>
+                  )}
+
+                  <div className="mt-4 flex items-center justify-between gap-2">
                     <span className="text-sm font-bold text-muted-foreground">{c.price}</span>
                     {c.id ? (
-                      <Link
-                        to="/courses/$courseId"
-                        params={{ courseId: c.id }}
-                        className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
-                      >
-                        ادخل الدرس
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        {!c.isFree && (
+                          <Link
+                            to={user ? "/subscribe/$courseId" : "/auth"}
+                            params={user ? { courseId: c.id } : undefined}
+                            className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold"
+                          >
+                            اشترك
+                          </Link>
+                        )}
+                        <Link
+                          to="/courses/$courseId"
+                          params={{ courseId: c.id }}
+                          className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+                        >
+                          {c.isFree ? "ابدأ الدرس" : "ادخل الدرس"}
+                        </Link>
+                      </div>
                     ) : (
                       <Link
-                        to={user ? "/courses" : "/auth"}
+                        to="/auth"
                         className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
                       >
                         ادخل الدرس
