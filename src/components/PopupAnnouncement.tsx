@@ -3,17 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-const FALLBACK_POPUP = {
-  id: "fallback-nooh-announcement",
-  title: "اعلان مهم: نوح المبرمج",
-  body:
-    "نوح المبرمج متخصص في تصميم وبرمجة المواقع الإلكترونية، صفحات الهبوط، ولوحات التحكم. لو عايز موقع يعرّف الناس بخدمتك بشكل احترافي، نوح يقدر يساعدك.",
-  image_url: null,
-};
-
 export function PopupAnnouncement() {
   const [open, setOpen] = useState(false);
-  const [closed, setClosed] = useState(false);
+  const [closedId, setClosedId] = useState<string | null>(null);
 
   const { data } = useQuery({
     queryKey: ["popup-announcement"],
@@ -26,22 +18,31 @@ export function PopupAnnouncement() {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (error) return FALLBACK_POPUP;
-      return data as { id: string; title: string; body: string; image_url: string | null } | null;
+      if (error) return null;
+      return (data ?? null) as { id: string; title: string; body: string; image_url: string | null } | null;
     },
-    placeholderData: FALLBACK_POPUP,
-    retry: 3,
-    staleTime: 10_000,
+    retry: 1,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: 15_000,
     refetchOnReconnect: true,
     refetchOnWindowFocus: true,
   });
 
+  // إعلان واحد بس في نفس الوقت — ولو الأدمن شال/غيّر الإعلان بيتحدّث تلقائي
   useEffect(() => {
-    if (!data || closed) return;
+    if (!data) {
+      setOpen(false);
+      return;
+    }
+    if (closedId === data.id) {
+      setOpen(false);
+      return;
+    }
     setOpen(true);
     const t = setTimeout(() => setOpen(false), 5000);
     return () => clearTimeout(t);
-  }, [data, closed]);
+  }, [data, closedId]);
 
   if (!open || !data) return null;
 
@@ -51,7 +52,7 @@ export function PopupAnnouncement() {
       className="fixed inset-0 z-[2147483601] flex items-center justify-center bg-foreground/60 p-4 pt-[calc(1rem+env(safe-area-inset-top))] animate-in fade-in"
       onClick={() => {
         setOpen(false);
-        setClosed(true);
+        setClosedId(data.id);
       }}
     >
       <div
@@ -62,7 +63,7 @@ export function PopupAnnouncement() {
           className="absolute left-3 top-3 rounded-full p-1 text-muted-foreground hover:bg-card"
           onClick={() => {
             setOpen(false);
-            setClosed(true);
+            setClosedId(data.id);
           }}
           aria-label="إغلاق"
         >
