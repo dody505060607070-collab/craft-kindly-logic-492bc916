@@ -130,6 +130,99 @@ export const generateAssessmentQuestions = createServerFn({ method: "POST" })
     return { questions };
   });
 
+/** تصحيح الأسئلة المقالية للطالب بالذكاء الاصطناعي وإضافة درجتها للنتيجة. */
+export const gradeEssayAnswers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        mode: z.enum(["quiz", "assignment"]),
+        recordId: z.string().uuid(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const isQuiz = data.mode === "quiz";
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: record, error } = await context.supabase
+      .from(isQuiz ? "quiz_attempts" : "assignment_submissions")
+      .select("*")
+      .eq("id", data.recordId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!record) throw new Error("النتيجة غير موجودة");
+    const row = record as Record<string, unknown>;
+    if (row["user_id"] !== context.userId) throw new Error("غير مصرح");
+
+    const parentId = String(isQuiz ? row["quiz_id"] : row["assignment_id"]);
+    const answers = (row["answers"] ?? {}) as Record<string, unknown>;
+
+    const { data: essayRows } = await supabaseAdmin
+      .from(isQuiz ? "quiz_questions" : "assignment_questions")
+      .select("id, question, points, model_answer")
+      .eq(isQuiz ? "quiz_id" : "assignment_id", parentId)
+      .eq("kind", "essay");
+
+    const essays = (essayRows ?? []) as { id: string; question: string; points: number; model_answer: string | null }[];
+    if (!essays.length) return { graded: 0, essayScore: 0, essayMax: 0, feedback: [] as { id: string; score: number; note: string }[] };
+
+    const essayMax = essays.reduce((sum, item) => sum + Number(item.points || 1), 0);
+    const payload = essays.map((item, index) => ({
+      n: index + 1,
+      id: item.id,
+      question: item.question,
+      points: Number(item.points || 1),
+      model_answer: item.model_answer ?? "",
+      student_answer: String(answers[item.id] ?? "").slice(0, 4000),
+    }));
+
+    const out = await groqJSON<{ results: { id?: string; n?: number; score?: number; note?: string }[] }>({
+      system:
+        'أنت مصحّح تعليمي عادل بالعربي المصري. أعِد JSON فقط: {"results":[{"id":"...","score":number,"note":"..."}]} — score من 0 لحد points الخاصة بالسؤال، و note ملاحظة قصيرة للطالب. قارن إجابة الطالب بالإجابة النموذجية لو موجودة، وامنح درجة جزئية لو الإجابة صح جزئيًا.',
+      user: `صحّح الأسئلة المقالية التالية:\n${JSON.stringify(payload, null, 1)}`,
+      temperature: 0.2,
+      maxTokens: 2500,
+    });
+
+    const feedback = essays.map((item, index) => {
+      const match = (out.results ?? []).find((r) => r.id === item.id || r.n === index + 1);
+      const points = Number(item.points || 1);
+      const score = Math.max(0, Math.min(points, Number(match?.score) || 0));
+      return { id: item.id, score, note: String(match?.note ?? "") };
+    });
+    const essayScore = feedback.reduce((sum, item) => sum + item.score, 0);
+
+    const baseScore = Number((isQuiz ? row["score"] : row["grade"]) ?? 0);
+    const baseMax = Number(row["max_score"] ?? 0);
+    const totalScore = baseScore + essayScore;
+    const totalMax = baseMax + essayMax;
+
+    const { data: parent } = await supabaseAdmin
+      .from(isQuiz ? "quizzes" : "assignments")
+      .select("pass_score")
+      .eq("id", parentId)
+      .maybeSingle();
+    const passScore = Number((parent as { pass_score?: number } | null)?.pass_score ?? 50);
+    const passed = totalMax > 0 ? (totalScore / totalMax) * 100 >= passScore : false;
+
+    const note = feedback.map((item, index) => `س${index + 1}: ${item.score} — ${item.note}`).join("\n");
+    if (isQuiz) {
+      await supabaseAdmin
+        .from("quiz_attempts")
+        .update({ score: totalScore, max_score: totalMax, passed })
+        .eq("id", data.recordId);
+    } else {
+      await supabaseAdmin
+        .from("assignment_submissions")
+        .update({ grade: totalScore, max_score: totalMax, passed, feedback: note, auto_graded: true })
+        .eq("id", data.recordId);
+    }
+
+    return { graded: essays.length, essayScore, essayMax, totalScore, totalMax, passed, feedback };
+  });
+
+
 /** تصحيح تسليم طالب بالذكاء الاصطناعي بالاعتماد على ملف/نص الإجابة الصحيحة. */
 export const gradeSubmissionWithAnswerKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
