@@ -49,6 +49,10 @@ function Subscribe() {
   });
   const payPhone = settings?.payment_phone || SITE.phone;
   const payInsta = settings?.payment_instapay || SITE.phone;
+  const monthDeal = discounted(course?.price ?? 0, course?.discount_percent ?? 0);
+  const yearDeal = discounted(course?.price_year ?? course?.price ?? 0, course?.discount_percent ?? 0);
+  const priceMonth = monthDeal.final;
+  const priceYear = yearDeal.final;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
