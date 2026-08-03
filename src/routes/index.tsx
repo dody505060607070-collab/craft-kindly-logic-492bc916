@@ -204,7 +204,7 @@ function Home() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
-        .select("id, title, description, cover_url, price, grade, is_free")
+        .select("id, title, description, cover_url, price, price_year, discount_percent, grade, is_free")
         .eq("is_published", true)
         .order("sort_order")
         .limit(6);
