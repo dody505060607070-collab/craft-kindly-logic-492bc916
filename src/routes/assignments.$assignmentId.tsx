@@ -88,13 +88,28 @@ function AssignmentDetailPage() {
     return () => { active = false; };
   }, [assignment?.questions_file_url]);
 
+  const gradeEssays = useServerFn(gradeEssayAnswers);
+
   const submitChoices = useMutation({
     mutationFn: async () => {
-      if (Object.keys(answers).length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
+      const answered = questions.filter((question) => {
+        const value = answers[question.id];
+        return typeof value === "number" ? true : typeof value === "string" && value.trim().length > 0;
+      });
+      if (answered.length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
       const { data, error } = await rpc("submit_assignment_answers", { _assignment_id: assignmentId, _answers: answers });
       if (error) throw error;
-      const row = (data as { score: number; max_score: number; passed: boolean }[] | null)?.[0];
+      const row = (data as { submission_id: string; score: number; max_score: number; passed: boolean }[] | null)?.[0];
       if (!row) throw new Error("تعذر حفظ النتيجة");
+
+      if (questions.some((question) => question.kind === "essay") && row.submission_id) {
+        try {
+          const graded = await gradeEssays({ data: { mode: "assignment" as const, recordId: row.submission_id } });
+          return { score: Number(graded.totalScore ?? row.score), max_score: Number(graded.totalMax ?? row.max_score), passed: Boolean(graded.passed) };
+        } catch {
+          toast.message("تم التسليم — تصحيح الأسئلة المقالية هيظهر بعد شوية");
+        }
+      }
       return row;
     },
     onSuccess: (row) => {
