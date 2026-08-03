@@ -77,7 +77,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
       return generate({ data: { lessonId: lessonId || undefined, extra: extra.trim() || undefined, count, kind } });
     },
     onSuccess: (result) => {
-      setDrafts(result.questions.map((item) => ({ kind: item.kind, question: item.question, options: item.options, correctIndex: item.correctIndex })));
+      setDrafts(result.questions.map((item) => ({ kind: item.kind, question: item.question, options: item.options, correctIndex: item.correctIndex, modelAnswer: item.modelAnswer ?? "" })));
       toast.success("تم توليد الأسئلة — راجعها ثم احفظها");
     },
     onError: (error: Error) => toast.error(error.message),
@@ -86,14 +86,19 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
   const save = useMutation({
     mutationFn: async () => {
       if (!targetId) throw new Error(`اختر ${parentLabel} أولاً`);
-      const valid = drafts.filter((draft) => draft.question.trim() && draft.options.length >= 2 && draft.options.every((option) => option.trim()));
+      const valid = drafts.filter((draft) =>
+        draft.kind === "essay"
+          ? draft.question.trim().length > 0
+          : draft.question.trim() && draft.options.length >= 2 && draft.options.every((option) => option.trim()),
+      );
       if (valid.length !== drafts.length || !valid.length) throw new Error("اكتب السؤال وكل الاختيارات قبل الحفظ");
       const { error } = await table(questionsTable).insert(
         valid.map((draft, index) => ({
           [parentKey]: targetId,
           question: draft.question.trim(),
-          options: draft.options.map((option) => option.trim()),
-          correct_index: draft.correctIndex,
+          options: draft.kind === "essay" ? [] : draft.options.map((option) => option.trim()),
+          correct_index: draft.kind === "essay" ? 0 : draft.correctIndex,
+          model_answer: draft.kind === "essay" ? (draft.modelAnswer ?? "").trim() || null : null,
           kind: draft.kind,
           points: 1,
           sort_order: index,
