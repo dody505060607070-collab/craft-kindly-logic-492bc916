@@ -85,6 +85,19 @@ function CodesPage() {
     },
   });
 
+  const { data: coursePlans } = useQuery({
+    queryKey: ["course-plans-for-codes", courseId],
+    enabled: !!courseId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("course_plans")
+        .select("id, name, duration_days, price, sort_order")
+        .eq("course_id", courseId)
+        .order("sort_order");
+      return data ?? [];
+    },
+  });
+
   const courseTitles = useMemo(
     () => new Map((courses ?? []).map((course) => [course.id, course.title])),
     [courses],
@@ -96,13 +109,33 @@ function CodesPage() {
 
   const generate = async () => {
     if (!courseId) return toast.error("اختر الدرس الأول");
+    let planName = plan;
+    let days: number | null = null;
+
+    if (plan === "__custom__") {
+      planName = customName.trim();
+      if (!planName) return toast.error("اكتب اسم المدة (مثلاً: نصف ترم)");
+      if (!Number.isFinite(customDays) || customDays < 0 || customDays > 3650) {
+        return toast.error("عدد الأيام لازم يكون بين 0 و 3650");
+      }
+      days = Math.round(customDays);
+    } else if (plan.startsWith("plan:")) {
+      const target = (coursePlans ?? []).find((row) => row.id === plan.slice(5));
+      if (!target) return toast.error("اختر مدة صحيحة");
+      planName = target.name;
+      days = target.duration_days;
+    } else {
+      days = PRESETS.find((preset) => preset.name === plan)?.days ?? 30;
+    }
+
     setBusy(true);
     try {
       const { data, error } = await rpc("generate_access_codes", {
         _course_id: courseId,
         _count: count,
-        _plan: plan,
+        _plan: planName,
         _note: note.trim() || null,
+        _duration_days: days,
       });
       if (error) throw new Error(error.message);
       const list = ((data ?? []) as Array<{ code: string }>).map((row) => row.code);
@@ -115,6 +148,7 @@ function CodesPage() {
       setBusy(false);
     }
   };
+
 
   const remove = async (id: string) => {
     if (!confirm("متأكد من حذف الكود؟ مش هيقدر حد يستخدمه بعد كده.")) return;
