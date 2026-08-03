@@ -63,7 +63,7 @@ function normalize(raw: RawQuestion[]): GeneratedQuestion[] {
 }
 
 
-/** ولّد أسئلة اختيار من متعدد و/أو صح وخطأ من محتوى درس معيّن أو من نص. */
+/** ولّد أسئلة اختيار من متعدد و/أو صح وخطأ و/أو مقالية من محتوى درس معيّن أو من نص. */
 export const generateAssessmentQuestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -72,7 +72,7 @@ export const generateAssessmentQuestions = createServerFn({ method: "POST" })
         lessonId: z.string().uuid().optional(),
         extra: z.string().max(20000).optional(),
         count: z.number().min(1).max(20).default(6),
-        kind: z.enum(["mcq", "truefalse", "mixed"]).default("mixed"),
+        kind: z.enum(["mcq", "truefalse", "essay", "mixed"]).default("mixed"),
       })
       .parse(input),
   )
