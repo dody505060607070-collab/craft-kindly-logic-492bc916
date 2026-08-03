@@ -4,7 +4,7 @@ import { FileCheck2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StudentShell } from "@/components/StudentShell";
 
-export const Route = createFileRoute("/assignments")({
+export const Route = createFileRoute("/assignments/")({
   head: () => ({
     meta: [
       { title: "الواجبات | منصة المستر" },

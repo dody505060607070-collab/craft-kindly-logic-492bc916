@@ -4,7 +4,7 @@ import { ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StudentShell } from "@/components/StudentShell";
 
-export const Route = createFileRoute("/quizzes")({
+export const Route = createFileRoute("/quizzes/")({
   head: () => ({
     meta: [
       { title: "الاختبارات | منصة المستر" },
