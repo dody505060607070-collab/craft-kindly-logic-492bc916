@@ -225,11 +225,26 @@ function Subscribe() {
 
             <div>
               <label className="mb-1.5 block text-xs font-bold text-muted-foreground">مدة الاشتراك</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setPlan("month")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "month" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>شهر — {priceMonth} ج.م</button>
-                <button type="button" onClick={() => setPlan("year")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "year" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>سنة — {priceYear} ج.م</button>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {plans.map((p) => {
+                  const d = discounted(p.price, p.discount_percent);
+                  const active = selected?.id === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPlanId(p.id)}
+                      className={`rounded-xl border p-3 text-sm font-bold ${active ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}
+                    >
+                      {p.name} — {d.final} ج.م
+                      {d.pct > 0 && <span className="ms-1 text-xs line-through opacity-70">{d.base}</span>}
+                      <span className="mt-0.5 block text-[11px] font-normal opacity-70">{p.duration_days} يوم</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
 
             <div>
               <label className="mb-1.5 block text-xs font-bold text-muted-foreground">
