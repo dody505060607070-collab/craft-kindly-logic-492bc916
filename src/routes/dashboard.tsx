@@ -9,6 +9,7 @@ import {
   Home,
   LineChart,
   ListChecks,
+  KeyRound,
   LogOut,
   Menu,
   MessageSquare,
