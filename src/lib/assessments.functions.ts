@@ -218,8 +218,7 @@ export const gradeEssayAnswers = createServerFn({ method: "POST" })
     const totalScore = baseScore + essayScore;
     const totalMax = baseMax + essayMax;
 
-    const { data: parent } = await supabaseAdmin
-      .from(isQuiz ? "quizzes" : "assignments")
+    const { data: parent } = await admin(isQuiz ? "quizzes" : "assignments")
       .select("pass_score")
       .eq("id", parentId)
       .maybeSingle();
@@ -228,16 +227,15 @@ export const gradeEssayAnswers = createServerFn({ method: "POST" })
 
     const note = feedback.map((item, index) => `س${index + 1}: ${item.score} — ${item.note}`).join("\n");
     if (isQuiz) {
-      await supabaseAdmin
-        .from("quiz_attempts")
+      await admin("quiz_attempts")
         .update({ score: totalScore, max_score: totalMax, passed })
         .eq("id", data.recordId);
     } else {
-      await supabaseAdmin
-        .from("assignment_submissions")
+      await admin("assignment_submissions")
         .update({ grade: totalScore, max_score: totalMax, passed, feedback: note, auto_graded: true })
         .eq("id", data.recordId);
     }
+
 
     return { graded: essays.length, essayScore, essayMax, totalScore, totalMax, passed, feedback };
   });
