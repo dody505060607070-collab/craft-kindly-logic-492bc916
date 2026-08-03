@@ -22,6 +22,19 @@ type AnyTable = {
 };
 const table = (name: string) => (supabase as unknown as { from: (t: string) => AnyTable }).from(name);
 
+const createParent = async (name: string, payload: Record<string, unknown>) => {
+  const client = supabase as unknown as {
+    from: (tableName: string) => {
+      insert: (value: Record<string, unknown>) => {
+        select: (columns: string) => {
+          single: () => Promise<{ data: { id: string } | null; error: { message: string } | null }>;
+        };
+      };
+    };
+  };
+  return client.from(name).insert(payload).select("id").single();
+};
+
 export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
   const queryClient = useQueryClient();
   const generate = useServerFn(generateAssessmentQuestions);
@@ -59,6 +72,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
 
   const { data: targets = [] } = useQuery({
     queryKey: ["builder-targets", parentTable],
+    enabled: mode === "quiz",
     queryFn: async () => {
       const { data, error } = await table(parentTable).select("id,title,course_id,lesson_id").order("created_at", { ascending: false });
       if (error) throw error;
@@ -85,16 +99,38 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!targetId) throw new Error(`اختر ${parentLabel} أولاً`);
       const valid = drafts.filter((draft) =>
         draft.kind === "essay"
           ? draft.question.trim().length > 0
           : draft.question.trim() && draft.options.length >= 2 && draft.options.every((option) => option.trim()),
       );
       if (valid.length !== drafts.length || !valid.length) throw new Error("اكتب السؤال وكل الاختيارات قبل الحفظ");
+      if (mode === "assignment" && (!courseId || !lessonId)) throw new Error("اختر الكورس والدرس أولاً");
+      if (mode === "quiz" && !targetId) throw new Error("اختر الاختبار أولاً");
+
+      let destinationId = targetId;
+      if (mode === "assignment") {
+        const lessonTitle = lessons.find((lesson) => lesson.id === lessonId)?.title ?? "الدرس";
+        const totalPoints = valid.length;
+        const { data: created, error: createError } = await createParent("assignments", {
+          title: `واجب: ${lessonTitle}`,
+          description: extra.trim() || null,
+          instructions: "أجب عن جميع الأسئلة ثم اضغط تسليم.",
+          course_id: courseId,
+          lesson_id: lessonId,
+          duration_minutes: 20,
+          max_score: totalPoints,
+          pass_score: 50,
+          is_published: true,
+        });
+        if (createError) throw createError;
+        if (!created?.id) throw new Error("تعذر إنشاء الواجب");
+        destinationId = created.id;
+      }
+
       const { error } = await table(questionsTable).insert(
         valid.map((draft, index) => ({
-          [parentKey]: targetId,
+          [parentKey]: destinationId,
           question: draft.question.trim(),
           options: draft.kind === "essay" ? [] : draft.options.map((option) => option.trim()),
           correct_index: draft.kind === "essay" ? 0 : draft.correctIndex,
@@ -107,9 +143,14 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
       if (error) throw error;
     },
     onSuccess: async () => {
-      toast.success("تم حفظ الأسئلة");
+      toast.success(mode === "assignment" ? "تم إنشاء الواجب وحفظ الأسئلة" : "تم حفظ الأسئلة");
       setDrafts([emptyMcq()]);
       setExtra("");
+      if (mode === "assignment") {
+        setCourseId("");
+        setLessonId("");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["crud", parentTable] });
       await queryClient.invalidateQueries({ queryKey: ["crud", questionsTable] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -129,7 +170,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className={`grid gap-3 ${mode === "quiz" ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
         <label className="block">
           <span className="mb-1.5 block text-xs font-black text-muted-foreground">١. الكورس</span>
           <select value={courseId} onChange={(event) => { setCourseId(event.target.value); setLessonId(""); }} className="w-full rounded-xl border border-input bg-surface px-3 py-2.5">
@@ -144,13 +185,15 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
             {lessons.map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
           </select>
         </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-black text-muted-foreground">٣. {parentLabel} الذي ستُضاف له الأسئلة</span>
-          <select value={targetId} onChange={(event) => setTargetId(event.target.value)} className="w-full rounded-xl border border-input bg-surface px-3 py-2.5">
-            <option value="">— اختر —</option>
-            {visibleTargets.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
-          </select>
-        </label>
+        {mode === "quiz" && (
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-black text-muted-foreground">٣. الاختبار الذي ستُضاف له الأسئلة</span>
+            <select value={targetId} onChange={(event) => setTargetId(event.target.value)} className="w-full rounded-xl border border-input bg-surface px-3 py-2.5">
+              <option value="">— اختر الاختبار —</option>
+              {visibleTargets.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+            </select>
+          </label>
+        )}
       </div>
 
       <div className="rounded-xl border border-border bg-surface p-4">
@@ -232,7 +275,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
         <Button type="button" variant="outline" onClick={() => setDrafts((current) => [...current, emptyTf()])}><Plus /> سؤال صح وخطأ</Button>
         <Button type="button" variant="outline" onClick={() => setDrafts((current) => [...current, emptyEssay()])}><Plus /> سؤال مقالي</Button>
         <Button type="button" onClick={() => save.mutate()} disabled={save.isPending}>
-          {save.isPending ? <Loader2 className="animate-spin" /> : null} حفظ كل الأسئلة
+          {save.isPending ? <Loader2 className="animate-spin" /> : null} {mode === "assignment" ? "إنشاء الواجب وحفظ الأسئلة" : "حفظ كل الأسئلة"}
         </Button>
       </div>
     </section>
