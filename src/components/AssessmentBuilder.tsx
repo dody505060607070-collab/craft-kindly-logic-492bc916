@@ -163,6 +163,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
               <option value="mixed">متنوع</option>
               <option value="mcq">اختيار من متعدد</option>
               <option value="truefalse">صح وخطأ</option>
+              <option value="essay">مقالي (إجابة مكتوبة)</option>
             </select>
           </label>
           <label className="text-xs font-bold">
