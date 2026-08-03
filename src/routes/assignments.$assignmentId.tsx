@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { FileCheck2, Loader2, Send, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { FileCheck2, Loader2, Send, AlertCircle, CheckCircle2, Timer, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { StudentShell } from "@/components/StudentShell";
@@ -10,14 +10,21 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/assignments/$assignmentId")({
   head: () => ({ meta: [
     { title: "حل الواجب | منصة المستر" },
-    { name: "description", content: "اقرأ الواجب وأرسل إجابتك للمراجعة." },
+    { name: "description", content: "حل أسئلة الواجب (اختيار من متعدد وصح وخطأ) وشوف درجتك فورًا." },
     { property: "og:title", content: "حل الواجب | منصة المستر" },
-    { property: "og:description", content: "اقرأ الواجب وأرسل إجابتك للمراجعة." },
+    { property: "og:description", content: "حل أسئلة الواجب وشوف درجتك فورًا." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
   component: AssignmentDetailPage,
 });
+
+type Question = { id: string; question: string; options: string[]; points: number; sort_order: number; kind: string };
+
+const rpc = supabase.rpc.bind(supabase) as unknown as (
+  fn: string,
+  args?: Record<string, unknown>,
+) => Promise<{ data: unknown; error: { message: string } | null }>;
 
 function AssignmentDetailPage() {
   const { assignmentId } = Route.useParams();
@@ -25,17 +32,32 @@ function AssignmentDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
+  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [index, setIndex] = useState(0);
+  const [started, setStarted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [questionsFileUrl, setQuestionsFileUrl] = useState<string | null>(null);
 
   const { data: assignment, isLoading } = useQuery({
     queryKey: ["assignment", assignmentId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assignments")
-        .select("*, courses(title)")
+        .select("id, title, instructions, description, due_at, max_score, duration_minutes, pass_score, questions_file_url, course_id, lesson_id, courses(title)")
         .eq("id", assignmentId)
         .single();
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: questions = [] } = useQuery({
+    queryKey: ["assignment-questions", assignmentId],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await rpc("get_assignment_questions_for_student", { _assignment_id: assignmentId });
+      if (error) throw error;
+      return (data ?? []) as Question[];
     },
   });
 
@@ -53,7 +75,37 @@ function AssignmentDetailPage() {
     },
   });
 
-  const submitMutation = useMutation({
+  // signed url for the questions file (stored as storage:<path>)
+  useEffect(() => {
+    const raw = assignment?.questions_file_url;
+    if (!raw) { setQuestionsFileUrl(null); return; }
+    if (!raw.startsWith("storage:")) { setQuestionsFileUrl(raw); return; }
+    let active = true;
+    void supabase.storage
+      .from("assessment-files")
+      .createSignedUrl(raw.slice("storage:".length), 60 * 60)
+      .then(({ data }) => { if (active) setQuestionsFileUrl(data?.signedUrl ?? null); });
+    return () => { active = false; };
+  }, [assignment?.questions_file_url]);
+
+  const submitChoices = useMutation({
+    mutationFn: async () => {
+      if (Object.keys(answers).length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
+      const { data, error } = await rpc("submit_assignment_answers", { _assignment_id: assignmentId, _answers: answers });
+      if (error) throw error;
+      const row = (data as { score: number; max_score: number; passed: boolean }[] | null)?.[0];
+      if (!row) throw new Error("تعذر حفظ النتيجة");
+      return row;
+    },
+    onSuccess: (row) => {
+      toast.success(`تم التسليم! درجتك: ${row.score} / ${row.max_score}`);
+      setStarted(false);
+      queryClient.invalidateQueries({ queryKey: ["assignment-submission", assignmentId] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "تعذر تسليم الواجب"),
+  });
+
+  const submitText = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("يجب تسجيل الدخول أولاً");
       const query = submission
@@ -66,17 +118,23 @@ function AssignmentDetailPage() {
       toast.success("تم تسليم الواجب بنجاح");
       queryClient.invalidateQueries({ queryKey: ["assignment-submission", assignmentId] });
     },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "تعذر تسليم الواجب");
-    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "تعذر تسليم الواجب"),
   });
+
+  useEffect(() => {
+    if (!started || timeLeft === null) return;
+    if (timeLeft <= 0) { submitChoices.mutate(); return; }
+    const timer = setTimeout(() => setTimeLeft((value) => (value === null ? null : value - 1)), 1000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started, timeLeft]);
+
+  const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
   if (isLoading) {
     return (
       <StudentShell>
-        <div className="flex h-[50vh] items-center justify-center">
-          <Loader2 className="size-8 animate-spin text-primary" />
-        </div>
+        <div className="flex h-[50vh] items-center justify-center"><Loader2 className="size-8 animate-spin text-primary" /></div>
       </StudentShell>
     );
   }
@@ -87,99 +145,138 @@ function AssignmentDetailPage() {
         <div className="mx-auto max-w-4xl px-4 py-8 text-center">
           <AlertCircle className="mx-auto size-12 text-destructive opacity-50" />
           <h1 className="mt-4 text-2xl font-black">الواجب غير موجود</h1>
-          <button onClick={() => navigate({ to: "/assignments" })} className="mt-4 text-primary font-bold underline">
-            الرجوع لقائمة الواجبات
-          </button>
+          <button onClick={() => navigate({ to: "/assignments" })} className="mt-4 font-bold text-primary underline">الرجوع لقائمة الواجبات</button>
         </div>
       </StudentShell>
     );
   }
 
+  const hasQuestions = questions.length > 0;
+  const current = questions[index];
+
   return (
     <StudentShell>
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <header className="mb-8">
+        <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="grid size-12 place-items-center rounded-2xl bg-primary/15 text-primary">
-              <FileCheck2 className="size-6" />
-            </span>
+            <span className="grid size-12 place-items-center rounded-2xl bg-primary/15 text-primary"><FileCheck2 className="size-6" /></span>
             <div>
               <h1 className="font-display text-3xl font-black">{assignment.title}</h1>
-              {assignment.courses && (
-                <p className="text-sm font-bold text-primary">{(assignment.courses as any).title}</p>
-              )}
+              {assignment.courses && <p className="text-sm font-bold text-primary">{(assignment.courses as { title: string }).title}</p>}
             </div>
           </div>
+          {started && timeLeft !== null && (
+            <span className="flex items-center gap-2 rounded-xl bg-destructive/10 px-3 py-2 font-black text-destructive">
+              <Timer className="size-4" /> {formatTime(timeLeft)}
+            </span>
+          )}
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
           <div className="space-y-6">
             <section className="glass rounded-2xl p-6">
-              <h2 className="mb-4 text-lg font-black">التعليمات</h2>
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                {assignment.instructions || "لا توجد تعليمات خاصة."}
-              </div>
+              <h2 className="mb-3 text-lg font-black">التعليمات</h2>
+              <p className="text-sm whitespace-pre-wrap">{assignment.instructions || assignment.description || "لا توجد تعليمات خاصة."}</p>
+              {questionsFileUrl && (
+                <a href={questionsFileUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-bold text-primary">
+                  <FileText className="size-4" /> افتح ملف أسئلة الواجب
+                </a>
+              )}
             </section>
 
-            {submission && !content ? (
+            {!user ? (
+              <section className="glass rounded-2xl p-6 text-center">
+                <p className="font-bold">سجّل دخولك أولاً عشان تقدر تحل الواجب.</p>
+                <button onClick={() => navigate({ to: "/auth" })} className="mt-4 rounded-xl bg-primary px-5 py-2.5 font-black text-primary-foreground">تسجيل الدخول</button>
+              </section>
+            ) : submission && !started ? (
               <section className="glass rounded-2xl border-emerald-500/20 bg-emerald-500/5 p-6">
-                <div className="flex items-center gap-2 text-emerald-500 mb-4">
-                  <CheckCircle2 className="size-5" />
-                  <h2 className="text-lg font-black">تم التسليم</h2>
+                <div className="mb-4 flex items-center gap-2 text-emerald-500">
+                  <CheckCircle2 className="size-5" /><h2 className="text-lg font-black">تم التسليم</h2>
                 </div>
-                <div className="rounded-xl bg-card p-4 text-sm whitespace-pre-wrap">
-                  {submission.content}
-                </div>
+                {submission.content && <div className="rounded-xl bg-card p-4 text-sm whitespace-pre-wrap">{submission.content}</div>}
                 {submission.grade !== null && (
-                  <div className="mt-4 rounded-xl bg-primary/10 p-4 border border-primary/20">
-                    <p className="font-bold text-primary">الدرجة: {submission.grade} / {assignment.max_score}</p>
-                    {submission.feedback && (
-                      <p className="mt-2 text-sm text-muted-foreground">ملاحظات المستر: {submission.feedback}</p>
+                  <div className="mt-4 rounded-xl border border-primary/20 bg-primary/10 p-4">
+                    <p className="font-black text-primary">الدرجة: {submission.grade} / {submission.max_score ?? assignment.max_score}</p>
+                    {submission.passed !== null && (
+                      <p className="mt-1 text-sm font-bold">{submission.passed ? "ناجح 🎉" : "محتاج مراجعة الدرس تاني"}</p>
                     )}
+                    {submission.feedback && <p className="mt-2 text-sm text-muted-foreground">ملاحظات المستر: {submission.feedback}</p>}
                   </div>
                 )}
-                <button
-                  onClick={() => {
-                    setContent(submission.content || "");
-                    // We allow editing if not graded yet
-                    if (submission.grade === null) {
-                       setContent(submission.content || "");
-                      toast.info("يمكنك تعديل إجابتك الآن");
-                    }
-                  }}
-                  disabled={submission.grade !== null}
-                  className="mt-4 text-xs font-bold text-muted-foreground underline disabled:opacity-50"
-                >
-                  تعديل التسليم
-                </button>
+                {hasQuestions && (
+                  <button onClick={() => { setAnswers({}); setIndex(0); setStarted(true); setTimeLeft(assignment.duration_minutes ? assignment.duration_minutes * 60 : null); }} className="mt-4 text-xs font-bold text-muted-foreground underline">
+                    أعِد حل الواجب
+                  </button>
+                )}
               </section>
-             ) : user ? (
+            ) : hasQuestions ? (
+              started && current ? (
+                <section className="glass rounded-2xl p-6">
+                  <div className="mb-4 flex items-center justify-between text-xs font-bold text-muted-foreground">
+                    <span>سؤال {index + 1} من {questions.length}</span>
+                    <span>{current.kind === "truefalse" ? "صح وخطأ" : "اختيار من متعدد"}</span>
+                  </div>
+                  <h2 className="text-lg font-black">{current.question}</h2>
+                  <div className="mt-4 space-y-2">
+                    {(current.options ?? []).map((option, optionIndex) => (
+                      <button
+                        key={optionIndex}
+                        type="button"
+                        onClick={() => setAnswers((value) => ({ ...value, [current.id]: optionIndex }))}
+                        className={`flex w-full items-center gap-3 rounded-xl border p-3 text-right text-sm font-bold transition-colors ${answers[current.id] === optionIndex ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-surface"}`}
+                      >
+                        <span className="grid size-6 place-items-center rounded-full border border-current text-xs">{optionIndex + 1}</span>
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-6 flex items-center justify-between gap-2">
+                    <button type="button" onClick={() => setIndex((value) => Math.max(0, value - 1))} disabled={index === 0} className="flex items-center gap-1 rounded-xl border border-border px-4 py-2 text-sm font-bold disabled:opacity-40">
+                      <ChevronRight className="size-4" /> السابق
+                    </button>
+                    {index < questions.length - 1 ? (
+                      <button type="button" onClick={() => setIndex((value) => value + 1)} className="flex items-center gap-1 rounded-xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground">
+                        التالي <ChevronLeft className="size-4" />
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => submitChoices.mutate()} disabled={submitChoices.isPending} className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground disabled:opacity-50">
+                        {submitChoices.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} سلّم الواجب
+                      </button>
+                    )}
+                  </div>
+                </section>
+              ) : (
+                <section className="glass rounded-2xl p-6 text-center">
+                  <h2 className="text-lg font-black">الواجب فيه {questions.length} سؤال</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    المدة {assignment.duration_minutes} دقيقة — التصحيح فوري بعد التسليم.
+                  </p>
+                  <button
+                    onClick={() => { setStarted(true); setIndex(0); setTimeLeft(assignment.duration_minutes ? assignment.duration_minutes * 60 : null); }}
+                    className="mt-4 rounded-xl bg-primary px-6 py-3 font-black text-primary-foreground"
+                  >
+                    ابدأ حل الواجب
+                  </button>
+                </section>
+              )
+            ) : (
               <section className="glass rounded-2xl p-6">
                 <h2 className="mb-4 text-lg font-black">تسليم الواجب</h2>
                 <textarea
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(event) => setContent(event.target.value)}
                   placeholder="اكتب إجابتك هنا..."
                   className="min-h-[200px] w-full rounded-xl border border-input bg-surface p-4 text-sm outline-none focus:ring-2 focus:ring-primary/20"
                 />
                 <button
-                  onClick={() => submitMutation.mutate()}
-                  disabled={submitMutation.isPending || !content.trim()}
+                  onClick={() => submitText.mutate()}
+                  disabled={submitText.isPending || !content.trim()}
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-bold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                 >
-                  {submitMutation.isPending ? (
-                    <Loader2 className="size-5 animate-spin" />
-                  ) : (
-                    <Send className="size-5" />
-                  )}
-                  تسليم الواجب
+                  {submitText.isPending ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5" />} تسليم الواجب
                 </button>
               </section>
-             ) : (
-               <section className="glass rounded-2xl p-6 text-center">
-                 <p className="font-bold">سجّل دخولك أولاً عشان تقدر تسلّم الواجب.</p>
-                 <button onClick={() => navigate({ to: "/auth" })} className="mt-4 rounded-xl bg-primary px-5 py-2.5 font-black text-primary-foreground">تسجيل الدخول</button>
-               </section>
             )}
           </div>
 
@@ -187,16 +284,13 @@ function AssignmentDetailPage() {
             <div className="soft-card rounded-2xl p-5">
               <h3 className="mb-3 text-sm font-black">معلومات</h3>
               <div className="space-y-3 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">الدرجة القصوى</span>
-                  <span className="font-bold">{assignment.max_score}</span>
-                </div>
+                <div className="flex justify-between"><span className="text-muted-foreground">عدد الأسئلة</span><span className="font-bold">{questions.length || "—"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">الدرجة القصوى</span><span className="font-bold">{assignment.max_score}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">درجة النجاح</span><span className="font-bold">{assignment.pass_score}%</span></div>
                 {assignment.due_at && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">موعد التسليم</span>
-                    <span className="font-bold text-destructive">
-                      {new Date(assignment.due_at).toLocaleDateString("ar-EG")}
-                    </span>
+                    <span className="font-bold text-destructive">{new Date(assignment.due_at).toLocaleDateString("ar-EG")}</span>
                   </div>
                 )}
               </div>
