@@ -130,6 +130,13 @@ export const generateAssessmentQuestions = createServerFn({ method: "POST" })
     return { questions };
   });
 
+interface LooseQuery extends PromiseLike<{ data: unknown; error: { message: string } | null }> {
+  select(query: string): LooseQuery;
+  eq(column: string, value: unknown): LooseQuery;
+  update(values: Record<string, unknown>): LooseQuery;
+  maybeSingle(): LooseQuery;
+}
+
 /** تصحيح الأسئلة المقالية للطالب بالذكاء الاصطناعي وإضافة درجتها للنتيجة. */
 export const gradeEssayAnswers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
