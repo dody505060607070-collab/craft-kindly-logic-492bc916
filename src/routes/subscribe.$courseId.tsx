@@ -178,8 +178,8 @@ function Subscribe() {
             <div>
               <label className="mb-1.5 block text-xs font-bold text-muted-foreground">مدة الاشتراك</label>
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setPlan("month")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "month" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>شهر — {course?.price ?? 0} ج.م</button>
-                <button type="button" onClick={() => setPlan("year")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "year" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>سنة — {course?.price_year ?? course?.price ?? 0} ج.م</button>
+                <button type="button" onClick={() => setPlan("month")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "month" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>شهر — {priceMonth} ج.م</button>
+                <button type="button" onClick={() => setPlan("year")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "year" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>سنة — {priceYear} ج.م</button>
               </div>
             </div>
 
