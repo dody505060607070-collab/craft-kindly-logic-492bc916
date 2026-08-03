@@ -33,7 +33,7 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
   const [courseId, setCourseId] = useState("");
   const [lessonId, setLessonId] = useState("");
   const [targetId, setTargetId] = useState("");
-  const [kind, setKind] = useState<"mcq" | "truefalse" | "mixed">("mixed");
+  const [kind, setKind] = useState<"mcq" | "truefalse" | "essay" | "mixed">("mixed");
   const [count, setCount] = useState(5);
   const [extra, setExtra] = useState("");
   const [drafts, setDrafts] = useState<Draft[]>([emptyMcq()]);
