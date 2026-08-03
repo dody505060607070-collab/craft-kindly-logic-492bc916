@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Loader2, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -132,6 +132,28 @@ export function CrudSection({
       await qc.invalidateQueries({ queryKey: ["crud", table], refetchType: "all" });
     },
     onError: (e: Error) => toast.error(e.message || "الحذف مانجحش"),
+  });
+
+  const canReorder = canEdit && orderBy === "sort_order" && fields.some((f) => f.key === "sort_order");
+
+  const reorder = useMutation({
+    mutationFn: async ({ index, dir }: { index: number; dir: -1 | 1 }) => {
+      const rows = [...(data ?? [])];
+      const target = index + dir;
+      if (target < 0 || target >= rows.length) return;
+      const moved = rows[index];
+      rows[index] = rows[target];
+      rows[target] = moved;
+      for (let i = 0; i < rows.length; i++) {
+        if (Number(rows[i].sort_order ?? -1) === i) continue;
+        const { error } = await db(table).update({ sort_order: i }).eq("id", String(rows[i].id));
+        if (error) throw error;
+      }
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["crud", table], refetchType: "all" });
+    },
+    onError: (e: Error) => toast.error(e.message || "الترتيب مانجحش"),
   });
 
   const visible = fields.filter((f) => !f.hideInTable);
@@ -275,12 +297,43 @@ export function CrudSection({
                     {f.label}
                   </th>
                 ))}
+                {canReorder && <th className="px-4 py-3 font-bold whitespace-nowrap">ترتيب</th>}
                 {canEdit && <th className="px-4 py-3">إجراءات</th>}
               </tr>
             </thead>
             <tbody>
-              {data.map((row) => (
+              {data.map((row, index) => (
                 <tr key={String(row.id)} className="border-t border-border/50">
+                  {canReorder && (
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          disabled={reorder.isPending || index === 0}
+                          onClick={() => reorder.mutate({ index, dir: -1 })}
+                          className="rounded-lg bg-surface p-2"
+                          aria-label="تحريك لأعلى"
+                          title="تحريك لأعلى"
+                        >
+                          <ArrowUp className="size-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          disabled={reorder.isPending || index === (data?.length ?? 0) - 1}
+                          onClick={() => reorder.mutate({ index, dir: 1 })}
+                          className="rounded-lg bg-surface p-2"
+                          aria-label="تحريك لأسفل"
+                          title="تحريك لأسفل"
+                        >
+                          <ArrowDown className="size-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  )}
                   {visible.map((f) => (
                     <td key={f.key} className="max-w-[260px] truncate px-4 py-3">
                       {f.type === "bool" ? (
