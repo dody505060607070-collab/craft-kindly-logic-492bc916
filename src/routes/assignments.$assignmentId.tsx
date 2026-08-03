@@ -232,9 +232,21 @@ function AssignmentDetailPage() {
                 <section className="glass rounded-2xl p-6">
                   <div className="mb-4 flex items-center justify-between text-xs font-bold text-muted-foreground">
                     <span>سؤال {index + 1} من {questions.length}</span>
-                    <span>{current.kind === "truefalse" ? "صح وخطأ" : "اختيار من متعدد"}</span>
+                    <span>{current.kind === "truefalse" ? "صح وخطأ" : current.kind === "essay" ? "مقالي" : "اختيار من متعدد"}</span>
                   </div>
                   <h2 className="text-lg font-black">{current.question}</h2>
+                  {current.kind === "essay" ? (
+                    <div className="mt-4">
+                      <textarea
+                        value={typeof answers[current.id] === "string" ? (answers[current.id] as string) : ""}
+                        onChange={(event) => setAnswers((value) => ({ ...value, [current.id]: event.target.value }))}
+                        rows={7}
+                        className="w-full rounded-xl border border-input bg-surface p-4 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                        placeholder="اكتب إجابتك بالتفصيل هنا…"
+                      />
+                      <p className="mt-2 text-xs text-muted-foreground">سؤال مقالي — التصحيح بالذكاء الاصطناعي بعد التسليم.</p>
+                    </div>
+                  ) : (
                   <div className="mt-4 space-y-2">
                     {(current.options ?? []).map((option, optionIndex) => (
                       <button
@@ -248,6 +260,7 @@ function AssignmentDetailPage() {
                       </button>
                     ))}
                   </div>
+                  )}
                   <div className="mt-6 flex items-center justify-between gap-2">
                     <button type="button" onClick={() => setIndex((value) => Math.max(0, value - 1))} disabled={index === 0} className="flex items-center gap-1 rounded-xl border border-border px-4 py-2 text-sm font-bold disabled:opacity-40">
                       <ChevronRight className="size-4" /> السابق
