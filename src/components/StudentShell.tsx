@@ -18,8 +18,7 @@ import { AIChat } from "@/components/AIChat";
 
 const NAV = [
   { to: "/", label: "الرئيسية", icon: undefined as typeof BookOpen | undefined },
-  { to: "/courses", label: "الدروس", icon: BookOpen as typeof BookOpen | undefined },
-  { to: "/assignments", label: "الواجبات", icon: FileCheck2 as typeof BookOpen | undefined },
+    { to: "/assignments", label: "الواجبات", icon: FileCheck2 as typeof BookOpen | undefined },
   { to: "/quizzes", label: "الاختبارات", icon: ListChecks as typeof BookOpen | undefined },
   { to: "/live", label: "البث المباشر", icon: Radio as typeof BookOpen | undefined },
 ] as const;
