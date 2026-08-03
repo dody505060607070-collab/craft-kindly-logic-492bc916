@@ -248,7 +248,6 @@ function QuizDetailPage() {
             {currentQuestion.question}
           </h2>
 
-          <div className="space-y-3">
           {isEssay ? (
             <div>
               <textarea
