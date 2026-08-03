@@ -10,6 +10,7 @@ import teacherThumbs from "@/assets/teacher-thumbsup.png";
 import teacherPoint from "@/assets/teacher-point.png";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { discounted } from "@/lib/pricing";
 import coursePython from "@/assets/course-python.jpg";
 
 import courseWeb from "@/assets/course-web.jpg";
@@ -204,7 +205,7 @@ function Home() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
-        .select("id, title, description, cover_url, price, grade, is_free")
+        .select("id, title, description, cover_url, price, price_year, discount_percent, grade, is_free")
         .eq("is_published", true)
         .order("sort_order")
         .limit(6);
@@ -245,7 +246,11 @@ function Home() {
           grade: course.grade || course.description?.slice(0, 40) || "درس برمجة",
           img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
           price:
-            course.is_free || Number(course.price) === 0 ? "مجانًا" : `${Number(course.price)} جنيه`,
+            course.is_free || Number(course.price) === 0
+              ? "مجانًا"
+              : discounted(course.price, course.discount_percent).hasDiscount
+                ? `${discounted(course.price, course.discount_percent).final} جنيه (بدل ${Number(course.price)})`
+                : `${Number(course.price)} جنيه`,
           isFree: Boolean(course.is_free) || Number(course.price) === 0,
           contents: contentsMap?.get(course.id) ?? [],
         }))

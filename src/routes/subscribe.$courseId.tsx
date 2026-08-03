@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { StudentShell } from "@/components/StudentShell";
 import { SITE } from "@/lib/site";
+import { discounted } from "@/lib/pricing";
+import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 
 export const Route = createFileRoute("/subscribe/$courseId")({
   head: () => ({
@@ -49,6 +51,10 @@ function Subscribe() {
   });
   const payPhone = settings?.payment_phone || SITE.phone;
   const payInsta = settings?.payment_instapay || SITE.phone;
+  const monthDeal = discounted(course?.price ?? 0, course?.discount_percent ?? 0);
+  const yearDeal = discounted(course?.price_year ?? course?.price ?? 0, course?.discount_percent ?? 0);
+  const priceMonth = monthDeal.final;
+  const priceYear = yearDeal.final;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +74,7 @@ function Subscribe() {
       const { error } = await supabase.from("payments").insert({
         user_id: user.id,
         course_id: courseId,
-        amount: plan === "year" ? (course?.price_year ?? course?.price ?? 0) : (course?.price ?? 0),
+        amount: plan === "year" ? priceYear : priceMonth,
         method,
         reference,
         proof_url: proofUrl,
@@ -116,11 +122,22 @@ function Subscribe() {
         {course && (
           <p className="mt-2 text-sm text-muted-foreground">
             درس: <span className="font-bold text-foreground">{course.title}</span> — السعر:{" "}
-            <span className="font-black text-primary">{plan === "year" ? (course.price_year ?? course.price) : course.price} ج.م</span>
+            <span className="font-black text-primary">{plan === "year" ? priceYear : priceMonth} ج.م</span>
+            {monthDeal.pct > 0 && (
+              <>
+                {" "}
+                <span className="line-through">{plan === "year" ? yearDeal.base : monthDeal.base} ج.م</span>{" "}
+                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-black text-emerald-600">
+                  خصم {monthDeal.pct}%
+                </span>
+              </>
+            )}
           </p>
         )}
 
         <div className="mt-6 space-y-4">
+          <RedeemCodeCard />
+
           <div className="glass rounded-2xl p-5">
             <h2 className="font-black">طرق الدفع</h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -161,8 +178,8 @@ function Subscribe() {
             <div>
               <label className="mb-1.5 block text-xs font-bold text-muted-foreground">مدة الاشتراك</label>
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setPlan("month")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "month" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>شهر — {course?.price ?? 0} ج.م</button>
-                <button type="button" onClick={() => setPlan("year")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "year" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>سنة — {course?.price_year ?? course?.price ?? 0} ج.م</button>
+                <button type="button" onClick={() => setPlan("month")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "month" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>شهر — {priceMonth} ج.م</button>
+                <button type="button" onClick={() => setPlan("year")} className={`rounded-xl border p-3 text-sm font-bold ${plan === "year" ? "border-primary bg-primary/10 text-primary" : "border-input bg-surface"}`}>سنة — {priceYear} ج.م</button>
               </div>
             </div>
 

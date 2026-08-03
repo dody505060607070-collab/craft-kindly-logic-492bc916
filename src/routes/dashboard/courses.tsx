@@ -90,6 +90,7 @@ function CoursesPage() {
             { key: "grade", label: "الصف الدراسي" },
             { key: "price", label: "السعر (ج.م)", type: "number", default: 0 },
             { key: "price_year", label: "سعر السنة (ج.م)", type: "number" },
+            { key: "discount_percent", label: "الخصم %", type: "number", default: 0 },
             { key: "is_free", label: "مجاني", type: "bool", default: false },
             { key: "is_published", label: "منشور", type: "bool", default: true },
             {
