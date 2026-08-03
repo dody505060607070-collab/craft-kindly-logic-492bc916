@@ -16,7 +16,9 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssignmentsRouteImport } from './routes/assignments'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as QuizzesIndexRouteImport } from './routes/quizzes.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as AssignmentsIndexRouteImport } from './routes/assignments.index'
 import { Route as SubscribeCourseIdRouteImport } from './routes/subscribe.$courseId'
 import { Route as QuizzesQuizIdRouteImport } from './routes/quizzes.$quizId'
 import { Route as DashboardVideosRouteImport } from './routes/dashboard/videos'
@@ -70,10 +72,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QuizzesIndexRoute = QuizzesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => QuizzesRoute,
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const AssignmentsIndexRoute = AssignmentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AssignmentsRoute,
 } as any)
 const SubscribeCourseIdRoute = SubscribeCourseIdRouteImport.update({
   id: '/subscribe/$courseId',
@@ -185,16 +197,16 @@ export interface FileRoutesByFullPath {
   '/dashboard/videos': typeof DashboardVideosRoute
   '/quizzes/$quizId': typeof QuizzesQuizIdRoute
   '/subscribe/$courseId': typeof SubscribeCourseIdRoute
+  '/assignments/': typeof AssignmentsIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/quizzes/': typeof QuizzesIndexRoute
   '/api/ai/transcribe': typeof ApiAiTranscribeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/assignments': typeof AssignmentsRouteWithChildren
   '/auth': typeof AuthRoute
   '/live': typeof LiveRoute
   '/me': typeof MeRoute
-  '/quizzes': typeof QuizzesRouteWithChildren
   '/assignments/$assignmentId': typeof AssignmentsAssignmentIdRoute
   '/courses/$courseId': typeof CoursesCourseIdRoute
   '/dashboard/ab-tests': typeof DashboardAbTestsRoute
@@ -211,7 +223,9 @@ export interface FileRoutesByTo {
   '/dashboard/videos': typeof DashboardVideosRoute
   '/quizzes/$quizId': typeof QuizzesQuizIdRoute
   '/subscribe/$courseId': typeof SubscribeCourseIdRoute
+  '/assignments': typeof AssignmentsIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/quizzes': typeof QuizzesIndexRoute
   '/api/ai/transcribe': typeof ApiAiTranscribeRoute
 }
 export interface FileRoutesById {
@@ -239,7 +253,9 @@ export interface FileRoutesById {
   '/dashboard/videos': typeof DashboardVideosRoute
   '/quizzes/$quizId': typeof QuizzesQuizIdRoute
   '/subscribe/$courseId': typeof SubscribeCourseIdRoute
+  '/assignments/': typeof AssignmentsIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/quizzes/': typeof QuizzesIndexRoute
   '/api/ai/transcribe': typeof ApiAiTranscribeRoute
 }
 export interface FileRouteTypes {
@@ -268,16 +284,16 @@ export interface FileRouteTypes {
     | '/dashboard/videos'
     | '/quizzes/$quizId'
     | '/subscribe/$courseId'
+    | '/assignments/'
     | '/dashboard/'
+    | '/quizzes/'
     | '/api/ai/transcribe'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/assignments'
     | '/auth'
     | '/live'
     | '/me'
-    | '/quizzes'
     | '/assignments/$assignmentId'
     | '/courses/$courseId'
     | '/dashboard/ab-tests'
@@ -294,7 +310,9 @@ export interface FileRouteTypes {
     | '/dashboard/videos'
     | '/quizzes/$quizId'
     | '/subscribe/$courseId'
+    | '/assignments'
     | '/dashboard'
+    | '/quizzes'
     | '/api/ai/transcribe'
   id:
     | '__root__'
@@ -321,7 +339,9 @@ export interface FileRouteTypes {
     | '/dashboard/videos'
     | '/quizzes/$quizId'
     | '/subscribe/$courseId'
+    | '/assignments/'
     | '/dashboard/'
+    | '/quizzes/'
     | '/api/ai/transcribe'
   fileRoutesById: FileRoutesById
 }
@@ -389,12 +409,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/quizzes/': {
+      id: '/quizzes/'
+      path: '/'
+      fullPath: '/quizzes/'
+      preLoaderRoute: typeof QuizzesIndexRouteImport
+      parentRoute: typeof QuizzesRoute
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/'
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/assignments/': {
+      id: '/assignments/'
+      path: '/'
+      fullPath: '/assignments/'
+      preLoaderRoute: typeof AssignmentsIndexRouteImport
+      parentRoute: typeof AssignmentsRoute
     }
     '/subscribe/$courseId': {
       id: '/subscribe/$courseId'
@@ -520,10 +554,12 @@ declare module '@tanstack/react-router' {
 
 interface AssignmentsRouteChildren {
   AssignmentsAssignmentIdRoute: typeof AssignmentsAssignmentIdRoute
+  AssignmentsIndexRoute: typeof AssignmentsIndexRoute
 }
 
 const AssignmentsRouteChildren: AssignmentsRouteChildren = {
   AssignmentsAssignmentIdRoute: AssignmentsAssignmentIdRoute,
+  AssignmentsIndexRoute: AssignmentsIndexRoute,
 }
 
 const AssignmentsRouteWithChildren = AssignmentsRoute._addFileChildren(
@@ -568,10 +604,12 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 interface QuizzesRouteChildren {
   QuizzesQuizIdRoute: typeof QuizzesQuizIdRoute
+  QuizzesIndexRoute: typeof QuizzesIndexRoute
 }
 
 const QuizzesRouteChildren: QuizzesRouteChildren = {
   QuizzesQuizIdRoute: QuizzesQuizIdRoute,
+  QuizzesIndexRoute: QuizzesIndexRoute,
 }
 
 const QuizzesRouteWithChildren =
