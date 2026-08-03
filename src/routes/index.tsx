@@ -245,7 +245,11 @@ function Home() {
           grade: course.grade || course.description?.slice(0, 40) || "درس برمجة",
           img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
           price:
-            course.is_free || Number(course.price) === 0 ? "مجانًا" : `${Number(course.price)} جنيه`,
+            course.is_free || Number(course.price) === 0
+              ? "مجانًا"
+              : discounted(course.price, course.discount_percent).hasDiscount
+                ? `${discounted(course.price, course.discount_percent).final} جنيه (بدل ${Number(course.price)})`
+                : `${Number(course.price)} جنيه`,
           isFree: Boolean(course.is_free) || Number(course.price) === 0,
           contents: contentsMap?.get(course.id) ?? [],
         }))
