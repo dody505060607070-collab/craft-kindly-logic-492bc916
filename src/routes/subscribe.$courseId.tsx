@@ -96,7 +96,7 @@ function Subscribe() {
             </p>
             <p className="mt-1 text-xs text-muted-foreground">هتوصلك رسالة داخل المنصة عند التفعيل.</p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
-              <Link to="/courses" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-primary-foreground">
+              <Link to="/" hash="courses" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-primary-foreground">
                 رجوع للدروس
               </Link>
               <Link to="/courses/$courseId" params={{ courseId }} className="rounded-xl bg-card px-5 py-2.5 text-sm font-black">
