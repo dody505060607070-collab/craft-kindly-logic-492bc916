@@ -6,10 +6,11 @@ import { groqJSON } from "./groq-helper.server";
 const TRUE_WORDS = ["true", "صح", "صحيح", "نعم"];
 
 export type GeneratedQuestion = {
-  kind: "mcq" | "truefalse";
+  kind: "mcq" | "truefalse" | "essay";
   question: string;
   options: string[];
   correctIndex: number;
+  modelAnswer?: string;
   explanation?: string;
 };
 
@@ -21,17 +22,26 @@ type RawQuestion = {
   choices?: unknown;
   options?: unknown;
   answer?: unknown;
+  model_answer?: unknown;
   explanation?: string;
 };
 
 function normalize(raw: RawQuestion[]): GeneratedQuestion[] {
   return raw
-    .map((item) => {
+    .map((item): GeneratedQuestion => {
       const kindRaw = String(item.kind ?? item.type ?? "mcq").toLowerCase();
-      const kind: "mcq" | "truefalse" =
-        kindRaw.includes("true") || kindRaw.includes("صح") ? "truefalse" : "mcq";
+      const kind: "mcq" | "truefalse" | "essay" =
+        kindRaw.includes("essay") || kindRaw.includes("مقال") || kindRaw.includes("written")
+          ? "essay"
+          : kindRaw.includes("true") || kindRaw.includes("صح")
+            ? "truefalse"
+            : "mcq";
       const question = String(item.question ?? item.prompt ?? "").trim();
       const answer = String(item.answer ?? "").trim().toLowerCase();
+      if (kind === "essay") {
+        const model = String(item.model_answer ?? item.answer ?? "").trim();
+        return { kind, question, options: [], correctIndex: 0, modelAnswer: model, explanation: item.explanation };
+      }
       if (kind === "truefalse") {
         return {
           kind,
@@ -49,8 +59,9 @@ function normalize(raw: RawQuestion[]): GeneratedQuestion[] {
       if (correctIndex < 0 || correctIndex >= list.length) correctIndex = 0;
       return { kind, question, options: list, correctIndex, explanation: item.explanation };
     })
-    .filter((item) => item.question && item.options.length >= 2);
+    .filter((item) => item.question && (item.kind === "essay" ? true : item.options.length >= 2));
 }
+
 
 /** ولّد أسئلة اختيار من متعدد و/أو صح وخطأ من محتوى درس معيّن أو من نص. */
 export const generateAssessmentQuestions = createServerFn({ method: "POST" })
