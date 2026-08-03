@@ -11,10 +11,10 @@ import { applyVariant, getSessionKey, pickVariant, recordVariantEvent, type Cour
 export const Route = createFileRoute("/courses/$courseId")({
   head: () => ({
     meta: [
-      { title: "تفاصيل الكورس | منصة المستر" },
-      { name: "description", content: "محتويات ودروس الكورس." },
-      { property: "og:title", content: "تفاصيل الكورس" },
-      { property: "og:description", content: "محتويات ودروس الكورس." },
+      { title: "تفاصيل الدرس | منصة المستر" },
+      { name: "description", content: "محتويات ودروس الدرس." },
+      { property: "og:title", content: "تفاصيل الدرس" },
+      { property: "og:description", content: "محتويات ودروس الدرس." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -234,7 +234,7 @@ function CourseDetail() {
 
           {/* Lesson list */}
           <aside className="rounded-2xl bg-card p-4">
-            <h3 className="mb-3 text-sm font-black">محتوى الكورس</h3>
+            <h3 className="mb-3 text-sm font-black">محتوى الدرس</h3>
             {chapters.length === 0 && lessons.length === 0 && (
               <p className="text-xs text-muted-foreground">لا يوجد محتوى بعد.</p>
             )}

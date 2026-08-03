@@ -10,10 +10,10 @@ import { applyVariant, getSessionKey, pickVariant, recordVariantEvent, type Cour
 export const Route = createFileRoute("/courses")({
   head: () => ({
     meta: [
-      { title: "الكورسات | منصة المستر" },
-      { name: "description", content: "استعرض كل الكورسات المتاحة على منصة المستر." },
-      { property: "og:title", content: "الكورسات | منصة المستر" },
-      { property: "og:description", content: "كورسات برمجة وذكاء اصطناعي." },
+      { title: "الدروس | منصة المستر" },
+      { name: "description", content: "استعرض كل الدروس المتاحة على منصة المستر." },
+      { property: "og:title", content: "الدروس | منصة المستر" },
+      { property: "og:description", content: "دروس برمجة وذكاء اصطناعي." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -78,9 +78,9 @@ function CoursesList() {
     <StudentShell>
       <div className="mx-auto max-w-6xl px-4 py-8">
         <header className="mb-8">
-          <h1 className="font-display text-3xl font-black sm:text-4xl">الكورسات</h1>
+          <h1 className="font-display text-3xl font-black sm:text-4xl">الدروس</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            اختر الكورس اللي يناسبك، ولو مش مشترك اضغط "اشترك" لتفعيل الوصول للفيديوهات.
+            اختر الدرس اللي يناسبك، ولو مش مشترك اضغط "اشترك" لتفعيل الوصول للفيديوهات.
           </p>
         </header>
 
@@ -168,7 +168,7 @@ function CoursesList() {
         </div>
 
         {(courses ?? []).length === 0 && (
-          <p className="mt-8 text-center text-muted-foreground">لا توجد كورسات حاليًا.</p>
+          <p className="mt-8 text-center text-muted-foreground">لا توجد دروس حاليًا.</p>
         )}
       </div>
     </StudentShell>

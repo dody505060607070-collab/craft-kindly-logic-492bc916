@@ -56,7 +56,7 @@ function HomeHeader() {
                 to="/courses"
                 className="hidden items-center gap-1.5 rounded-xl bg-card px-3 py-2 text-xs font-bold sm:flex"
               >
-                <BookOpen className="size-4" /> الكورسات
+                <BookOpen className="size-4" /> الدروس
               </Link>
               <Link
                 to="/me"
@@ -86,14 +86,14 @@ function HomeHeader() {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "منصة المستر | كورسات برمجة وذكاء اصطناعي" },
+      { title: "منصة المستر | دروس برمجة وذكاء اصطناعي" },
       {
         name: "description",
         content:
-          "كورسات برمجة وذكاء اصطناعي مع الأستاذ المستر — شرح مبسط، فيديوهات منظمة، ومتابعة خطوة بخطوة.",
+          "دروس برمجة وذكاء اصطناعي مع الأستاذ المستر — شرح مبسط، فيديوهات منظمة، ومتابعة خطوة بخطوة.",
       },
-      { property: "og:title", content: "منصة المستر | كورسات برمجة وذكاء اصطناعي" },
-      { property: "og:description", content: "كورسات برمجة وذكاء اصطناعي مع الأستاذ المستر — شرح مبسط، فيديوهات منظمة، ومتابعة خطوة بخطوة." },
+      { property: "og:title", content: "منصة المستر | دروس برمجة وذكاء اصطناعي" },
+      { property: "og:description", content: "دروس برمجة وذكاء اصطناعي مع الأستاذ المستر — شرح مبسط، فيديوهات منظمة، ومتابعة خطوة بخطوة." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -217,7 +217,7 @@ function Home() {
       ? liveCourses.map((course, index) => ({
           id: course.id,
           title: course.title,
-          grade: course.grade || course.description?.slice(0, 40) || "كورس برمجة",
+          grade: course.grade || course.description?.slice(0, 40) || "درس برمجة",
           img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
           price: Number(course.price) > 0 ? `${Number(course.price)} جنيه` : "مجانًا",
         }))
@@ -249,14 +249,14 @@ function Home() {
               اتعلم <span className="text-gradient">البرمجة</span> صح
             </h1>
             <p className="mt-4 text-lg text-muted-foreground">
-              كورسات برمجة وذكاء اصطناعي مع {SITE.teacher}
+              دروس برمجة وذكاء اصطناعي مع {SITE.teacher}
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3 md:justify-start">
               <a
                 href="#courses"
                 className="rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground shadow-xl shadow-primary/25 transition hover:-translate-y-0.5"
               >
-                شوف الكورسات
+                شوف الدروس
               </a>
               <Link
                 to={user ? "/courses" : "/auth"}
@@ -298,7 +298,7 @@ function Home() {
       <section id="courses" className="mx-auto max-w-6xl px-4 py-16">
         <Reveal>
           <h2 className="text-center text-3xl font-black sm:text-4xl">
-            ال<span className="text-gradient">كورسات</span>
+            ال<span className="text-gradient">دروس</span>
           </h2>
         </Reveal>
 
@@ -325,14 +325,14 @@ function Home() {
                         params={{ courseId: c.id }}
                         className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
                       >
-                        ادخل الكورس
+                        ادخل الدرس
                       </Link>
                     ) : (
                       <Link
                         to={user ? "/courses" : "/auth"}
                         className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
                       >
-                        ادخل الكورس
+                        ادخل الدرس
                       </Link>
                     )}
                   </div>

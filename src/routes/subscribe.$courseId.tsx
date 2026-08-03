@@ -11,9 +11,9 @@ import { SITE } from "@/lib/site";
 export const Route = createFileRoute("/subscribe/$courseId")({
   head: () => ({
     meta: [
-      { title: "اشترك في الكورس | منصة المستر" },
+      { title: "اشترك في الدرس | منصة المستر" },
       { name: "description", content: "طرق الاشتراك عبر فودافون كاش أو إنستاباي." },
-      { property: "og:title", content: "اشترك في الكورس" },
+      { property: "og:title", content: "اشترك في الدرس" },
       { property: "og:description", content: "الدفع عبر فودافون كاش/إنستاباي." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -92,12 +92,12 @@ function Subscribe() {
             <CheckCircle2 className="mx-auto size-16 text-emerald-500" />
             <h1 className="mt-4 font-display text-2xl font-black">تم إرسال طلب الاشتراك</h1>
             <p className="mt-3 text-sm text-muted-foreground">
-              سيتم مراجعة التحويل بتاعك خلال 12 ساعة كحد أقصى، وهيتم تفعيل الكورس فور الاعتماد.
+              سيتم مراجعة التحويل بتاعك خلال 12 ساعة كحد أقصى، وهيتم تفعيل الدرس فور الاعتماد.
             </p>
             <p className="mt-1 text-xs text-muted-foreground">هتوصلك رسالة داخل المنصة عند التفعيل.</p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               <Link to="/courses" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-primary-foreground">
-                رجوع للكورسات
+                رجوع للدروس
               </Link>
               <Link to="/courses/$courseId" params={{ courseId }} className="rounded-xl bg-card px-5 py-2.5 text-sm font-black">
                 معاينة المحتوى
@@ -115,7 +115,7 @@ function Subscribe() {
         <h1 className="font-display text-2xl font-black sm:text-3xl">الاشتراك</h1>
         {course && (
           <p className="mt-2 text-sm text-muted-foreground">
-            كورس: <span className="font-bold text-foreground">{course.title}</span> — السعر:{" "}
+            درس: <span className="font-bold text-foreground">{course.title}</span> — السعر:{" "}
             <span className="font-black text-primary">{plan === "year" ? (course.price_year ?? course.price) : course.price} ج.م</span>
           </p>
         )}
