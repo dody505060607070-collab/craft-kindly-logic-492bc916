@@ -7,6 +7,7 @@ import { StudentShell } from "@/components/StudentShell";
 import { useEffect, useMemo, useState } from "react";
 import { AILessonToolbox } from "@/components/AILessonToolbox";
 import { applyVariant, getSessionKey, pickVariant, recordVariantEvent, type CourseVariant } from "@/lib/ab";
+import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 
 export const Route = createFileRoute("/courses/$courseId")({
   head: () => ({
