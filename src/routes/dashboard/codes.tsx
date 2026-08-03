@@ -215,11 +215,49 @@ function CodesPage() {
               onChange={(event) => setPlan(event.target.value)}
               className="mt-1 w-full rounded-xl border border-input bg-surface px-3 py-2.5 text-sm"
             >
-              <option value="month">شهر</option>
-              <option value="year">سنة</option>
-              <option value="lifetime">مدى الحياة</option>
+              {(coursePlans ?? []).length > 0 && (
+                <optgroup label="خطط الدرس (نفس المدفوعات)">
+                  {(coursePlans ?? []).map((row) => (
+                    <option key={row.id} value={`plan:${row.id}`}>
+                      {row.name} — {row.duration_days > 0 ? `${row.duration_days} يوم` : "مدى الحياة"}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label="مدد جاهزة">
+                {PRESETS.map((preset) => (
+                  <option key={preset.name} value={preset.name}>{preset.label}</option>
+                ))}
+              </optgroup>
+              <option value="__custom__">مدة مخصصة…</option>
             </select>
           </label>
+          {plan === "__custom__" && (
+            <>
+              <label className="text-xs font-bold">
+                اسم المدة
+                <input
+                  value={customName}
+                  onChange={(event) => setCustomName(event.target.value)}
+                  maxLength={40}
+                  placeholder="مثال: نصف ترم"
+                  className="mt-1 w-full rounded-xl border border-input bg-surface px-3 py-2.5 text-sm"
+                />
+              </label>
+              <label className="text-xs font-bold">
+                عدد الأيام
+                <input
+                  type="number"
+                  min={0}
+                  max={3650}
+                  value={customDays}
+                  onChange={(event) => setCustomDays(Number(event.target.value))}
+                  className="mt-1 w-full rounded-xl border border-input bg-surface px-3 py-2.5 text-sm"
+                />
+              </label>
+            </>
+          )}
+
           <label className="text-xs font-bold">
             عدد الأكواد
             <input
