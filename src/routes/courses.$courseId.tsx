@@ -199,6 +199,10 @@ function CourseDetail() {
                 </div>
               )}
             </div>
+            {!canWatch && user && (
+              <RedeemCodeCard />
+            )}
+
             {current && (
               <div>
                 <h2 className="font-display text-lg font-black">{current.title}</h2>
