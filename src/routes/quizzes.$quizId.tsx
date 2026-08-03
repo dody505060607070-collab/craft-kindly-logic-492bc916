@@ -217,7 +217,8 @@ function QuizDetailPage() {
   }
 
   const currentQuestion = questions![currentQuestionIndex];
-  const options = currentQuestion.options as string[];
+  const options = (currentQuestion.options ?? []) as string[];
+  const isEssay = currentQuestion.kind === "essay";
 
   return (
     <StudentShell>
