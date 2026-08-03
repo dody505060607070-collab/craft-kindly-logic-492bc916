@@ -134,6 +134,28 @@ export function CrudSection({
     onError: (e: Error) => toast.error(e.message || "الحذف مانجحش"),
   });
 
+  const canReorder = canEdit && orderBy === "sort_order" && fields.some((f) => f.key === "sort_order");
+
+  const reorder = useMutation({
+    mutationFn: async ({ index, dir }: { index: number; dir: -1 | 1 }) => {
+      const rows = [...(data ?? [])];
+      const target = index + dir;
+      if (target < 0 || target >= rows.length) return;
+      const moved = rows[index];
+      rows[index] = rows[target];
+      rows[target] = moved;
+      for (let i = 0; i < rows.length; i++) {
+        if (Number(rows[i].sort_order ?? -1) === i) continue;
+        const { error } = await db(table).update({ sort_order: i }).eq("id", String(rows[i].id));
+        if (error) throw error;
+      }
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["crud", table], refetchType: "all" });
+    },
+    onError: (e: Error) => toast.error(e.message || "الترتيب مانجحش"),
+  });
+
   const visible = fields.filter((f) => !f.hideInTable);
 
   return (
