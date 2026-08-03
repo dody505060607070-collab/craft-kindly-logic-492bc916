@@ -230,6 +230,27 @@ function CourseDetail() {
               </div>
             )}
 
+            {current && (canWatch || current.is_free) &&
+              (assignments.some((a: any) => a.lesson_id === current.id) || quizzes.some((q: any) => q.lesson_id === current.id)) && (
+              <div className="soft-card rounded-2xl p-4">
+                <h3 className="mb-3 text-sm font-black">واجبات واختبارات الدرس</h3>
+                <div className="space-y-2">
+                  {assignments.filter((a: any) => a.lesson_id === current.id).map((a: any) => (
+                    <Link key={a.id} to="/assignments/$assignmentId" params={{ assignmentId: a.id }} className="flex items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-xs font-bold hover:bg-primary/10">
+                      <FileCheck2 className="size-4 shrink-0 text-primary" />
+                      <span className="line-clamp-1 flex-1">{a.title}</span>
+                    </Link>
+                  ))}
+                  {quizzes.filter((q: any) => q.lesson_id === current.id).map((q: any) => (
+                    <Link key={q.id} to="/quizzes/$quizId" params={{ quizId: q.id }} className="flex items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-xs font-bold hover:bg-accent/10">
+                      <ListChecks className="size-4 shrink-0 text-accent" />
+                      <span className="line-clamp-1 flex-1">{q.title}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {current && (canWatch || current.is_free) && (
               <AILessonToolbox
                 lessonTitle={current.title}

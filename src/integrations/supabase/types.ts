@@ -74,40 +74,99 @@ export type Database = {
         }
         Relationships: []
       }
-      assignment_submissions: {
+      assignment_questions: {
         Row: {
           assignment_id: string
+          correct_index: number
+          created_at: string
+          id: string
+          kind: string
+          options: Json
+          points: number
+          question: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          assignment_id: string
+          correct_index?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          options?: Json
+          points?: number
+          question: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string
+          correct_index?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          options?: Json
+          points?: number
+          question?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_questions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assignment_submissions: {
+        Row: {
+          answers: Json
+          assignment_id: string
           attachment_path: string | null
+          auto_graded: boolean
           content: string | null
           created_at: string
           feedback: string | null
           file_url: string | null
           grade: number | null
           id: string
+          max_score: number | null
+          passed: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          answers?: Json
           assignment_id: string
           attachment_path?: string | null
+          auto_graded?: boolean
           content?: string | null
           created_at?: string
           feedback?: string | null
           file_url?: string | null
           grade?: number | null
           id?: string
+          max_score?: number | null
+          passed?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          answers?: Json
           assignment_id?: string
           attachment_path?: string | null
+          auto_graded?: boolean
           content?: string | null
           created_at?: string
           feedback?: string | null
           file_url?: string | null
           grade?: number | null
           id?: string
+          max_score?: number | null
+          passed?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -123,38 +182,56 @@ export type Database = {
       }
       assignments: {
         Row: {
+          answer_key_text: string | null
+          answer_key_url: string | null
           course_id: string | null
           created_at: string
           description: string | null
           due_at: string | null
+          duration_minutes: number
           id: string
           instructions: string | null
           is_published: boolean
+          lesson_id: string | null
           max_score: number
+          pass_score: number
+          questions_file_url: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          answer_key_text?: string | null
+          answer_key_url?: string | null
           course_id?: string | null
           created_at?: string
           description?: string | null
           due_at?: string | null
+          duration_minutes?: number
           id?: string
           instructions?: string | null
           is_published?: boolean
+          lesson_id?: string | null
           max_score?: number
+          pass_score?: number
+          questions_file_url?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          answer_key_text?: string | null
+          answer_key_url?: string | null
           course_id?: string | null
           created_at?: string
           description?: string | null
           due_at?: string | null
+          duration_minutes?: number
           id?: string
           instructions?: string | null
           is_published?: boolean
+          lesson_id?: string | null
           max_score?: number
+          pass_score?: number
+          questions_file_url?: string | null
           title?: string
           updated_at?: string
         }
@@ -164,6 +241,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
         ]
@@ -782,6 +866,7 @@ export type Database = {
           correct_answer: string | null
           correct_index: number
           id: string
+          kind: string
           options: Json
           points: number
           prompt: string | null
@@ -793,6 +878,7 @@ export type Database = {
           correct_answer?: string | null
           correct_index?: number
           id?: string
+          kind?: string
           options?: Json
           points?: number
           prompt?: string | null
@@ -804,6 +890,7 @@ export type Database = {
           correct_answer?: string | null
           correct_index?: number
           id?: string
+          kind?: string
           options?: Json
           points?: number
           prompt?: string | null
@@ -823,6 +910,8 @@ export type Database = {
       }
       quizzes: {
         Row: {
+          answer_key_text: string | null
+          answer_key_url: string | null
           course_id: string | null
           created_at: string
           description: string | null
@@ -830,11 +919,15 @@ export type Database = {
           duration_minutes: number | null
           id: string
           is_published: boolean
+          lesson_id: string | null
           pass_score: number
+          questions_file_url: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          answer_key_text?: string | null
+          answer_key_url?: string | null
           course_id?: string | null
           created_at?: string
           description?: string | null
@@ -842,11 +935,15 @@ export type Database = {
           duration_minutes?: number | null
           id?: string
           is_published?: boolean
+          lesson_id?: string | null
           pass_score?: number
+          questions_file_url?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          answer_key_text?: string | null
+          answer_key_url?: string | null
           course_id?: string | null
           created_at?: string
           description?: string | null
@@ -854,7 +951,9 @@ export type Database = {
           duration_minutes?: number | null
           id?: string
           is_published?: boolean
+          lesson_id?: string | null
           pass_score?: number
+          questions_file_url?: string | null
           title?: string
           updated_at?: string
         }
@@ -864,6 +963,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
         ]
@@ -1030,6 +1136,34 @@ export type Database = {
         Returns: undefined
       }
       can_read_course_object: { Args: { _name: string }; Returns: boolean }
+      get_assignment_questions_for_student: {
+        Args: { _assignment_id: string }
+        Returns: {
+          id: string
+          kind: string
+          options: Json
+          points: number
+          question: string
+          sort_order: number
+        }[]
+      }
+      get_assignments_catalog: {
+        Args: never
+        Returns: {
+          course_id: string
+          description: string
+          due_at: string
+          duration_minutes: number
+          id: string
+          instructions: string
+          lesson_id: string
+          max_score: number
+          pass_score: number
+          question_count: number
+          questions_file_url: string
+          title: string
+        }[]
+      }
       get_lessons_catalog: {
         Args: { _course_id: string }
         Returns: {
@@ -1064,6 +1198,7 @@ export type Database = {
         Args: { _quiz_id: string }
         Returns: {
           id: string
+          kind: string
           options: Json
           points: number
           question: string
@@ -1090,6 +1225,15 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      submit_assignment_answers: {
+        Args: { _answers: Json; _assignment_id: string }
+        Returns: {
+          max_score: number
+          passed: boolean
+          score: number
+          submission_id: string
+        }[]
+      }
       submit_quiz_attempt: {
         Args: { _answers: Json; _quiz_id: string }
         Returns: {
