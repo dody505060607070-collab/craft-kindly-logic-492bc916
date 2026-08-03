@@ -169,14 +169,14 @@ function Subscribe() {
         <h1 className="font-display text-2xl font-black sm:text-3xl">الاشتراك</h1>
         {course && (
           <p className="mt-2 text-sm text-muted-foreground">
-            درس: <span className="font-bold text-foreground">{course.title}</span> — السعر:{" "}
-            <span className="font-black text-primary">{plan === "year" ? priceYear : priceMonth} ج.م</span>
-            {monthDeal.pct > 0 && (
+            درس: <span className="font-bold text-foreground">{course.title}</span> — {selected?.name}:{" "}
+            <span className="font-black text-primary">{deal.final} ج.م</span>
+            {deal.pct > 0 && (
               <>
                 {" "}
-                <span className="line-through">{plan === "year" ? yearDeal.base : monthDeal.base} ج.م</span>{" "}
+                <span className="line-through">{deal.base} ج.م</span>{" "}
                 <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-black text-emerald-600">
-                  خصم {monthDeal.pct}%
+                  خصم {deal.pct}%
                 </span>
               </>
             )}
