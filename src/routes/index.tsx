@@ -10,6 +10,7 @@ import teacherThumbs from "@/assets/teacher-thumbsup.png";
 import teacherPoint from "@/assets/teacher-point.png";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { discounted } from "@/lib/pricing";
 import coursePython from "@/assets/course-python.jpg";
 
 import courseWeb from "@/assets/course-web.jpg";
