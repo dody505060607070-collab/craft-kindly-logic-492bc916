@@ -203,7 +203,7 @@ function Home() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("courses")
-        .select("id, title, description, cover_url, price, grade")
+        .select("id, title, description, cover_url, price, grade, is_free")
         .eq("is_published", true)
         .order("sort_order")
         .limit(6);
@@ -212,16 +212,43 @@ function Home() {
     },
   });
 
-  const cards: Array<{ id: string | null; title: string; grade: string; img: string; price: string }> =
+  const courseIds = (liveCourses ?? []).map((c) => c.id);
+  const { data: contentsMap } = useQuery({
+    queryKey: ["home-course-contents", courseIds.join(",")],
+    enabled: courseIds.length > 0,
+    queryFn: async () => {
+      const entries = await Promise.all(
+        courseIds.map(async (id) => {
+          const { data } = await supabase.rpc("get_lessons_catalog", { _course_id: id });
+          const rows = (data ?? []) as Array<{ title: string }>;
+          return [id, rows.map((r) => r.title)] as const;
+        }),
+      );
+      return new Map(entries);
+    },
+  });
+
+  const cards: Array<{
+    id: string | null;
+    title: string;
+    grade: string;
+    img: string;
+    price: string;
+    isFree: boolean;
+    contents: string[];
+  }> =
     liveCourses && liveCourses.length > 0
       ? liveCourses.map((course, index) => ({
           id: course.id,
           title: course.title,
           grade: course.grade || course.description?.slice(0, 40) || "درس برمجة",
           img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
-          price: Number(course.price) > 0 ? `${Number(course.price)} جنيه` : "مجانًا",
+          price:
+            course.is_free || Number(course.price) === 0 ? "مجانًا" : `${Number(course.price)} جنيه`,
+          isFree: Boolean(course.is_free) || Number(course.price) === 0,
+          contents: contentsMap?.get(course.id) ?? [],
         }))
-      : COURSES.map((course) => ({ id: null, ...course }));
+      : COURSES.map((course) => ({ id: null, ...course, isFree: false, contents: [] }));
 
 
 
