@@ -126,11 +126,11 @@ export function CrudSection({
       const { error } = await db(table).delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("تم الحذف");
-      qc.invalidateQueries({ queryKey: ["crud", table] });
+      await qc.invalidateQueries({ queryKey: ["crud", table], refetchType: "all" });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message || "الحذف مانجحش"),
   });
 
   const visible = fields.filter((f) => !f.hideInTable);
