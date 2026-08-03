@@ -41,7 +41,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 const NAV = [
-  { to: "/courses", label: "منظور الطالب", icon: Eye },
+  { to: "/", label: "منظور الطالب", icon: Eye },
   { to: "/dashboard", label: "نظرة عامة", icon: Home, exact: true },
   { to: "/dashboard/courses", label: "الكورسات والدروس", icon: BookOpen },
   { to: "/dashboard/videos", label: "سيرفر الفيديوهات", icon: Video },
