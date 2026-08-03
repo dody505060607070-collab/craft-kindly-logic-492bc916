@@ -1,12 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const FALLBACK_MARQUEE = {
-  marquee_text:
-    "إعلان: نوح المبرمج بيعمل مواقع إلكترونية احترافية وسريعة ومتوافقة مع الموبايل والكمبيوتر — تواصل وابدأ موقعك دلوقتي",
-  marquee_enabled: true,
-};
-
 export function MarqueeBar() {
   const { data } = useQuery({
     queryKey: ["site-settings-public"],
@@ -16,12 +10,13 @@ export function MarqueeBar() {
         .select("marquee_text,marquee_enabled")
         .eq("id", "main")
         .maybeSingle();
-      if (error) return FALLBACK_MARQUEE;
-      return data ?? FALLBACK_MARQUEE;
+      if (error) return null;
+      return data ?? null;
     },
-    placeholderData: FALLBACK_MARQUEE,
-    retry: 3,
-    staleTime: 10_000,
+    retry: 1,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: 15_000,
     refetchOnReconnect: true,
     refetchOnWindowFocus: true,
   });
