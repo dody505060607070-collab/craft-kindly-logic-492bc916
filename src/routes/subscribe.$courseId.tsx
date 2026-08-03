@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { StudentShell } from "@/components/StudentShell";
 import { SITE } from "@/lib/site";
+import { discounted } from "@/lib/pricing";
+import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 
 export const Route = createFileRoute("/subscribe/$courseId")({
   head: () => ({
