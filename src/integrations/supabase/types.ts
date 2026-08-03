@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          code: string
+          course_id: string
+          created_at: string
+          duration_days: number
+          id: string
+          note: string | null
+          plan: string
+          updated_at: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          course_id: string
+          created_at?: string
+          duration_days?: number
+          id?: string
+          note?: string | null
+          plan?: string
+          updated_at?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          course_id?: string
+          created_at?: string
+          duration_days?: number
+          id?: string
+          note?: string | null
+          plan?: string
+          updated_at?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_codes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_usage: {
         Row: {
           created_at: string
@@ -372,6 +419,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           description: string | null
+          discount_percent: number
           grade: string | null
           id: string
           is_free: boolean
@@ -388,6 +436,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          discount_percent?: number
           grade?: string | null
           id?: string
           is_free?: boolean
@@ -404,6 +453,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          discount_percent?: number
           grade?: string | null
           id?: string
           is_free?: boolean
@@ -1136,6 +1186,17 @@ export type Database = {
         Returns: undefined
       }
       can_read_course_object: { Args: { _name: string }; Returns: boolean }
+      generate_access_codes: {
+        Args: {
+          _count: number
+          _course_id: string
+          _note?: string
+          _plan?: string
+        }
+        Returns: {
+          code: string
+        }[]
+      }
       get_assignment_questions_for_student: {
         Args: { _assignment_id: string }
         Returns: {
@@ -1225,6 +1286,14 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      redeem_access_code: {
+        Args: { _code: string }
+        Returns: {
+          course_id: string
+          expires_at: string
+          plan: string
+        }[]
+      }
       submit_assignment_answers: {
         Args: { _answers: Json; _assignment_id: string }
         Returns: {
