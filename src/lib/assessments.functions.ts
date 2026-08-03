@@ -144,9 +144,12 @@ export const gradeEssayAnswers = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const isQuiz = data.mode === "quiz";
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = (name: string) =>
+      (supabaseAdmin as unknown as { from: (t: string) => LooseQuery }).from(name);
+    const client = (name: string) =>
+      (context.supabase as unknown as { from: (t: string) => LooseQuery }).from(name);
 
-    const { data: record, error } = await context.supabase
-      .from(isQuiz ? "quiz_attempts" : "assignment_submissions")
+    const { data: record, error } = await client(isQuiz ? "quiz_attempts" : "assignment_submissions")
       .select("*")
       .eq("id", data.recordId)
       .maybeSingle();
@@ -158,14 +161,24 @@ export const gradeEssayAnswers = createServerFn({ method: "POST" })
     const parentId = String(isQuiz ? row["quiz_id"] : row["assignment_id"]);
     const answers = (row["answers"] ?? {}) as Record<string, unknown>;
 
-    const { data: essayRows } = await supabaseAdmin
-      .from(isQuiz ? "quiz_questions" : "assignment_questions")
+    const { data: essayRows } = await admin(isQuiz ? "quiz_questions" : "assignment_questions")
       .select("id, question, points, model_answer")
       .eq(isQuiz ? "quiz_id" : "assignment_id", parentId)
       .eq("kind", "essay");
 
     const essays = (essayRows ?? []) as { id: string; question: string; points: number; model_answer: string | null }[];
-    if (!essays.length) return { graded: 0, essayScore: 0, essayMax: 0, feedback: [] as { id: string; score: number; note: string }[] };
+    if (!essays.length) {
+      return {
+        graded: 0,
+        essayScore: 0,
+        essayMax: 0,
+        totalScore: Number((isQuiz ? row["score"] : row["grade"]) ?? 0),
+        totalMax: Number(row["max_score"] ?? 0),
+        passed: Boolean(row["passed"]),
+        feedback: [] as { id: string; score: number; note: string }[],
+      };
+    }
+
 
     const essayMax = essays.reduce((sum, item) => sum + Number(item.points || 1), 0);
     const payload = essays.map((item, index) => ({
