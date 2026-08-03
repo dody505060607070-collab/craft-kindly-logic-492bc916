@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { generateAssessmentQuestions } from "@/lib/assessments.functions";
 
-type Kind = "mcq" | "truefalse";
-type Draft = { kind: Kind; question: string; options: string[]; correctIndex: number };
+type Kind = "mcq" | "truefalse" | "essay";
+type Draft = { kind: Kind; question: string; options: string[]; correctIndex: number; modelAnswer?: string };
 
 const emptyMcq = (): Draft => ({ kind: "mcq", question: "", options: ["", "", "", ""], correctIndex: 0 });
 const emptyTf = (): Draft => ({ kind: "truefalse", question: "", options: ["صح", "خطأ"], correctIndex: 0 });
+const emptyEssay = (): Draft => ({ kind: "essay", question: "", options: [], correctIndex: 0, modelAnswer: "" });
 
 type AnyTable = {
   select: (q: string) => AnyTable;
