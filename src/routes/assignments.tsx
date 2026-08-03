@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { FileCheck2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,7 @@ function AssignmentsPage() {
 
         <div className="space-y-3">
           {(data ?? []).map((a) => (
-            <div key={a.id} className="soft-card flex items-start gap-3 rounded-2xl p-4">
+            <Link key={a.id} to="/assignments/$assignmentId" params={{ assignmentId: a.id }} className="soft-card flex items-start gap-3 rounded-2xl p-4 hover:bg-primary/5 transition-colors">
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
                 <FileCheck2 className="size-5" />
               </span>
@@ -61,7 +61,7 @@ function AssignmentsPage() {
                   )}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
           {(data ?? []).length === 0 && (
             <p className="text-center text-muted-foreground">لا توجد واجبات حاليًا.</p>

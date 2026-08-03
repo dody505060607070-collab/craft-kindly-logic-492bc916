@@ -1060,6 +1060,16 @@ export type Database = {
           video_url: string
         }[]
       }
+      get_quiz_questions_for_student: {
+        Args: { _quiz_id: string }
+        Returns: {
+          id: string
+          options: Json
+          points: number
+          question: string
+          sort_order: number
+        }[]
+      }
       get_quizzes_catalog: {
         Args: never
         Returns: {
@@ -1080,6 +1090,15 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      submit_quiz_attempt: {
+        Args: { _answers: Json; _quiz_id: string }
+        Returns: {
+          attempt_id: string
+          max_score: number
+          passed: boolean
+          score: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "student"

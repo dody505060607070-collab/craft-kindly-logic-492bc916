@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { AiWriteButton } from "@/components/AiWriteButton";
 import { UploadField, type UploadMode } from "@/components/UploadField";
+import { Button } from "@/components/ui/button";
 
 
 /* الوصول لأي جدول باسم ديناميكي */
@@ -144,14 +145,15 @@ export function CrudSection({
         </div>
         {canCreate && (
 
-          <button
+          <Button
+            type="button"
             onClick={() =>
               setEditing(Object.fromEntries(fields.map((f) => [f.key, f.default ?? ""])) as Row)
             }
             className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
           >
             <Plus className="size-4" /> إضافة جديد
-          </button>
+          </Button>
         )}
       </header>
 
@@ -296,14 +298,21 @@ export function CrudSection({
                   {canEdit && (
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <button
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
                           onClick={() => setEditing(row)}
                           className="rounded-lg bg-surface p-2 text-accent"
                           aria-label="تعديل"
                         >
                           <Pencil className="size-3.5" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          disabled={remove.isPending}
                           onClick={() => {
                             const msg =
                               table === "courses"
@@ -315,7 +324,7 @@ export function CrudSection({
                           aria-label="حذف"
                         >
                           <Trash2 className="size-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   )}

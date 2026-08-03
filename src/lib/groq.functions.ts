@@ -62,6 +62,7 @@ type GenQ = { questions: { type: "mcq" | "truefalse"; prompt: string; choices?: 
 export const generatePracticeQuestions = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => z.object({ text: z.string().min(20).max(20000), count: z.number().min(3).max(15).default(6) }).parse(i))
   .handler(async ({ data }) => {
+    await optionalAiRateLimit("admin.quiz-questions");
     const out = await groqJSON<GenQ>({
       system: "أنت مصمم اختبارات تعليمي محترف. اكتب أسئلة تدريبية باللغة العربية المصرية، JSON بالشكل: {\"questions\":[{\"type\":\"mcq\"|\"truefalse\",\"prompt\":\"...\",\"choices\":[...],\"answer\":\"...\",\"explanation\":\"...\"}]}",
       user: `من النص التالي، ولّد ${data.count} أسئلة متنوعة (mcq + truefalse):\n\n${data.text}`,
