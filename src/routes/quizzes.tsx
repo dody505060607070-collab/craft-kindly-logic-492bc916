@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,7 +47,7 @@ function QuizzesPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           {(data ?? []).map((q) => (
-            <div key={q.id} className="soft-card rounded-2xl p-5">
+            <Link key={q.id} to="/quizzes/$quizId" params={{ quizId: q.id }} className="soft-card rounded-2xl p-5 hover:bg-accent/5 transition-colors block">
               <span className="grid size-10 place-items-center rounded-xl bg-accent/15 text-accent">
                 <ListChecks className="size-5" />
               </span>
