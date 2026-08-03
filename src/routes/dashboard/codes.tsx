@@ -38,16 +38,27 @@ type CodeRow = {
   created_at: string;
 };
 
-const planLabel = (plan: string) => (plan === "year" ? "سنة" : plan === "lifetime" ? "مدى الحياة" : "شهر");
+const planLabel = (plan: string) =>
+  plan === "year" ? "سنة" : plan === "lifetime" ? "مدى الحياة" : plan === "term" ? "ترم" : plan === "month" ? "شهر" : plan;
+
+const PRESETS = [
+  { name: "month", label: "شهر", days: 30 },
+  { name: "term", label: "ترم دراسي", days: 120 },
+  { name: "year", label: "سنة", days: 365 },
+  { name: "lifetime", label: "مدى الحياة", days: 0 },
+];
 
 function CodesPage() {
   const queryClient = useQueryClient();
   const [courseId, setCourseId] = useState("");
   const [plan, setPlan] = useState("month");
+  const [customName, setCustomName] = useState("");
+  const [customDays, setCustomDays] = useState(30);
   const [count, setCount] = useState(5);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [fresh, setFresh] = useState<string[]>([]);
+
   const [filter, setFilter] = useState<"all" | "unused" | "used">("all");
 
   const { data: courses } = useQuery({
@@ -74,6 +85,19 @@ function CodesPage() {
     },
   });
 
+  const { data: coursePlans } = useQuery({
+    queryKey: ["course-plans-for-codes", courseId],
+    enabled: !!courseId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("course_plans")
+        .select("id, name, duration_days, price, sort_order")
+        .eq("course_id", courseId)
+        .order("sort_order");
+      return data ?? [];
+    },
+  });
+
   const courseTitles = useMemo(
     () => new Map((courses ?? []).map((course) => [course.id, course.title])),
     [courses],
@@ -85,13 +109,33 @@ function CodesPage() {
 
   const generate = async () => {
     if (!courseId) return toast.error("اختر الدرس الأول");
+    let planName = plan;
+    let days: number | null = null;
+
+    if (plan === "__custom__") {
+      planName = customName.trim();
+      if (!planName) return toast.error("اكتب اسم المدة (مثلاً: نصف ترم)");
+      if (!Number.isFinite(customDays) || customDays < 0 || customDays > 3650) {
+        return toast.error("عدد الأيام لازم يكون بين 0 و 3650");
+      }
+      days = Math.round(customDays);
+    } else if (plan.startsWith("plan:")) {
+      const target = (coursePlans ?? []).find((row) => row.id === plan.slice(5));
+      if (!target) return toast.error("اختر مدة صحيحة");
+      planName = target.name;
+      days = target.duration_days;
+    } else {
+      days = PRESETS.find((preset) => preset.name === plan)?.days ?? 30;
+    }
+
     setBusy(true);
     try {
       const { data, error } = await rpc("generate_access_codes", {
         _course_id: courseId,
         _count: count,
-        _plan: plan,
+        _plan: planName,
         _note: note.trim() || null,
+        _duration_days: days,
       });
       if (error) throw new Error(error.message);
       const list = ((data ?? []) as Array<{ code: string }>).map((row) => row.code);
@@ -104,6 +148,7 @@ function CodesPage() {
       setBusy(false);
     }
   };
+
 
   const remove = async (id: string) => {
     if (!confirm("متأكد من حذف الكود؟ مش هيقدر حد يستخدمه بعد كده.")) return;
@@ -170,11 +215,49 @@ function CodesPage() {
               onChange={(event) => setPlan(event.target.value)}
               className="mt-1 w-full rounded-xl border border-input bg-surface px-3 py-2.5 text-sm"
             >
-              <option value="month">شهر</option>
-              <option value="year">سنة</option>
-              <option value="lifetime">مدى الحياة</option>
+              {(coursePlans ?? []).length > 0 && (
+                <optgroup label="خطط الدرس (نفس المدفوعات)">
+                  {(coursePlans ?? []).map((row) => (
+                    <option key={row.id} value={`plan:${row.id}`}>
+                      {row.name} — {row.duration_days > 0 ? `${row.duration_days} يوم` : "مدى الحياة"}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label="مدد جاهزة">
+                {PRESETS.map((preset) => (
+                  <option key={preset.name} value={preset.name}>{preset.label}</option>
+                ))}
+              </optgroup>
+              <option value="__custom__">مدة مخصصة…</option>
             </select>
           </label>
+          {plan === "__custom__" && (
+            <>
+              <label className="text-xs font-bold">
+                اسم المدة
+                <input
+                  value={customName}
+                  onChange={(event) => setCustomName(event.target.value)}
+                  maxLength={40}
+                  placeholder="مثال: نصف ترم"
+                  className="mt-1 w-full rounded-xl border border-input bg-surface px-3 py-2.5 text-sm"
+                />
+              </label>
+              <label className="text-xs font-bold">
+                عدد الأيام
+                <input
+                  type="number"
+                  min={0}
+                  max={3650}
+                  value={customDays}
+                  onChange={(event) => setCustomDays(Number(event.target.value))}
+                  className="mt-1 w-full rounded-xl border border-input bg-surface px-3 py-2.5 text-sm"
+                />
+              </label>
+            </>
+          )}
+
           <label className="text-xs font-bold">
             عدد الأكواد
             <input

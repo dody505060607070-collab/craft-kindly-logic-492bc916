@@ -1246,17 +1246,30 @@ export type Database = {
       }
       can_read_assessment_object: { Args: { _name: string }; Returns: boolean }
       can_read_course_object: { Args: { _name: string }; Returns: boolean }
-      generate_access_codes: {
-        Args: {
-          _count: number
-          _course_id: string
-          _note?: string
-          _plan?: string
-        }
-        Returns: {
-          code: string
-        }[]
-      }
+      generate_access_codes:
+        | {
+            Args: {
+              _count: number
+              _course_id: string
+              _note?: string
+              _plan?: string
+            }
+            Returns: {
+              code: string
+            }[]
+          }
+        | {
+            Args: {
+              _count: number
+              _course_id: string
+              _duration_days?: number
+              _note?: string
+              _plan?: string
+            }
+            Returns: {
+              code: string
+            }[]
+          }
       get_assignment_questions_for_student: {
         Args: { _assignment_id: string }
         Returns: {
