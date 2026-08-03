@@ -122,11 +122,22 @@ function Subscribe() {
         {course && (
           <p className="mt-2 text-sm text-muted-foreground">
             درس: <span className="font-bold text-foreground">{course.title}</span> — السعر:{" "}
-            <span className="font-black text-primary">{plan === "year" ? (course.price_year ?? course.price) : course.price} ج.م</span>
+            <span className="font-black text-primary">{plan === "year" ? priceYear : priceMonth} ج.م</span>
+            {monthDeal.pct > 0 && (
+              <>
+                {" "}
+                <span className="line-through">{plan === "year" ? yearDeal.base : monthDeal.base} ج.م</span>{" "}
+                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-black text-emerald-600">
+                  خصم {monthDeal.pct}%
+                </span>
+              </>
+            )}
           </p>
         )}
 
         <div className="mt-6 space-y-4">
+          <RedeemCodeCard />
+
           <div className="glass rounded-2xl p-5">
             <h2 className="font-black">طرق الدفع</h2>
             <p className="mt-2 text-sm text-muted-foreground">
