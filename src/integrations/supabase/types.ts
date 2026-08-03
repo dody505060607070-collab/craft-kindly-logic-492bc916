@@ -1029,6 +1029,7 @@ export type Database = {
         Args: { _payment_id: string; _status: string }
         Returns: undefined
       }
+      can_read_course_object: { Args: { _name: string }; Returns: boolean }
       get_lessons_catalog: {
         Args: { _course_id: string }
         Returns: {
