@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { CircleCheck, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { UploadField } from "@/components/UploadField";
 import { supabase } from "@/integrations/supabase/client";
 import { generateAssessmentQuestions } from "@/lib/assessments.functions";
 
@@ -50,6 +51,8 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
   const [count, setCount] = useState(5);
   const [extra, setExtra] = useState("");
   const [drafts, setDrafts] = useState<Draft[]>([emptyMcq()]);
+  const [questionsFile, setQuestionsFile] = useState("");
+  const [answerFile, setAnswerFile] = useState("");
 
   const { data: courses = [] } = useQuery({
     queryKey: ["builder-courses"],
@@ -99,19 +102,21 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
 
   const save = useMutation({
     mutationFn: async () => {
-      const valid = drafts.filter((draft) =>
+      const started = drafts.filter((draft) => draft.question.trim().length > 0 || draft.options.some((option) => option.trim().length > 0) || Boolean(draft.modelAnswer?.trim()));
+      const valid = started.filter((draft) =>
         draft.kind === "essay"
           ? draft.question.trim().length > 0
           : draft.question.trim() && draft.options.length >= 2 && draft.options.every((option) => option.trim()),
       );
-      if (valid.length !== drafts.length || !valid.length) throw new Error("اكتب السؤال وكل الاختيارات قبل الحفظ");
+      if (valid.length !== started.length) throw new Error("كمّل السؤال وكل الاختيارات قبل الحفظ");
+      if (!valid.length && !questionsFile) throw new Error("اكتب سؤالًا واحدًا على الأقل أو ارفع ملف الواجب");
       if (mode === "assignment" && (!courseId || !lessonId)) throw new Error("اختر الكورس والدرس أولاً");
       if (mode === "quiz" && !targetId) throw new Error("اختر الاختبار أولاً");
 
       let destinationId = targetId;
       if (mode === "assignment") {
         const lessonTitle = lessons.find((lesson) => lesson.id === lessonId)?.title ?? "الدرس";
-        const totalPoints = valid.length;
+        const totalPoints = valid.length || 10;
         const { data: created, error: createError } = await createParent("assignments", {
           title: `واجب: ${lessonTitle}`,
           description: extra.trim() || null,
@@ -122,14 +127,17 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
           max_score: totalPoints,
           pass_score: 50,
           is_published: true,
+          questions_file_url: questionsFile || null,
+          answer_key_url: answerFile || null,
         });
         if (createError) throw createError;
         if (!created?.id) throw new Error("تعذر إنشاء الواجب");
         destinationId = created.id;
       }
 
-      const { error } = await table(questionsTable).insert(
-        valid.map((draft, index) => ({
+      if (valid.length) {
+        const { error } = await table(questionsTable).insert(
+          valid.map((draft, index) => ({
           [parentKey]: destinationId,
           question: draft.question.trim(),
           options: draft.kind === "essay" ? [] : draft.options.map((option) => option.trim()),
@@ -138,14 +146,17 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
           kind: draft.kind,
           points: 1,
           sort_order: index,
-        })),
-      );
-      if (error) throw error;
+          })),
+        );
+        if (error) throw error;
+      }
     },
     onSuccess: async () => {
       toast.success(mode === "assignment" ? "تم إنشاء الواجب وحفظ الأسئلة" : "تم حفظ الأسئلة");
       setDrafts([emptyMcq()]);
       setExtra("");
+      setQuestionsFile("");
+      setAnswerFile("");
       if (mode === "assignment") {
         setCourseId("");
         setLessonId("");
@@ -195,6 +206,35 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
           </label>
         )}
       </div>
+
+      {mode === "assignment" && (
+        <div className="grid gap-4 rounded-xl border border-border bg-surface p-4 md:grid-cols-2">
+          <div>
+            <p className="mb-2 text-xs font-black text-muted-foreground">ملف الواجب (اختياري)</p>
+            <UploadField
+              bucket="assessment-files"
+              mode="storage"
+              prefix="questions"
+              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+              label="ارفع ملف الواجب"
+              onDone={setQuestionsFile}
+            />
+            {questionsFile && <p className="mt-2 text-xs font-bold text-success">تم رفع ملف الواجب</p>}
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-black text-muted-foreground">ملف الإجابة النموذجية (اختياري وسري)</p>
+            <UploadField
+              bucket="assessment-files"
+              mode="storage"
+              prefix="answers"
+              accept=".pdf,.doc,.docx,.txt,.md,.png,.jpg,.jpeg"
+              label="ارفع ملف الإجابة"
+              onDone={setAnswerFile}
+            />
+            {answerFile && <p className="mt-2 text-xs font-bold text-success">تم رفع ملف الإجابة</p>}
+          </div>
+        </div>
+      )}
 
       <div className="rounded-xl border border-border bg-surface p-4">
         <label className="text-xs font-black text-muted-foreground" htmlFor="builder-extra">محتوى إضافي أو موضوع (اختياري لو اخترت درس)</label>
