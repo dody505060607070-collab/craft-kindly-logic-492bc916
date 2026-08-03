@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
-import { QuizBuilder } from "@/components/QuizBuilder";
+import { AssessmentBuilder } from "@/components/AssessmentBuilder";
 
 export const Route = createFileRoute("/dashboard/quizzes")({
   head: () => ({
@@ -28,55 +28,54 @@ function QuizzesPage() {
         </div>
         <AdminHelp
           title="شرح صفحة الاختبارات"
-          intro="بتضيف اختبار كامل وبعدين تضيف أسئلته من بنك الأسئلة."
+          intro="بتضيف اختبار، بتربطه بالكورس والدرس، وبعدين تضيف أسئلته (اختيار من متعدد أو صح وخطأ) يدويًا أو بالذكاء الاصطناعي."
           items={[
-            {
-              title: "١. اعمل الاختبار",
-              body: "من قسم 'الاختبارات' اضغط 'إضافة جديد'. حدّد العنوان ومعرّف الكورس (اختياري: معرّف الدرس) والمدة بالدقايق ودرجة النجاح %.",
-            },
-            {
-              title: "٢. أضف الأسئلة",
-              body: "استخدم منشئ الاختبار السهل: اختر الاختبار، اكتب السؤال واختياراته، ثم علّم الإجابة الصحيحة واحفظ. ويمكن للذكاء الاصطناعي توليد الأسئلة كلها من موضوع الدرس.",
-            },
-            {
-              title: "التوليد بالذكاء الاصطناعي",
-              body: "اكتب موضوع الاختبار أو الصق محتوى الدرس، حدد عدد الأسئلة واضغط توليد. راجع الأسئلة والإجابات ثم اضغط حفظ كل الأسئلة.",
-            },
-            {
-              title: "الإجابة الصحيحة",
-              body: "اضغط الدائرة بجانب الاختيار الصحيح؛ الطالب لن يرى الإجابة، والتصحيح يتم تلقائيًا بعد إنهاء الاختبار.",
-            },
-            {
-              title: "منشور؟",
-              body: "لازم يبقى 'منشور = نعم' عشان الطالب يشوف الاختبار.",
-            },
+            { title: "١. اعمل الاختبار", body: "من قسم 'الاختبارات' اضغط 'إضافة جديد'. حدّد العنوان والكورس والدرس (الفيديو اللي الاختبار بيتبعه) والمدة ودرجة النجاح." },
+            { title: "٢. ارفع ملف الأسئلة (اختياري)", body: "لو عندك ملف PDF فيه الأسئلة، ارفعه في 'ملف الأسئلة' — الطالب هيقدر يفتحه من صفحة الاختبار." },
+            { title: "٣. ارفع ملف الإجابة الصحيحة", body: "ملف/نص الإجابة الصحيحة ده الطالب مش بيشوفه أبدًا. الذكاء الاصطناعي بيستخدمه في مراجعة وتصحيح إجابات الطلاب." },
+            { title: "٤. أضف الأسئلة", body: "من 'منشئ الاختبار': اختر الكورس ثم الدرس ثم الاختبار، حدد نوع الأسئلة وعددها واضغط 'ولّد الأسئلة'، راجع وعلّم الإجابة الصحيحة ثم احفظ." },
+            { title: "منشور؟", body: "لازم يبقى 'منشور = نعم' عشان الطالب يشوف الاختبار." },
           ]}
         />
       </div>
 
-      <QuizBuilder />
+      <AssessmentBuilder mode="quiz" />
 
       <div>
         <SectionHint title="١. الاختبارات">
-          الخطوة الأولى: اعمل الاختبار نفسه (شل / كيان). حدّد "معرّف الكورس" و(اختياري) "معرّف الدرس" لو الاختبار مربوط بدرس معين. "المدة بالدقايق" هي الوقت اللي الطالب هيمتحن فيه. "درجة النجاح %" هي أقل نسبة للنجاح. لازم "منشور = نعم".
+          اعمل الاختبار نفسه: العنوان، الكورس، الدرس (الفيديو اللي الاختبار مربوط بيه)، المدة بالدقايق، ودرجة النجاح %. ارفع "ملف الأسئلة" لو عندك، و"ملف الإجابة الصحيحة" للـ AI فقط (الطالب مش هيشوفه). لازم "منشور = نعم".
         </SectionHint>
         <CrudSection
           table="quizzes"
           title="الاختبارات"
-          description="حدد المدة ودرجة النجاح لكل اختبار."
+          description="حدد الكورس والدرس والمدة ودرجة النجاح لكل اختبار."
           fields={[
-            { key: "title", label: "عنوان الاختبار" },
+            { key: "title", label: "عنوان الاختبار", required: true },
             { key: "course_id", label: "الكورس", relation: { table: "courses", label: "title" } },
+            { key: "lesson_id", label: "الدرس / الفيديو", relation: { table: "lessons", label: "title" } },
             { key: "duration_minutes", label: "المدة (دقيقة)", type: "number", default: 15 },
             { key: "pass_score", label: "درجة النجاح %", type: "number", default: 50 },
+            {
+              key: "questions_file_url",
+              label: "ملف الأسئلة (يشوفه الطالب)",
+              hideInTable: true,
+              upload: { bucket: "assessment-files", mode: "storage", prefix: "questions", accept: ".pdf,.doc,.docx,.png,.jpg,.jpeg", label: "ارفع ملف الأسئلة" },
+            },
+            {
+              key: "answer_key_url",
+              label: "ملف الإجابة الصحيحة (سري — للـ AI فقط)",
+              hideInTable: true,
+              upload: { bucket: "assessment-files", mode: "storage", prefix: "answers", accept: ".pdf,.doc,.docx,.txt,.md,.png,.jpg,.jpeg", label: "ارفع ملف الإجابة" },
+            },
+            { key: "answer_key_text", label: "نص الإجابة النموذجية (للـ AI)", type: "textarea", hideInTable: true },
             { key: "is_published", label: "منشور", type: "bool", default: true },
           ]}
         />
       </div>
 
       <div>
-        <SectionHint title="٣. بنك الأسئلة المتقدم">
-          استخدم هذا الجدول فقط لو محتاج تعدّل البيانات الخام لسؤال قديم. للإضافة العادية استخدم "منشئ الاختبار السهل" فوق.
+        <SectionHint title="٢. بنك الأسئلة المتقدم">
+          استخدم هذا الجدول فقط لو محتاج تعدّل سؤال قديم. "نوع السؤال" = mcq (اختيار من متعدد) أو truefalse (صح وخطأ). للإضافة العادية استخدم المنشئ فوق.
         </SectionHint>
         <CrudSection
           table="quiz_questions"
@@ -87,6 +86,16 @@ function QuizzesPage() {
           fields={[
             { key: "quiz_id", label: "الاختبار", required: true, relation: { table: "quizzes", label: "title" } },
             { key: "question", label: "نص السؤال", type: "textarea", required: true },
+            {
+              key: "kind",
+              label: "نوع السؤال",
+              type: "select",
+              default: "mcq",
+              options: [
+                { value: "mcq", label: "اختيار من متعدد" },
+                { value: "truefalse", label: "صح وخطأ" },
+              ],
+            },
             { key: "options", label: 'الاختيارات (JSON مثل ["أ","ب"])', type: "textarea", hideInTable: true },
             { key: "correct_index", label: "رقم الاختيار الصحيح (يبدأ من 0)", type: "number", default: 0 },
             { key: "points", label: "الدرجة", type: "number", default: 1 },
