@@ -1185,6 +1185,7 @@ export type Database = {
         Args: { _payment_id: string; _status: string }
         Returns: undefined
       }
+      can_read_assessment_object: { Args: { _name: string }; Returns: boolean }
       can_read_course_object: { Args: { _name: string }; Returns: boolean }
       generate_access_codes: {
         Args: {
@@ -1310,6 +1311,13 @@ export type Database = {
           max_score: number
           passed: boolean
           score: number
+        }[]
+      }
+      validate_coupon: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          discount_percent: number
         }[]
       }
     }
