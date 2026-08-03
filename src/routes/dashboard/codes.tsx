@@ -38,16 +38,27 @@ type CodeRow = {
   created_at: string;
 };
 
-const planLabel = (plan: string) => (plan === "year" ? "سنة" : plan === "lifetime" ? "مدى الحياة" : "شهر");
+const planLabel = (plan: string) =>
+  plan === "year" ? "سنة" : plan === "lifetime" ? "مدى الحياة" : plan === "term" ? "ترم" : plan === "month" ? "شهر" : plan;
+
+const PRESETS = [
+  { name: "month", label: "شهر", days: 30 },
+  { name: "term", label: "ترم دراسي", days: 120 },
+  { name: "year", label: "سنة", days: 365 },
+  { name: "lifetime", label: "مدى الحياة", days: 0 },
+];
 
 function CodesPage() {
   const queryClient = useQueryClient();
   const [courseId, setCourseId] = useState("");
   const [plan, setPlan] = useState("month");
+  const [customName, setCustomName] = useState("");
+  const [customDays, setCustomDays] = useState(30);
   const [count, setCount] = useState(5);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [fresh, setFresh] = useState<string[]>([]);
+
   const [filter, setFilter] = useState<"all" | "unused" | "used">("all");
 
   const { data: courses } = useQuery({
