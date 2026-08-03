@@ -68,7 +68,7 @@ function Subscribe() {
       const { error } = await supabase.from("payments").insert({
         user_id: user.id,
         course_id: courseId,
-        amount: plan === "year" ? (course?.price_year ?? course?.price ?? 0) : (course?.price ?? 0),
+        amount: plan === "year" ? priceYear : priceMonth,
         method,
         reference,
         proof_url: proofUrl,
