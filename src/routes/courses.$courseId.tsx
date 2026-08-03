@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Download, FileText, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle2, Download, FileText, Lock, PlayCircle, FileCheck2, ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { StudentShell } from "@/components/StudentShell";
@@ -52,7 +52,7 @@ function CourseDetail() {
   const { data } = useQuery({
     queryKey: ["course-detail", courseId, user?.id, isAdmin],
     queryFn: async () => {
-      const [c, chapters, catalog, playable, enroll, variantRows] = await Promise.all([
+      const [c, chapters, catalog, playable, enroll, variantRows, assignments, quizzes] = await Promise.all([
         supabase.from("courses").select("*").eq("id", courseId).maybeSingle(),
         supabase.from("chapters").select("*").eq("course_id", courseId).order("sort_order"),
         supabase.rpc("get_lessons_catalog", { _course_id: courseId }),
@@ -61,6 +61,8 @@ function CourseDetail() {
           ? supabase.from("enrollments").select("*").eq("course_id", courseId).eq("user_id", user.id).maybeSingle()
           : Promise.resolve({ data: null }),
         supabase.from("course_variants").select("*").eq("course_id", courseId).eq("is_active", true),
+        supabase.from("assignments").select("*").eq("course_id", courseId).eq("is_published", true),
+        supabase.from("quizzes").select("*").eq("course_id", courseId).eq("is_published", true),
       ]);
       const playableRows = (playable.data ?? []) as Array<{ id: string; video_url: string | null; transcript: string | null }>;
       const signedPlayable = await Promise.all(playableRows.map(async (row) => {
@@ -87,6 +89,8 @@ function CourseDetail() {
         materials: (materials.data ?? []) as Array<{ id: string; title: string; file_path: string; file_type: string; lesson_id: string }>,
         enrollment: enroll.data,
         variants: (variantRows.data ?? []) as CourseVariant[],
+        assignments: assignments.data ?? [],
+        quizzes: quizzes.data ?? [],
       };
 
     },
@@ -114,7 +118,7 @@ function CourseDetail() {
 
   const rawCourse = data.course;
   const course = applyVariant(rawCourse, variant);
-  const { chapters, lessons, enrollment, materials } = data;
+  const { chapters, lessons, enrollment, materials, assignments, quizzes } = data;
   const enrolled = Boolean(enrollment && (!enrollment.expires_at || new Date(enrollment.expires_at) > new Date()));
   const canWatch = isAdmin || enrolled || course.is_free;
   const current = activeLesson
@@ -235,77 +239,110 @@ function CourseDetail() {
           </div>
 
           {/* Lesson list */}
-          <aside className="rounded-2xl bg-card p-4">
-            <h3 className="mb-3 text-sm font-black">محتوى الدرس</h3>
-            {chapters.length === 0 && lessons.length === 0 && (
-              <p className="text-xs text-muted-foreground">لا يوجد محتوى بعد.</p>
-            )}
-            <div className="space-y-3">
-              {chapters.map((ch) => {
-                const chLessons = lessons.filter((l) => l.chapter_id === ch.id);
-                return (
-                  <div key={ch.id}>
-                    <p className="mb-2 text-xs font-black text-primary">{ch.title}</p>
-                    <div className="space-y-1">
-                      {chLessons.map((l) => {
-                        const unlocked = canWatch || l.is_free;
-                        const isActive = current?.id === l.id;
-                        return (
-                          <button
-                            key={l.id}
-                            onClick={() => setActiveLesson(l.id)}
-                            className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-right text-xs font-bold transition ${
-                              isActive
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-surface hover:bg-primary/10"
-                            }`}
-                          >
-                            {unlocked ? (
-                              <PlayCircle className="size-4 shrink-0" />
-                            ) : (
-                              <Lock className="size-4 shrink-0 opacity-60" />
-                            )}
-                            <span className="line-clamp-1 flex-1">{l.title}</span>
-                            {l.is_free && !enrolled && (
-                              <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-500">
-                                مجاني
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
+          <aside className="space-y-6">
+            <div className="rounded-2xl bg-card p-4">
+              <h3 className="mb-3 text-sm font-black">محتوى الدرس</h3>
+              {chapters.length === 0 && lessons.length === 0 && (
+                <p className="text-xs text-muted-foreground">لا يوجد محتوى بعد.</p>
+              )}
+              <div className="space-y-3">
+                {chapters.map((ch) => {
+                  const chLessons = lessons.filter((l) => l.chapter_id === ch.id);
+                  return (
+                    <div key={ch.id}>
+                      <p className="mb-2 text-xs font-black text-primary">{ch.title}</p>
+                      <div className="space-y-1">
+                        {chLessons.map((l) => {
+                          const unlocked = canWatch || l.is_free;
+                          const isActive = current?.id === l.id;
+                          return (
+                            <button
+                              key={l.id}
+                              onClick={() => setActiveLesson(l.id)}
+                              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-right text-xs font-bold transition ${
+                                isActive
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-surface hover:bg-primary/10"
+                              }`}
+                            >
+                              {unlocked ? (
+                                <PlayCircle className="size-4 shrink-0" />
+                              ) : (
+                                <Lock className="size-4 shrink-0 opacity-60" />
+                              )}
+                              <span className="line-clamp-1 flex-1">{l.title}</span>
+                              {l.is_free && !enrolled && (
+                                <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-500">
+                                  مجاني
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
+                  );
+                })}
+                {/* Lessons without chapters */}
+                {lessons.filter((l) => !l.chapter_id).length > 0 && (
+                  <div className="space-y-1">
+                    {lessons
+                      .filter((l) => !l.chapter_id)
+                      .map((l) => (
+                        <button
+                          key={l.id}
+                          onClick={() => setActiveLesson(l.id)}
+                          className="flex w-full items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-right text-xs font-bold"
+                        >
+                          {canWatch || l.is_free ? <PlayCircle className="size-4" /> : <Lock className="size-4 opacity-60" />}
+                          {l.title}
+                        </button>
+                      ))}
                   </div>
-                );
-              })}
-              {/* Lessons without chapters */}
-              {lessons.filter((l) => !l.chapter_id).length > 0 && (
-                <div className="space-y-1">
-                  {lessons
-                    .filter((l) => !l.chapter_id)
-                    .map((l) => (
-                      <button
-                        key={l.id}
-                        onClick={() => setActiveLesson(l.id)}
-                        className="flex w-full items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-right text-xs font-bold"
-                      >
-                        {canWatch || l.is_free ? <PlayCircle className="size-4" /> : <Lock className="size-4 opacity-60" />}
-                        {l.title}
-                      </button>
-                    ))}
-                </div>
+                )}
+              </div>
+
+              {!enrolled && !course.is_free && (
+                <Link
+                  to="/subscribe/$courseId"
+                  params={{ courseId }}
+                  onClick={() => recordVariantEvent(courseId, variant?.id ?? null, "enroll", user?.id).catch(() => {})}
+                  className="mt-4 block rounded-xl bg-primary py-3 text-center text-sm font-black text-primary-foreground"
+                >
+                  اشترك بـ {course.price} ج.م
+                </Link>
               )}
             </div>
 
-            {!enrolled && !course.is_free && (
-              <Link
-                to="/subscribe/$courseId"
-                params={{ courseId }}
-                onClick={() => recordVariantEvent(courseId, variant?.id ?? null, "enroll", user?.id).catch(() => {})}
-                className="mt-4 block rounded-xl bg-primary py-3 text-center text-sm font-black text-primary-foreground"
-              >
-                اشترك بـ {course.price} ج.م
-              </Link>
+            {/* Quizzes & Assignments */}
+            {(quizzes.length > 0 || assignments.length > 0) && (
+              <div className="rounded-2xl bg-card p-4">
+                <h3 className="mb-3 text-sm font-black">المهام والاختبارات</h3>
+                <div className="space-y-2">
+                  {quizzes.map((q) => (
+                    <Link
+                      key={q.id}
+                      to="/quizzes/$quizId"
+                      params={{ quizId: q.id }}
+                      className="flex items-center gap-2 rounded-xl bg-accent/10 px-3 py-2.5 text-right text-xs font-bold text-accent hover:bg-accent/20"
+                    >
+                      <ListChecks className="size-4 shrink-0" />
+                      <span className="line-clamp-1 flex-1">اختبار: {q.title}</span>
+                    </Link>
+                  ))}
+                  {assignments.map((a) => (
+                    <Link
+                      key={a.id}
+                      to="/assignments/$assignmentId"
+                      params={{ assignmentId: a.id }}
+                      className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2.5 text-right text-xs font-bold text-primary hover:bg-primary/20"
+                    >
+                      <FileCheck2 className="size-4 shrink-0" />
+                      <span className="line-clamp-1 flex-1">واجب: {a.title}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             )}
           </aside>
         </div>
