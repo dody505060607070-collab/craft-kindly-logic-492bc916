@@ -54,8 +54,8 @@ function QuizDetailPage() {
     },
   });
 
-  const { data: lastAttempt } = useQuery({
-    queryKey: ["quiz-last-attempt", quizId, user?.id],
+  const { data: attempts = [] } = useQuery({
+    queryKey: ["quiz-attempts", quizId, user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
@@ -63,12 +63,14 @@ function QuizDetailPage() {
         .select("*")
         .eq("quiz_id", quizId)
         .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
+        .order("created_at", { ascending: false });
+      return data ?? [];
     },
   });
+
+  const lastAttempt = attempts[0];
+  const attemptCount = attempts.length;
+  const isMaxAttemptsReached = quiz?.max_attempts > 0 && attemptCount >= quiz.max_attempts;
 
   const gradeEssays = useServerFn(gradeEssayAnswers);
 
@@ -102,7 +104,7 @@ function QuizDetailPage() {
       if (!data) return;
       toast.success(`تم تسليم الاختبار بنجاح! درجتك: ${data.score} / ${data.maxScore}`);
       setIsStarted(false);
-      queryClient.invalidateQueries({ queryKey: ["quiz-last-attempt", quizId] });
+      queryClient.invalidateQueries({ queryKey: ["quiz-attempts", quizId] });
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "تعذر تسليم الاختبار");
@@ -186,8 +188,10 @@ function QuizDetailPage() {
                 <p className="font-black">{questions?.length || 0}</p>
               </div>
               <div className="soft-card p-4 text-center rounded-2xl">
-                <p className="text-xs text-muted-foreground mb-1">درجة النجاح</p>
-                <p className="font-black">{quiz.pass_score}%</p>
+                <p className="text-xs text-muted-foreground mb-1">المحاولات</p>
+                <p className="font-black">
+                  {quiz.max_attempts === 0 ? "غير محدود" : `${attemptCount} / ${quiz.max_attempts}`}
+                </p>
               </div>
               <div className="soft-card p-4 text-center rounded-2xl">
                 <p className="text-xs text-muted-foreground mb-1">الدرجة الكلية</p>
@@ -210,10 +214,16 @@ function QuizDetailPage() {
 
             <button
               onClick={startQuiz}
-              disabled={!user || !questions?.length}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-black text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
+              disabled={!user || !questions?.length || isMaxAttemptsReached}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-black text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:grayscale disabled:hover:scale-100"
             >
-              {!user ? "سجّل الدخول لبدء الاختبار" : !questions?.length ? "لم تتم إضافة أسئلة بعد" : "ابدأ الاختبار الآن"}
+              {!user 
+                ? "سجّل الدخول لبدء الاختبار" 
+                : !questions?.length 
+                  ? "لم تتم إضافة أسئلة بعد" 
+                  : isMaxAttemptsReached 
+                    ? "لقد استنفدت جميع محاولاتك لهذا الاختبار"
+                    : "ابدأ الاختبار الآن"}
             </button>
           </div>
         </div>
