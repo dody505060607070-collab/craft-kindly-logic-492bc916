@@ -109,13 +109,17 @@ function QuizDetailPage() {
   });
 
   useEffect(() => {
-    if (isStarted && timeLeft !== null && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft(prev => (prev !== null ? prev - 1 : null));
-      }, 1000);
-      return () => clearInterval(timer);
-    } else if (isStarted && timeLeft === 0) {
-      submitMutation.mutate();
+    if (isStarted && timeLeft !== null) {
+      if (timeLeft > 0) {
+        const timer = setInterval(() => {
+          setTimeLeft(prev => (prev !== null && prev > 0 ? prev - 1 : 0));
+        }, 1000);
+        return () => clearInterval(timer);
+      } else {
+        // Time is up! 
+        toast.info("انتهى وقت الاختبار، يتم التسليم تلقائياً...");
+        submitMutation.mutate();
+      }
     }
   }, [isStarted, timeLeft]);
 

@@ -1362,14 +1362,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
-      redeem_access_code: {
-        Args: { _code: string }
-        Returns: {
-          course_id: string
-          expires_at: string
-          plan: string
-        }[]
-      }
+      redeem_access_code: { Args: { _code: string }; Returns: undefined }
       submit_assignment_answers: {
         Args: { _answers: Json; _assignment_id: string }
         Returns: {
