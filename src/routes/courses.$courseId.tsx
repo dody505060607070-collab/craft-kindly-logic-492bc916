@@ -155,7 +155,20 @@ function CourseDetail() {
           {/* Video / paywall */}
           <div className="space-y-4">
             <div className="aspect-video overflow-hidden rounded-2xl bg-black">
-              {current && (canWatch || current.is_free) && current.video_url ? (
+              {lessons.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white">
+                  <PlayCircle className="size-10 opacity-30" />
+                  <p className="font-bold">لا يوجد محتوى في هذا الدرس بعد.</p>
+                  {isAdmin && (
+                    <Link
+                      to="/dashboard/courses"
+                      className="rounded-xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground"
+                    >
+                      إضافة محتوى
+                    </Link>
+                  )}
+                </div>
+              ) : current && (canWatch || current.is_free) && current.video_url ? (
                 isYoutube(current.video_url) ? (
                   <iframe
                     key={current.id}
@@ -175,10 +188,13 @@ function CourseDetail() {
                   />
                 )
               ) : (
-
                 <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white">
                   <Lock className="size-10 opacity-70" />
-                  <p className="font-bold">هذا المحتوى مغلق — اشترك لتفعيل الوصول</p>
+                  <p className="font-bold">
+                    {current && !current.video_url 
+                      ? "هذا الدرس لا يحتوي على فيديو بعد"
+                      : "هذا المحتوى مغلق — اشترك لتفعيل الوصول"}
+                  </p>
                   {!user ? (
                     <Link
                       to="/auth"
@@ -186,7 +202,7 @@ function CourseDetail() {
                     >
                       سجّل دخول أولاً
                     </Link>
-                  ) : (
+                  ) : !canWatch && !(current?.is_free) ? (
                     <Link
                       to="/subscribe/$courseId"
                       params={{ courseId }}
@@ -195,7 +211,7 @@ function CourseDetail() {
                     >
                       اشترك الآن
                     </Link>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>
