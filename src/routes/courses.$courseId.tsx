@@ -155,7 +155,6 @@ function CourseDetail() {
           {/* Video / paywall */}
           <div className="space-y-4">
             <div className="aspect-video overflow-hidden rounded-2xl bg-black">
-            <div className="aspect-video overflow-hidden rounded-2xl bg-black">
               {lessons.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white">
                   <PlayCircle className="size-10 opacity-30" />
@@ -208,6 +207,18 @@ function CourseDetail() {
                       to="/subscribe/$courseId"
                       params={{ courseId }}
                       onClick={() => recordVariantEvent(courseId, variant?.id ?? null, "enroll", user?.id).catch(() => {})}
+                      className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-primary-foreground"
+                    >
+                      اشترك الآن
+                    </Link>
+                  ) : null}
+                </div>
+              )}
+            </div>
+            {!canWatch && user && (
+              <RedeemCodeCard />
+            )}
+
                       className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-primary-foreground"
                     >
                       اشترك الآن
