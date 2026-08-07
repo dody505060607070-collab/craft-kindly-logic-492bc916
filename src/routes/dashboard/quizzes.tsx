@@ -3,6 +3,7 @@ import { CrudSection } from "@/components/CrudSection";
 import { AdminHelp } from "@/components/AdminHelp";
 import { SectionHint } from "@/components/SectionHint";
 import { AssessmentBuilder } from "@/components/AssessmentBuilder";
+import { QuestionBankFileUploader } from "@/components/QuestionBankFileUploader";
 
 export const Route = createFileRoute("/dashboard/quizzes")({
   head: () => ({
@@ -77,8 +78,9 @@ function QuizzesPage() {
 
       <div>
         <SectionHint title="٢. بنك الأسئلة المتقدم">
-          استخدم هذا الجدول فقط لو محتاج تعدّل سؤال قديم. "نوع السؤال" = mcq (اختيار من متعدد) أو truefalse (صح وخطأ). للإضافة العادية استخدم المنشئ فوق.
+          ارفع ملف الأسئلة أو الإجابة مباشرة من الخانات التالية، أو استخدم الجدول لتعديل سؤال منفرد.
         </SectionHint>
+        <QuestionBankFileUploader />
         <CrudSection
           table="quiz_questions"
           title="بنك الأسئلة"
