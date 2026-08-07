@@ -200,6 +200,9 @@ function Home() {
   const heroY = useTransform(heroProgress, [0, 1], [0, 90]);
   const heroFade = useTransform(heroProgress, [0, 1], [1, 0.15]);
 
+  const [activeCategory, setActiveCategory] = React.useState("الكل");
+  const [activeType, setActiveType] = React.useState<"all" | "paid" | "free">("all");
+
   const { data: liveCourses } = useQuery({
     queryKey: ["home-courses"],
     queryFn: async () => {
@@ -211,91 +214,79 @@ function Home() {
           course_plans(id, name, price, discount_percent, duration_days, is_active)
         `)
         .eq("is_published", true)
-        .order("sort_order")
-        .limit(6);
+        .order("sort_order");
       if (error) throw error;
       return data ?? [];
     },
   });
 
-  const courseIds = (liveCourses ?? []).map((c) => c.id);
-  const { data: contentsMap } = useQuery({
-    queryKey: ["home-course-contents", courseIds.join(",")],
-    enabled: courseIds.length > 0,
-    queryFn: async () => {
-      const entries = await Promise.all(
-        courseIds.map(async (id) => {
-          const { data } = await supabase.rpc("get_lessons_catalog", { _course_id: id });
-          const rows = (data ?? []) as Array<{ title: string }>;
-          return [id, rows.map((r) => r.title)] as const;
-        }),
-      );
-      return new Map(entries);
-    },
-  });
+  const allCategories = React.useMemo(() => {
+    const cats = new Set<string>(["الكل"]);
+    if (liveCourses) {
+      liveCourses.forEach((c) => {
+        if (c.grade) cats.add(c.grade);
+      });
+    }
+    return Array.from(cats);
+  }, [liveCourses]);
 
-  const cards: Array<{
-    id: string | null;
-    title: string;
-    grade: string;
-    img: string;
-    prices: Array<{ label: string; amount: number; original?: number }>;
-    isFree: boolean;
-    contents: string[];
-  }> =
-    liveCourses && liveCourses.length > 0
-      ? liveCourses.map((course, index) => {
-          const isFree = Boolean(course.is_free);
-          
-          const prices: Array<{ label: string; amount: number; original?: number }> = [];
-          
-          if (!isFree) {
-            
-            // Use course_plans if available
-            const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
-            if (activePlans.length > 0) {
-              activePlans.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach(p => {
-                const d = discounted(p.price, p.discount_percent);
-                prices.push({
-                  label: p.name,
-                  amount: d.final,
-                  original: d.hasDiscount ? d.base : undefined
-                });
-              });
-            } else {
-              // Fallback to basic fields
-              if (course.price > 0) {
-                const d = discounted(course.price, course.discount_percent);
-                prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-              }
-              if (course.price_term && course.price_term > 0) {
-                const d = discounted(course.price_term, course.discount_percent);
-                prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-              }
-              if (course.price_year && course.price_year > 0) {
-                const d = discounted(course.price_year, course.discount_percent);
-                prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-              }
-            }
+  const cards = React.useMemo(() => {
+    if (!liveCourses) return [];
+    
+    let filtered = liveCourses.map((course, index) => {
+      const isFree = Boolean(course.is_free);
+      const prices: Array<{ label: string; amount: number; original?: number }> = [];
+      
+      if (!isFree) {
+        const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
+        if (activePlans.length > 0) {
+          activePlans.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach(p => {
+            const d = discounted(p.price, p.discount_percent);
+            prices.push({ label: p.name, amount: d.final, original: d.hasDiscount ? d.base : undefined });
+          });
+        } else {
+          if (course.price > 0) {
+            const d = discounted(course.price, course.discount_percent);
+            prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
           }
+          if (course.price_term && course.price_term > 0) {
+            const d = discounted(course.price_term, course.discount_percent);
+            prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+          }
+          if (course.price_year && course.price_year > 0) {
+            const d = discounted(course.price_year, course.discount_percent);
+            prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+          }
+        }
+      }
 
-          return {
-            id: course.id,
-            title: course.title,
-            grade: course.grade || course.description?.slice(0, 40) || "درس برمجة",
-            img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
-            prices,
-            isFree,
-            contents: [],
-          };
-        })
-      : COURSES.map((course) => ({ 
-          id: null, 
-          ...course, 
-          isFree: false, 
-          contents: [],
-          prices: [{ label: "شهر", amount: parseInt(course.price.replace(/\D/g, "")) || 0 }] 
-        }));
+      return {
+        id: course.id,
+        title: course.title,
+        grade: course.grade || "درس برمجة",
+        img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
+        prices,
+        isFree,
+        contents: [],
+      };
+    });
+
+    if (activeCategory !== "الكل") {
+      filtered = filtered.filter(c => c.grade === activeCategory);
+    }
+
+    if (activeType === "paid") {
+      filtered = filtered.filter(c => !c.isFree);
+    } else if (activeType === "free") {
+      filtered = filtered.filter(c => c.isFree);
+    }
+
+    return filtered;
+  }, [liveCourses, activeCategory, activeType]);
+
+  const paidCourses = cards.filter(c => !c.isFree);
+  const freeCourses = cards.filter(c => c.isFree);
+
 
 
 
