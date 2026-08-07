@@ -475,6 +475,7 @@ export type Database = {
           is_free: boolean
           is_published: boolean
           price: number
+          price_term: number | null
           price_year: number | null
           slug: string | null
           sort_order: number
@@ -492,6 +493,7 @@ export type Database = {
           is_free?: boolean
           is_published?: boolean
           price?: number
+          price_term?: number | null
           price_year?: number | null
           slug?: string | null
           sort_order?: number
@@ -509,6 +511,7 @@ export type Database = {
           is_free?: boolean
           is_published?: boolean
           price?: number
+          price_term?: number | null
           price_year?: number | null
           slug?: string | null
           sort_order?: number
