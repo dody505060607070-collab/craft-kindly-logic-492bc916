@@ -26,18 +26,17 @@ export function SubscribersCounter({ className = "" }: { className?: string }) {
   const { data: studentCount = 1000 } = useQuery({
     queryKey: ["student-count"],
     queryFn: async () => {
+      // Use exact count for total student profiles
       const { count, error } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true });
       
       if (error) throw error;
-      // Use exactly 1003 + increment or a fixed logic? 
-      // The user says "in admin it's 1003, in student it's 1001".
-      // Let's use a consistent base of 1000 + the actual real count.
-      // If the database has 3 profiles, it will show 1003 for everyone.
+      
+      // Always add the 1000 base offset for consistent visual social proof
       return (count || 0) + 1000;
     },
-    refetchInterval: 1000 * 30, // Refresh every 30 seconds for better consistency
+    refetchInterval: 1000 * 5, // Refresh every 5 seconds for real-time feel
   });
 
   return (
