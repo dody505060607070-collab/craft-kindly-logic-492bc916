@@ -105,7 +105,7 @@ function Subscribe() {
         },
       ];
 
-  const selected = plans.find((p) => p.id === planId) ?? plans[0];
+  const selected = plans.find((p) => p.id === planId || p.name === planId) ?? plans[0];
   const deal = discounted(selected?.price ?? 0, selected?.discount_percent ?? 0);
 
   const submit = async (e: React.FormEvent) => {
