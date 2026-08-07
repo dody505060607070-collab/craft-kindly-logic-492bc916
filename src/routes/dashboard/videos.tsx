@@ -110,17 +110,19 @@ function VideosPage() {
             { key: "file_type", label: "النوع", default: "pdf" },
             {
               key: "questions_file_url",
-              label: "بنك الأسئلة (يشوفه الطالب)",
+              label: "ملف الأسئلة (بنك الأسئلة)",
               hideInTable: true,
               upload: { bucket: "assessment-files", mode: "storage", prefix: "bank-questions", accept: ".pdf,.doc,.docx,.png,.jpg,.jpeg", label: "ارفع ملف الأسئلة" },
+              hint: "ملف الأسئلة اللي الطالب هيشوفه ويحله.",
             },
             {
               key: "answer_key_url",
-              label: "ملف الإجابة الصحيحة (سري — للـ AI فقط)",
+              label: "ملف الإجابة (سري للـ AI)",
               hideInTable: true,
               upload: { bucket: "assessment-files", mode: "storage", prefix: "bank-answers", accept: ".pdf,.doc,.docx,.txt,.md,.png,.jpg,.jpeg", label: "ارفع ملف الإجابة" },
+              hint: "ملف الإجابة اللي الـ AI هيستخدمه عشان يصحح للطالب.",
             },
-            { key: "answer_key_text", label: "نص الإجابة النموذجية (للـ AI)", type: "textarea", hideInTable: true },
+            { key: "answer_key_text", label: "نص الإجابة (يدوي للـ AI)", type: "textarea", hideInTable: true, hint: "ممكن تكتب الإجابة هنا بدل ما ترفع ملف." },
           ]}
         />
       </div>
