@@ -133,6 +133,14 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
         if (createError) throw createError;
         if (!created?.id) throw new Error("تعذر إنشاء الواجب");
         destinationId = created.id;
+      } else if (mode === "quiz" && (questionsFile || answerFile)) {
+        // تحديث الاختبار الحالي بالملفات المرفوعة
+        const updatePayload: Record<string, any> = {};
+        if (questionsFile) updatePayload.questions_file_url = questionsFile;
+        if (answerFile) updatePayload.answer_key_url = answerFile;
+        
+        const { error: updateError } = await (supabase as any).from("quizzes").update(updatePayload).eq("id", destinationId);
+        if (updateError) throw updateError;
       }
 
       if (valid.length) {
@@ -207,10 +215,10 @@ export function AssessmentBuilder({ mode }: { mode: "quiz" | "assignment" }) {
         )}
       </div>
 
-      {mode === "assignment" && (
+      {(mode === "assignment" || mode === "quiz") && (
         <div className="grid gap-4 rounded-xl border border-border bg-surface p-4 md:grid-cols-2">
           <div>
-            <p className="mb-2 text-xs font-black text-muted-foreground">ملف الواجب (اختياري)</p>
+            <p className="mb-2 text-xs font-black text-muted-foreground">ملف {mode === "quiz" ? "الاختبار" : "الواجب"} (اختياري)</p>
             <UploadField
               bucket="assessment-files"
               mode="storage"
