@@ -130,7 +130,7 @@ function AssignmentsPage() {
         <CrudSection
           table="assignments"
           title="الواجبات"
-          selectColumns="id, course_id, title, description, due_at, is_published, created_at, updated_at, instructions, max_score, lesson_id, questions_file_url, duration_minutes, pass_score, max_attempts"
+          selectColumns="id, course_id, title, description, due_at, is_published, created_at, updated_at, instructions, max_score, lesson_id, questions_file_url, answer_key_url, answer_key_text, duration_minutes, pass_score, max_attempts"
           description="اربط الواجب بالكورس والدرس، وارفع ملف الأسئلة وملف الإجابة."
           fields={[
             { key: "title", label: "عنوان الواجب", required: true },
