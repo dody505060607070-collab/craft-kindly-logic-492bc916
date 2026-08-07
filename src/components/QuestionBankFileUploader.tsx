@@ -29,7 +29,10 @@ export function QuestionBankFileUploader() {
       return;
     }
 
-    const { error } = await supabase.from("quizzes").update({ [column]: value }).eq("id", quizId);
+    const payload = column === "questions_file_url"
+      ? { questions_file_url: value }
+      : { answer_key_url: value };
+    const { error } = await supabase.from("quizzes").update(payload).eq("id", quizId);
     if (error) {
       toast.error(error.message);
       return;
