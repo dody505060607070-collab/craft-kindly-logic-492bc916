@@ -73,13 +73,13 @@ function AuthPage() {
               full_name: fullName.trim(), 
               grade,
               current_device_id: deviceId 
-            },
+            } as any,
           },
         });
         if (error) throw error;
         
         if (data.user) {
-          await supabase.from("profiles").update({ current_device_id: deviceId }).eq("id", data.user.id);
+          await (supabase.from("profiles") as any).update({ current_device_id: deviceId }).eq("id", data.user.id);
         }
         
         toast.success("تم إنشاء الحساب بنجاح");
@@ -92,13 +92,12 @@ function AuthPage() {
         
         if (data.user) {
           const deviceId = window.navigator.userAgent;
-          const { data: profile } = await supabase.from("profiles").select("current_device_id").eq("id", data.user.id).maybeSingle();
+          const { data: profile } = await (supabase.from("profiles") as any).select("current_device_id").eq("id", data.user.id).maybeSingle();
           
-          if (profile && profile.current_device_id && profile.current_device_id !== deviceId) {
-            // Updated to allow login but update the "locked" device
-            await supabase.from("profiles").update({ current_device_id: deviceId }).eq("id", data.user.id);
-          } else if (profile && !profile.current_device_id) {
-            await supabase.from("profiles").update({ current_device_id: deviceId }).eq("id", data.user.id);
+          if (profile && (profile as any).current_device_id && (profile as any).current_device_id !== deviceId) {
+            await (supabase.from("profiles") as any).update({ current_device_id: deviceId }).eq("id", data.user.id);
+          } else if (profile && !(profile as any).current_device_id) {
+            await (supabase.from("profiles") as any).update({ current_device_id: deviceId }).eq("id", data.user.id);
           }
         }
         
