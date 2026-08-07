@@ -1241,6 +1241,38 @@ export type Database = {
         }
         Relationships: []
       }
+      video_views: {
+        Row: {
+          device_id: string | null
+          id: string
+          lesson_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          device_id?: string | null
+          id?: string
+          lesson_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          device_id?: string | null
+          id?: string
+          lesson_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_views_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1333,6 +1365,7 @@ export type Database = {
           description: string
           id: string
           max_views: number
+          title: string
           video_url: string
         }[]
       }
@@ -1386,6 +1419,7 @@ export type Database = {
           score: number
         }[]
       }
+      track_video_view: { Args: { _lesson_id: string }; Returns: undefined }
       validate_coupon: {
         Args: { _code: string }
         Returns: {
