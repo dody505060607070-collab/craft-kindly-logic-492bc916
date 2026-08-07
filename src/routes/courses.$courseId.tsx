@@ -396,7 +396,7 @@ function CourseDetail() {
                   onClick={() => recordVariantEvent(courseId, variant?.id ?? null, "enroll", user?.id).catch(() => {})}
                   className="mt-4 block rounded-xl bg-primary py-3 text-center text-sm font-black text-primary-foreground"
                 >
-                  اشترك بـ {course.price} ج.م
+                  باشتراك الآن
                 </Link>
               )}
             </div>
