@@ -131,6 +131,84 @@ function Reveal({
   );
 }
 
+function CourseCard({ course: c, delay, user }: { course: any; delay: number; user: any }) {
+  return (
+    <Reveal delay={delay}>
+      <article className="soft-card h-full overflow-hidden rounded-3xl">
+        <img
+          src={c.img}
+          alt={c.title}
+          loading="lazy"
+          width={1024}
+          height={640}
+          className="h-44 w-full object-cover"
+        />
+        <div className="p-5">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-bold text-primary">{c.grade}</p>
+            <span
+              className={`rounded-lg px-2 py-1 text-[11px] font-black ${
+                c.isFree ? "bg-primary/10 text-primary" : "bg-accent/15 text-accent"
+              }`}
+            >
+              {c.isFree ? "مجاني" : "باشتراك"}
+            </span>
+          </div>
+          <h3 className="mt-1 text-lg font-black">{c.title}</h3>
+
+          <div className="mt-4 flex flex-col gap-2">
+            <div className="flex flex-wrap gap-2">
+              {c.isFree ? (
+                <span className="text-sm font-bold text-muted-foreground">مجانًا</span>
+              ) : (
+                c.prices.map((p: any, pi: number) => (
+                  <div key={pi} className="flex flex-col rounded-lg bg-surface/50 px-2 py-1 text-[10px] font-bold ring-1 ring-border/50">
+                    <span className="text-muted-foreground">{p.label}</span>
+                    <span>
+                      {p.amount} ج.م
+                      {p.original && <span className="ms-1 text-[9px] line-through opacity-50">{p.original}</span>}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1" />
+              {c.id ? (
+                <div className="flex items-center gap-2">
+                  {!c.isFree && (
+                    <Link
+                      to={user ? "/subscribe/$courseId" : "/auth"}
+                      params={user ? { courseId: c.id } : undefined}
+                      className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold"
+                    >
+                      اشترك
+                    </Link>
+                  )}
+                  <Link
+                    to="/courses/$courseId"
+                    params={{ courseId: c.id }}
+                    className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+                  >
+                    {c.isFree ? "ابدأ الدرس" : "ادخل الدرس"}
+                  </Link>
+                </div>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+                >
+                  ادخل الدرس
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </article>
+    </Reveal>
+  );
+}
+
 function Logo({ size = "lg" }: { size?: "lg" | "sm" }) {
   const big = size === "lg";
   const cls = big ? "h-28 w-28 object-contain drop-shadow-xl sm:h-36 sm:w-36" : "h-14 w-14 object-contain";
