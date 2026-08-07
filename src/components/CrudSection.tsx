@@ -292,12 +292,12 @@ export function CrudSection({
           <table className="w-full text-right text-sm">
             <thead className="bg-surface/70 text-xs text-muted-foreground">
               <tr>
+                {canReorder && <th className="px-4 py-3 font-bold whitespace-nowrap">ترتيب</th>}
                 {visible.map((f) => (
                   <th key={f.key} className="px-4 py-3 font-bold whitespace-nowrap">
                     {f.label}
                   </th>
                 ))}
-                {canReorder && <th className="px-4 py-3 font-bold whitespace-nowrap">ترتيب</th>}
                 {canEdit && <th className="px-4 py-3">إجراءات</th>}
               </tr>
             </thead>
