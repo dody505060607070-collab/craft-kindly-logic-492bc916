@@ -317,35 +317,32 @@ function Home() {
     if (!liveCourses) return [];
     
     let filtered = liveCourses.map((course, index) => {
-      const isFree = Boolean(course.is_free);
-      
-      // If price, price_term, and price_year are all 0/null AND course_plans is empty, 
-      // but is_free is false, it might be a user error in DB. 
-      // But strictly, we check the prices we found.
       const prices: Array<{ label: string; amount: number; original?: number }> = [];
       
-      if (!isFree) {
-        const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
-        if (activePlans.length > 0) {
-          activePlans.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach(p => {
-            const d = discounted(p.price, p.discount_percent);
-            prices.push({ label: p.name, amount: d.final, original: d.hasDiscount ? d.base : undefined });
-          });
-        } else {
-          if (course.price > 0) {
-            const d = discounted(course.price, course.discount_percent);
-            prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-          }
-          if (course.price_term && course.price_term > 0) {
-            const d = discounted(course.price_term, course.discount_percent);
-            prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-          }
-          if (course.price_year && course.price_year > 0) {
-            const d = discounted(course.price_year, course.discount_percent);
-            prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-          }
+      const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
+      if (activePlans.length > 0) {
+        activePlans.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach(p => {
+          const d = discounted(p.price, p.discount_percent);
+          prices.push({ label: p.name, amount: d.final, original: d.hasDiscount ? d.base : undefined });
+        });
+      } else {
+        if (course.price > 0) {
+          const d = discounted(course.price, course.discount_percent);
+          prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+        }
+        if (course.price_term && course.price_term > 0) {
+          const d = discounted(course.price_term, course.discount_percent);
+          prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+        }
+        if (course.price_year && course.price_year > 0) {
+          const d = discounted(course.price_year, course.discount_percent);
+          prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
         }
       }
+
+      // If is_free is false but we have NO prices, treat it as free 
+      // (safety fallback for UI, even if DB says otherwise)
+      const isFree = Boolean(course.is_free) || prices.length === 0;
 
       return {
         id: course.id,
