@@ -484,28 +484,6 @@ function Home() {
         </div>
       </section>
 
-                            params={{ courseId: c.id }}
-                            className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
-                          >
-                            {c.isFree ? "ابدأ الدرس" : "ادخل الدرس"}
-                          </Link>
-                        </div>
-                      ) : (
-                        <Link
-                          to="/auth"
-                          className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
-                        >
-                          ادخل الدرس
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-      </section>
 
 
       {/* Features */}
