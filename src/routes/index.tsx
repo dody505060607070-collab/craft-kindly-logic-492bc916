@@ -252,7 +252,7 @@ function Home() {
                 ? `${discounted(course.price, course.discount_percent).final} جنيه (بدل ${Number(course.price)})`
                 : `${Number(course.price)} جنيه`,
           isFree: Boolean(course.is_free) || Number(course.price) === 0,
-          contents: contentsMap?.get(course.id) ?? [],
+          contents: [], // Only show course info on home
         }))
       : COURSES.map((course) => ({ id: null, ...course, isFree: false, contents: [] }));
 

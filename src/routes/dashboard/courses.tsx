@@ -20,6 +20,9 @@ export const Route = createFileRoute("/dashboard/courses")({
 function CoursesPage() {
   return (
     <div className="space-y-12">
+      <SectionHint title="إدارة الكورسات والاشتراكات والدروس">
+        هنا يمكنك التحكم بكل شيء يخص الكورس في مكان واحد. ابدأ بإضافة المادة، ثم الكورس، ثم خطط الاشتراك (شهر، ترم، سنة)، ثم الفصول والدروس.
+      </SectionHint>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-black">الكورسات والدروس</h1>
@@ -147,8 +150,8 @@ function CoursesPage() {
       </div>
 
       <div>
-        <SectionHint title="الدروس (اختصار سريع)">
-          إدارة الدروس هنا كمان بس صفحة "سيرفر الفيديوهات" أنسب لأنها فيها زرار الرفع. حط "معرّف الفصل" لو الدرس تحت فصل، وإلا سيبه فاضي.
+        <SectionHint title="الدروس والفيديوهات والملفات">
+          أضف الدروس هنا واربطها بالفصول. لرفع الفيديوهات والملفات المرفقة، يفضل استخدام صفحة "الفيديوهات والملفات" لأنها توفر واجهة أسهل للرفع.
         </SectionHint>
         <CrudSection
           table="lessons"
@@ -161,7 +164,7 @@ function CoursesPage() {
             { key: "description", label: "الوصف", type: "textarea", hideInTable: true },
             { key: "course_id", label: "الكورس", required: true, relation: { table: "courses", label: "title" } },
             { key: "chapter_id", label: "الفصل", relation: { table: "chapters", label: "title" } },
-            { key: "video_url", label: "رابط الفيديو (YouTube/mp4)", hideInTable: true },
+            { key: "video_url", label: "رابط الفيديو", hideInTable: true, upload: { bucket: "course-videos", mode: "storage", accept: "video/*", prefix: "lessons", label: "ارفع فيديو" } },
             { key: "duration_min", label: "المدة (دقيقة)", type: "number", default: 0 },
             { key: "is_free", label: "معاينة مجانية", type: "bool", default: false },
             { key: "is_published", label: "منشور", type: "bool", default: true },
