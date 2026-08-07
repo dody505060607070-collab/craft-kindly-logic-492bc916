@@ -65,7 +65,7 @@ function CourseDetail() {
         supabase.from("assignments").select("*").eq("course_id", courseId).eq("is_published", true),
         supabase.from("quizzes").select("*").eq("course_id", courseId).eq("is_published", true),
       ]);
-      const playableRows = (playable.data ?? []) as Array<{ id: string; video_url: string | null; transcript: string | null }>;
+      const playableRows = (playable.data ?? []) as any[];
       const signedPlayable = await Promise.all(playableRows.map(async (row) => {
         if (!row.video_url?.startsWith("storage:")) return row;
         const { data: signed } = await supabase.storage.from("course-videos").createSignedUrl(row.video_url.slice(8), 3600);
@@ -73,12 +73,17 @@ function CourseDetail() {
       }));
       const playMap = new Map(signedPlayable.map((row) => [row.id, row]));
       const catalogRows = (catalog.data ?? []) as Array<Record<string, unknown> & { id: string }>;
-      const merged = catalogRows.map((l) => ({
-        ...l,
-        video_url: playMap.get(l.id)?.video_url ?? null,
-        transcript: playMap.get(l.id)?.transcript ?? null,
-        unlocked: playMap.has(l.id),
-      }));
+      const merged = catalogRows.map((l) => {
+        const p = playMap.get(l.id);
+        return {
+          ...l,
+          video_url: p?.video_url ?? null,
+          transcript: p?.description ?? null,
+          max_views: p?.max_views ?? 0,
+          current_views: p?.current_views ?? 0,
+          unlocked: playMap.has(l.id),
+        };
+      });
       const lessonIds = catalogRows.map((l) => l.id);
       const materials = lessonIds.length
         ? await supabase.from("materials").select("id, title, file_path, file_type, lesson_id").in("lesson_id", lessonIds)
@@ -170,24 +175,52 @@ function CourseDetail() {
                   )}
                 </div>
               ) : current && (canWatch || Boolean(current.is_free)) && current.video_url ? (
-                isYoutube(current.video_url) ? (
-                  <iframe
-                    key={current.id}
-                    src={toYoutubeEmbed(current.video_url)!}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={current.title}
-                  />
-                ) : (
-                  <video
-                    key={current.id}
-                    src={current.video_url}
-                    controls
-                    controlsList="nodownload"
-                    className="h-full w-full"
-                  />
-                )
+                (() => {
+                  const hasReachedLimit = !isAdmin && current.max_views > 0 && current.current_views >= current.max_views;
+                  
+                  if (hasReachedLimit) {
+                    return (
+                      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white">
+                        <Lock className="size-10 opacity-70 text-destructive" />
+                        <p className="font-bold">لقد استنفدت عدد المشاهدات المسموح بها لهذا الفيديو ({current.max_views})</p>
+                        <p className="text-xs opacity-60">تواصل مع المستر إذا كنت تعتقد أن هناك خطأ.</p>
+                      </div>
+                    );
+                  }
+
+                  return isYoutube(current.video_url) ? (
+                    <iframe
+                      key={current.id}
+                      src={toYoutubeEmbed(current.video_url)!}
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={current.title}
+                      onLoad={() => {
+                        if (!isAdmin) {
+                          supabase.rpc('track_video_view', { _lesson_id: current.id }).then(() => {
+                            // Silently refresh view count in background if needed
+                          });
+                        }
+                      }}
+                    />
+                  ) : (
+                    <video
+                      key={current.id}
+                      src={current.video_url}
+                      controls
+                      controlsList="nodownload"
+                      className="h-full w-full"
+                      onPlay={() => {
+                        if (!isAdmin) {
+                          supabase.rpc('track_video_view', { _lesson_id: current.id }).then(() => {
+                            // Could trigger a refetch here but might be jarring
+                          });
+                        }
+                      }}
+                    />
+                  );
+                })()
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-white">
                   <Lock className="size-10 opacity-70" />
@@ -222,7 +255,18 @@ function CourseDetail() {
 
             {current && (
               <div>
-                <h2 className="font-display text-lg font-black">{current.title}</h2>
+                <div className="flex items-center justify-between gap-4">
+                  <h2 className="font-display text-lg font-black">{current.title}</h2>
+                  {!isAdmin && current.max_views > 0 && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ring-1 ${
+                      current.current_views >= current.max_views 
+                        ? "bg-destructive/10 text-destructive ring-destructive/20" 
+                        : "bg-primary/10 text-primary ring-primary/20"
+                    }`}>
+                      المشاهدات: {current.current_views} / {current.max_views}
+                    </span>
+                  )}
+                </div>
                 {current.description && (
                   <p className="mt-2 text-sm text-muted-foreground">{current.description}</p>
                 )}

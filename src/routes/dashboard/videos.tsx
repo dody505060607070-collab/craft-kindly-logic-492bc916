@@ -82,6 +82,7 @@ function VideosPage() {
               hint: "ارفع الفيديو بالزر، أو الصق رابط يوتيوب هنا.",
             },
             { key: "duration_min", label: "المدة (دقيقة)", type: "number", default: 0 },
+            { key: "max_views", label: "أقصى عدد مشاهدات", type: "number", default: 0, hint: "0 تعني غير محدود. لو وصل الطالب للعدد ده مش هيقدر يفتح الفيديو تاني." },
             { key: "is_free", label: "معاينة مجانية", type: "bool", default: false },
             { key: "is_published", label: "منشور", type: "bool", default: true },
             { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
