@@ -1326,8 +1326,10 @@ export type Database = {
       get_playable_lessons: {
         Args: { _course_id: string }
         Returns: {
+          current_views: number
+          description: string
           id: string
-          transcript: string
+          max_views: number
           video_url: string
         }[]
       }
