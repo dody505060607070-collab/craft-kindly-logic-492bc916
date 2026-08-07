@@ -48,6 +48,7 @@ function QuizzesPage() {
         <CrudSection
           table="quizzes"
           title="الاختبارات"
+          selectColumns="id, course_id, title, description, duration_min, is_published, created_at, updated_at, duration_minutes, pass_score, lesson_id, questions_file_url, max_attempts"
           description="حدد الكورس والدرس والمدة ودرجة النجاح لكل اختبار."
           fields={[
             { key: "title", label: "عنوان الاختبار", required: true },
