@@ -539,6 +539,7 @@ export type Database = {
           expires_at: string | null
           id: string
           progress: number
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -547,6 +548,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           progress?: number
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -555,6 +557,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           progress?: number
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1166,6 +1169,7 @@ export type Database = {
           id: string
           is_blocked: boolean
           last_seen_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -1175,6 +1179,7 @@ export type Database = {
           id?: string
           is_blocked?: boolean
           last_seen_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -1184,6 +1189,7 @@ export type Database = {
           id?: string
           is_blocked?: boolean
           last_seen_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
