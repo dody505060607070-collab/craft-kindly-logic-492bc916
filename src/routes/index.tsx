@@ -162,13 +162,18 @@ function CourseCard({ course: c, delay, user }: { course: any; delay: number; us
                 <span className="text-sm font-bold text-muted-foreground">مجانًا</span>
               ) : (
                 c.prices.map((p: any, pi: number) => (
-                  <div key={pi} className="flex flex-col rounded-lg bg-surface/50 px-2 py-1 text-[10px] font-bold ring-1 ring-border/50">
+                  <Link 
+                    key={pi} 
+                    to={user ? "/subscribe/$courseId" : "/auth"}
+                    params={user ? { courseId: c.id } : undefined}
+                    className="flex flex-col rounded-lg bg-surface/50 px-2 py-1 text-[10px] font-bold ring-1 ring-border/50 transition hover:bg-accent/10 hover:ring-accent/30"
+                  >
                     <span className="text-muted-foreground">{p.label}</span>
                     <span>
                       {p.amount} ج.م
                       {p.original && <span className="ms-1 text-[9px] line-through opacity-50">{p.original}</span>}
                     </span>
-                  </div>
+                  </Link>
                 ))
               )}
             </div>
