@@ -63,8 +63,8 @@ function AssignmentDetailPage() {
     },
   });
 
-  const { data: submission } = useQuery({
-    queryKey: ["assignment-submission", assignmentId, user?.id],
+  const { data: submissions = [] } = useQuery({
+    queryKey: ["assignment-submissions", assignmentId, user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
@@ -72,10 +72,14 @@ function AssignmentDetailPage() {
         .select("*")
         .eq("assignment_id", assignmentId)
         .eq("user_id", user!.id)
-        .maybeSingle();
-      return data;
+        .order("created_at", { ascending: false });
+      return (data ?? []) as any[];
     },
   });
+
+  const submission = submissions[0];
+  const submissionCount = submissions.length;
+  const isMaxAttemptsReached = assignment ? (Number(assignment.max_attempts || 0) > 0 && submissionCount >= Number(assignment.max_attempts || 0)) : false;
 
   // signed url for the questions file (stored as storage:<path>)
   useEffect(() => {
@@ -93,12 +97,12 @@ function AssignmentDetailPage() {
   const gradeEssays = useServerFn(gradeEssayAnswers);
 
   const submitChoices = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (isAutoSubmit?: boolean) => {
       const answered = questions.filter((question) => {
         const value = answers[question.id];
         return typeof value === "number" ? true : typeof value === "string" && value.trim().length > 0;
       });
-      if (answered.length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
+      if (!isAutoSubmit && answered.length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
       const { data, error } = await rpc("submit_assignment_answers", { _assignment_id: assignmentId, _answers: answers });
       if (error) throw error;
       const row = (data as { submission_id: string; score: number; max_score: number; passed: boolean }[] | null)?.[0];
@@ -117,7 +121,7 @@ function AssignmentDetailPage() {
     onSuccess: (row) => {
       toast.success(`تم التسليم! درجتك: ${row.score} / ${row.max_score}`);
       setStarted(false);
-      queryClient.invalidateQueries({ queryKey: ["assignment-submission", assignmentId] });
+      queryClient.invalidateQueries({ queryKey: ["assignment-submissions", assignmentId] });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "تعذر تسليم الواجب"),
   });
@@ -133,14 +137,18 @@ function AssignmentDetailPage() {
     },
     onSuccess: () => {
       toast.success("تم تسليم الواجب بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["assignment-submission", assignmentId] });
+      queryClient.invalidateQueries({ queryKey: ["assignment-submissions", assignmentId] });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "تعذر تسليم الواجب"),
   });
 
   useEffect(() => {
     if (!started || timeLeft === null) return;
-    if (timeLeft <= 0) { submitChoices.mutate(); return; }
+    if (timeLeft <= 0) { 
+      toast.info("انتهى وقت الواجب، يتم التسليم تلقائياً...");
+      submitChoices.mutate(true); 
+      return; 
+    }
     const timer = setTimeout(() => setTimeLeft((value) => (value === null ? null : value - 1)), 1000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -222,8 +230,12 @@ function AssignmentDetailPage() {
                   </div>
                 )}
                 {hasQuestions && (
-                  <button onClick={() => { setAnswers({}); setIndex(0); setStarted(true); setTimeLeft(assignment.duration_minutes ? assignment.duration_minutes * 60 : null); }} className="mt-4 text-xs font-bold text-muted-foreground underline">
-                    أعِد حل الواجب
+                  <button 
+                    onClick={() => { setAnswers({}); setIndex(0); setStarted(true); setTimeLeft(assignment.duration_minutes ? assignment.duration_minutes * 60 : null); }} 
+                    disabled={isMaxAttemptsReached}
+                    className="mt-4 text-xs font-bold text-muted-foreground underline disabled:no-underline disabled:opacity-50"
+                  >
+                    {isMaxAttemptsReached ? "لا توجد محاولات متبقية" : "أعِد حل الواجب"}
                   </button>
                 )}
               </section>
@@ -270,7 +282,7 @@ function AssignmentDetailPage() {
                         التالي <ChevronLeft className="size-4" />
                       </button>
                     ) : (
-                      <button type="button" onClick={() => submitChoices.mutate()} disabled={submitChoices.isPending} className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground disabled:opacity-50">
+                      <button type="button" onClick={() => submitChoices.mutate(false)} disabled={submitChoices.isPending} className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground disabled:opacity-50">
                         {submitChoices.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />} سلّم الواجب
                       </button>
                     )}
@@ -284,9 +296,10 @@ function AssignmentDetailPage() {
                   </p>
                   <button
                     onClick={() => { setStarted(true); setIndex(0); setTimeLeft(assignment.duration_minutes ? assignment.duration_minutes * 60 : null); }}
-                    className="mt-4 rounded-xl bg-primary px-6 py-3 font-black text-primary-foreground"
+                    disabled={isMaxAttemptsReached}
+                    className="mt-4 rounded-xl bg-primary px-6 py-3 font-black text-primary-foreground disabled:opacity-50 disabled:grayscale"
                   >
-                    ابدأ حل الواجب
+                    {isMaxAttemptsReached ? "لقد استنفدت جميع محاولاتك لهذا الواجب" : "ابدأ حل الواجب"}
                   </button>
                 </section>
               )
@@ -315,6 +328,7 @@ function AssignmentDetailPage() {
               <h3 className="mb-3 text-sm font-black">معلومات</h3>
               <div className="space-y-3 text-xs">
                 <div className="flex justify-between"><span className="text-muted-foreground">عدد الأسئلة</span><span className="font-bold">{questions.length || "—"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">المحاولات</span><span className="font-bold">{!assignment.max_attempts || Number(assignment.max_attempts) === 0 ? "غير محدود" : `${submissionCount} / ${assignment.max_attempts}`}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">الدرجة القصوى</span><span className="font-bold">{assignment.max_score}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">درجة النجاح</span><span className="font-bold">{assignment.pass_score}%</span></div>
                 {assignment.due_at && (
