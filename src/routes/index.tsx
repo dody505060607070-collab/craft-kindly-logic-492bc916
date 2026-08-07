@@ -415,8 +415,23 @@ function Home() {
                     </ul>
                   )}
 
-                  <div className="mt-4 flex items-center justify-between gap-2">
-                    <span className="text-sm font-bold text-muted-foreground">{c.price}</span>
+                  <div className="mt-4 flex flex-col gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      {c.isFree ? (
+                        <span className="text-sm font-bold text-muted-foreground">مجانًا</span>
+                      ) : (
+                        c.prices.map((p, pi) => (
+                          <div key={pi} className="flex flex-col rounded-lg bg-surface/50 px-2 py-1 text-[10px] font-bold ring-1 ring-border/50">
+                            <span className="text-muted-foreground">{p.label}</span>
+                            <span>
+                              {p.amount} ج.م
+                              {p.original && <span className="ms-1 text-[9px] line-through opacity-50">{p.original}</span>}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
                     {c.id ? (
                       <div className="flex items-center gap-2">
                         {!c.isFree && (
