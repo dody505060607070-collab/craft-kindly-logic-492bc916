@@ -45,7 +45,7 @@ function AssignmentDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assignments")
-        .select("id, title, instructions, description, due_at, max_score, duration_minutes, pass_score, questions_file_url, course_id, lesson_id, courses(title)")
+        .select("id, title, instructions, description, due_at, max_score, duration_minutes, pass_score, questions_file_url, course_id, lesson_id, max_attempts, courses(title)")
         .eq("id", assignmentId)
         .single();
       if (error) throw error;
@@ -79,7 +79,7 @@ function AssignmentDetailPage() {
 
   const submission = submissions[0];
   const submissionCount = submissions.length;
-  const isMaxAttemptsReached = assignment ? (Number(assignment.max_attempts || 0) > 0 && submissionCount >= Number(assignment.max_attempts || 0)) : false;
+  const isMaxAttemptsReached = assignment ? (Number((assignment as any).max_attempts || 0) > 0 && submissionCount >= Number((assignment as any).max_attempts || 0)) : false;
 
   // signed url for the questions file (stored as storage:<path>)
   useEffect(() => {
@@ -328,7 +328,7 @@ function AssignmentDetailPage() {
               <h3 className="mb-3 text-sm font-black">معلومات</h3>
               <div className="space-y-3 text-xs">
                 <div className="flex justify-between"><span className="text-muted-foreground">عدد الأسئلة</span><span className="font-bold">{questions.length || "—"}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">المحاولات</span><span className="font-bold">{!assignment.max_attempts || Number(assignment.max_attempts) === 0 ? "غير محدود" : `${submissionCount} / ${assignment.max_attempts}`}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">المحاولات</span><span className="font-bold">{!(assignment as any).max_attempts || Number((assignment as any).max_attempts) === 0 ? "غير محدود" : `${submissionCount} / ${(assignment as any).max_attempts}`}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">الدرجة القصوى</span><span className="font-bold">{assignment.max_score}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">درجة النجاح</span><span className="font-bold">{assignment.pass_score}%</span></div>
                 {assignment.due_at && (

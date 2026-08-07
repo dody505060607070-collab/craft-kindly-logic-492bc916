@@ -54,6 +54,7 @@ function QuizzesPage() {
             { key: "course_id", label: "الكورس", relation: { table: "courses", label: "title" } },
             { key: "lesson_id", label: "الدرس / الفيديو", relation: { table: "lessons", label: "title" } },
             { key: "duration_minutes", label: "المدة (دقيقة)", type: "number", default: 15 },
+            { key: "max_attempts", label: "عدد المحاولات (0 = غير محدود)", type: "number", default: 0 },
             { key: "pass_score", label: "درجة النجاح %", type: "number", default: 50 },
             {
               key: "questions_file_url",
