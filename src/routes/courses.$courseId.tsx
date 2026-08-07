@@ -240,6 +240,7 @@ function CourseDetail() {
                     <Link
                       to="/subscribe/$courseId"
                       params={{ courseId }}
+                      search={{ plan: "month" }}
                       onClick={() => recordVariantEvent(courseId, variant?.id ?? null, "enroll", user?.id).catch(() => {})}
                       className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-primary-foreground"
                     >
@@ -393,6 +394,7 @@ function CourseDetail() {
                 <Link
                   to="/subscribe/$courseId"
                   params={{ courseId }}
+                  search={{ plan: "month" }}
                   onClick={() => recordVariantEvent(courseId, variant?.id ?? null, "enroll", user?.id).catch(() => {})}
                   className="mt-4 block rounded-xl bg-primary py-3 text-center text-sm font-black text-primary-foreground"
                 >

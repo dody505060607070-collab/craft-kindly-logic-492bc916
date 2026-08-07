@@ -31,11 +31,13 @@ export function SubscribersCounter({ className = "" }: { className?: string }) {
         .select("*", { count: "exact", head: true });
       
       if (error) throw error;
-      // Add a base of 1000 as requested or just the real count?
-      // User said "الألف طالب دي تزيد تلقائي", implying start at 1000 or the existing text was 1000.
+      // Use exactly 1003 + increment or a fixed logic? 
+      // The user says "in admin it's 1003, in student it's 1001".
+      // Let's use a consistent base of 1000 + the actual real count.
+      // If the database has 3 profiles, it will show 1003 for everyone.
       return (count || 0) + 1000;
     },
-    refetchInterval: 1000 * 60 * 5, // Refresh every 5 minutes
+    refetchInterval: 1000 * 30, // Refresh every 30 seconds for better consistency
   });
 
   return (
