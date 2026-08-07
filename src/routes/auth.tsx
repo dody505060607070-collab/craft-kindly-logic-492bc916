@@ -62,22 +62,46 @@ function AuthPage() {
           setBusy(false);
           return toast.error("اكتب اسمك بالكامل");
         }
-        const { error } = await supabase.auth.signUp({
+        const deviceId = window.navigator.userAgent;
+        const { error, data } = await supabase.auth.signUp({
           email: cleanEmail,
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { phone: cleanPhone, full_name: fullName.trim(), grade },
+            data: { 
+              phone: cleanPhone, 
+              full_name: fullName.trim(), 
+              grade,
+              current_device_id: deviceId 
+            },
           },
         });
         if (error) throw error;
+        
+        if (data.user) {
+          await supabase.from("profiles").update({ current_device_id: deviceId }).eq("id", data.user.id);
+        }
+        
         toast.success("تم إنشاء الحساب بنجاح");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password,
         });
         if (error) throw error;
+        
+        if (data.user) {
+          const deviceId = window.navigator.userAgent;
+          const { data: profile } = await supabase.from("profiles").select("current_device_id").eq("id", data.user.id).maybeSingle();
+          
+          if (profile && profile.current_device_id && profile.current_device_id !== deviceId) {
+            // Updated to allow login but update the "locked" device
+            await supabase.from("profiles").update({ current_device_id: deviceId }).eq("id", data.user.id);
+          } else if (profile && !profile.current_device_id) {
+            await supabase.from("profiles").update({ current_device_id: deviceId }).eq("id", data.user.id);
+          }
+        }
+        
         toast.success("أهلاً بيك 👋");
       }
       await refresh();
