@@ -73,14 +73,15 @@ function QuizDetailPage() {
   const gradeEssays = useServerFn(gradeEssayAnswers);
 
   const submitMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (isAutoSubmit?: boolean) => {
       if (!user || !quiz || !questions) return;
 
       const answered = questions.filter((q) => {
         const value = answers[q.id];
         return typeof value === "number" ? true : typeof value === "string" && value.trim().length > 0;
       });
-      if (answered.length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
+      
+      if (!isAutoSubmit && answered.length !== questions.length) throw new Error("جاوب على كل الأسئلة الأول");
       const { data, error } = await supabase.rpc("submit_quiz_attempt", { _quiz_id: quizId, _answers: answers });
       if (error) throw error;
       const result = data?.[0];
@@ -118,7 +119,7 @@ function QuizDetailPage() {
       } else {
         // Time is up! 
         toast.info("انتهى وقت الاختبار، يتم التسليم تلقائياً...");
-        submitMutation.mutate();
+        submitMutation.mutate(true); // Pass true to bypass unanswered check
       }
     }
   }, [isStarted, timeLeft]);
@@ -298,7 +299,7 @@ function QuizDetailPage() {
 
             {currentQuestionIndex === questions!.length - 1 ? (
               <button
-                onClick={() => submitMutation.mutate()}
+                onClick={() => submitMutation.mutate(false)}
                 disabled={submitMutation.isPending}
                 className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-black text-primary-foreground shadow-lg shadow-primary/20 hover:opacity-90 disabled:opacity-50"
               >
