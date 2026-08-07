@@ -219,18 +219,6 @@ function CourseDetail() {
               <RedeemCodeCard />
             )}
 
-                      className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-primary-foreground"
-                    >
-                      اشترك الآن
-                    </Link>
-                  ) : null}
-                </div>
-              )}
-            </div>
-            {!canWatch && user && (
-              <RedeemCodeCard />
-            )}
-
             {current && (
               <div>
                 <h2 className="font-display text-lg font-black">{current.title}</h2>
