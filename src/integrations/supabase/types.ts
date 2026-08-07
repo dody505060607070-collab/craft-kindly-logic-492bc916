@@ -1295,6 +1295,18 @@ export type Database = {
             Args: {
               _count: number
               _course_id: string
+              _duration_days?: number
+              _note?: string
+              _plan: string
+            }
+            Returns: {
+              code: string
+            }[]
+          }
+        | {
+            Args: {
+              _count: number
+              _course_id: string
               _note?: string
               _plan?: string
             }
