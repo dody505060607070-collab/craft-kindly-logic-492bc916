@@ -11,6 +11,11 @@ import { discounted } from "@/lib/pricing";
 import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 
 export const Route = createFileRoute("/subscribe/$courseId")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      plan: search.plan as string | undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "اشترك في الدرس | منصة المستر" },
@@ -34,10 +39,12 @@ type PlanOption = {
 
 function Subscribe() {
   const { courseId } = useParams({ from: "/subscribe/$courseId" });
+  const search = Route.useSearch() as { plan?: string };
+  const initialPlanId = search.plan || null;
   const { user } = useAuth();
   const [reference, setReference] = useState("");
   const [method, setMethod] = useState("vodafone_cash");
-  const [planId, setPlanId] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<string | null>(initialPlanId);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -98,7 +105,7 @@ function Subscribe() {
         },
       ];
 
-  const selected = plans.find((p) => p.id === planId) ?? plans[0];
+  const selected = plans.find((p) => p.id === planId || p.name === planId) ?? plans[0];
   const deal = discounted(selected?.price ?? 0, selected?.discount_percent ?? 0);
 
   const submit = async (e: React.FormEvent) => {
