@@ -69,7 +69,7 @@ export function PaymentProofsReview() {
   const setStatus = async (p: Payment, status: "paid" | "failed") => {
     setBusyId(p.id);
     try {
-      const { error } = await supabase.rpc("approve_payment", { _payment_id: p.id, _status: status });
+      const { error } = await supabase.rpc("approve_payment", { _payment_id: p.id, _status: status === "paid" ? "paid" : "failed" });
       if (error) throw error;
       toast.success(status === "paid" ? "تم اعتماد الدفع وتفعيل الاشتراك" : "تم الرفض");
       qc.invalidateQueries({ queryKey: ["pending-payments"] });
@@ -110,7 +110,9 @@ export function PaymentProofsReview() {
               </div>
               <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
                 <span className="rounded-full bg-card px-2 py-0.5">{p.method}</span>
-                <span className="rounded-full bg-card px-2 py-0.5">{p.plan === "year" ? "سنة" : "شهر"}</span>
+                <span className="rounded-full bg-card px-2 py-0.5">
+                  {p.plan === "year" ? "سنة" : p.plan === "term" ? "ترم" : "شهر"}
+                </span>
                 {p.reference && <span dir="ltr" className="rounded-full bg-card px-2 py-0.5">#{p.reference}</span>}
                 <span className="rounded-full bg-card px-2 py-0.5">
                   {new Date(p.created_at).toLocaleString("ar-EG")}
