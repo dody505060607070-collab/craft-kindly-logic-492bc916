@@ -104,6 +104,13 @@ function Subscribe() {
             discount_percent: Number(course?.discount_percent ?? 0),
           },
           {
+            id: "term",
+            name: "ترم",
+            duration_days: 120,
+            price: Number(course?.price_term ?? course?.price ?? 0),
+            discount_percent: Number(course?.discount_percent ?? 0),
+          },
+          {
             id: "year",
             name: "سنة",
             duration_days: 365,
