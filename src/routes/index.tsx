@@ -368,76 +368,122 @@ function Home() {
           </h2>
         </Reveal>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map((c, i) => (
-            <Reveal key={c.id ?? c.title} delay={i * 0.12}>
-              <article className="soft-card h-full overflow-hidden rounded-3xl">
-                <img
-                  src={c.img}
-                  alt={c.title}
-                  loading="lazy"
-                  width={1024}
-                  height={640}
-                  className="h-44 w-full object-cover"
-                />
-                <div className="p-5">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-bold text-primary">{c.grade}</p>
-                    <span
-                      className={`rounded-lg px-2 py-1 text-[11px] font-black ${
-                        c.isFree ? "bg-primary/10 text-primary" : "bg-accent/15 text-accent"
-                      }`}
-                    >
-                      {c.isFree ? "مجاني" : "باشتراك"}
-                    </span>
-                  </div>
-                  <h3 className="mt-1 text-lg font-black">{c.title}</h3>
+        {/* Search & Filters */}
+        <Reveal delay={0.1} className="mt-8">
+          <div className="flex flex-col gap-4 rounded-3xl bg-card/50 p-4 ring-1 ring-border sm:p-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2 rounded-2xl bg-surface px-4 py-2 ring-1 ring-border/50">
+                <Filter className="size-4 text-muted-foreground" />
+                <span className="text-sm font-bold">التصنيف:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {allCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`rounded-xl px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
+                      activeCategory === cat
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                        : "bg-surface hover:bg-muted"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                  {c.contents.length > 0 && (
-                    <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-                      {c.contents.slice(0, 3).map((t, ti) => (
-                        <li key={`${t}-${ti}`} className="flex items-center gap-1.5">
-                          <PlayCircle className="size-3.5 shrink-0 text-primary" />
-                          <span className="truncate">{t}</span>
-                        </li>
-                      ))}
-                      {c.contents.length > 3 && (
-                        <li className="text-[11px] font-bold">+ {c.contents.length - 3} محتوى إضافي</li>
-                      )}
-                    </ul>
-                  )}
+            <div className="flex flex-wrap items-center gap-2 border-t border-border/50 pt-4">
+              <div className="flex items-center gap-2 rounded-2xl bg-surface px-4 py-2 ring-1 ring-border/50">
+                <Search className="size-4 text-muted-foreground" />
+                <span className="text-sm font-bold">النوع:</span>
+              </div>
+              <div className="flex gap-2">
+                {[
+                  { id: "all", label: "الكل" },
+                  { id: "paid", label: "باشتراك" },
+                  { id: "free", label: "مجاني" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveType(t.id as any)}
+                    className={`rounded-xl px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
+                      activeType === t.id
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                        : "bg-surface hover:bg-muted"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
 
-                  <div className="mt-4 flex flex-col gap-2">
-                    <div className="flex flex-wrap gap-2">
-                      {c.isFree ? (
-                        <span className="text-sm font-bold text-muted-foreground">مجانًا</span>
-                      ) : (
-                        c.prices.map((p, pi) => (
-                          <div key={pi} className="flex flex-col rounded-lg bg-surface/50 px-2 py-1 text-[10px] font-bold ring-1 ring-border/50">
-                            <span className="text-muted-foreground">{p.label}</span>
-                            <span>
-                              {p.amount} ج.م
-                              {p.original && <span className="ms-1 text-[9px] line-through opacity-50">{p.original}</span>}
-                            </span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex-1" /> {/* Spacer */}
-                      {c.id ? (
-                        <div className="flex items-center gap-2">
-                          {!c.isFree && (
-                            <Link
-                              to={user ? "/subscribe/$courseId" : "/auth"}
-                              params={user ? { courseId: c.id } : undefined}
-                              className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold"
-                            >
-                              اشترك
-                            </Link>
-                          )}
-                          <Link
-                            to="/courses/$courseId"
+        <div className="mt-10 space-y-12">
+          {/* Paid Courses */}
+          {paidCourses.length > 0 && (
+            <div className="space-y-6">
+              <h3 className="flex items-center gap-2 text-xl font-black">
+                <span className="size-2 rounded-full bg-accent" />
+                دروس باشتراك
+              </h3>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {paidCourses.map((c, i) => (
+                  <CourseCard key={c.id ?? c.title} course={c} delay={i * 0.1} user={user} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Separator Line */}
+          {paidCourses.length > 0 && freeCourses.length > 0 && (
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-background px-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                  دروس مجانية بالأسفل
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Free Courses */}
+          {freeCourses.length > 0 && (
+            <div className="space-y-6">
+              <h3 className="flex items-center gap-2 text-xl font-black">
+                <span className="size-2 rounded-full bg-primary" />
+                دروس مجانية
+              </h3>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {freeCourses.map((c, i) => (
+                  <CourseCard key={c.id ?? c.title} course={c} delay={i * 0.1} user={user} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {cards.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="mb-4 rounded-full bg-muted p-6">
+                <Search className="size-10 text-muted-foreground opacity-20" />
+              </div>
+              <h3 className="text-xl font-bold">لا يوجد دروس تطابق هذا البحث</h3>
+              <p className="mt-2 text-muted-foreground">جرب اختيار تصنيف آخر أو عرض الكل.</p>
+              <button 
+                onClick={() => { setActiveCategory("الكل"); setActiveType("all"); }}
+                className="mt-6 rounded-2xl bg-primary px-6 py-2 font-bold text-primary-foreground"
+              >
+                عرض كل الدروس
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
                             params={{ courseId: c.id }}
                             className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
                           >
