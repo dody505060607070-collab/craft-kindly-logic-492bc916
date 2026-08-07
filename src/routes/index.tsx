@@ -318,6 +318,10 @@ function Home() {
     
     let filtered = liveCourses.map((course, index) => {
       const isFree = Boolean(course.is_free);
+      
+      // If price, price_term, and price_year are all 0/null AND course_plans is empty, 
+      // but is_free is false, it might be a user error in DB. 
+      // But strictly, we check the prices we found.
       const prices: Array<{ label: string; amount: number; original?: number }> = [];
       
       if (!isFree) {
