@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useSpring, useTransform } from "motion/react";
-import { useRef } from "react";
-import { MessageCircle, PlayCircle, ShieldCheck, Sparkles } from "lucide-react";
+import React, { useRef } from "react";
+import { MessageCircle, PlayCircle, ShieldCheck, Sparkles, Search, Filter } from "lucide-react";
 
 import logoMark from "@/assets/logo-mark.png";
 import logoMarkDark from "@/assets/logo-mark-dark.png";
