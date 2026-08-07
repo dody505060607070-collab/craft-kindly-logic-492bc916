@@ -609,6 +609,7 @@ export type Database = {
           id: string
           is_free: boolean
           is_published: boolean
+          max_views: number | null
           sort_order: number
           title: string
           transcript: string | null
@@ -624,6 +625,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_published?: boolean
+          max_views?: number | null
           sort_order?: number
           title: string
           transcript?: string | null
@@ -639,6 +641,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_published?: boolean
+          max_views?: number | null
           sort_order?: number
           title?: string
           transcript?: string | null
