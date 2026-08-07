@@ -250,6 +250,7 @@ function Home() {
           const prices: Array<{ label: string; amount: number; original?: number }> = [];
           
           if (!isFree) {
+            console.log(`Course ${course.title} plans:`, course.course_plans);
             // Use course_plans if available
             const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
             if (activePlans.length > 0) {
