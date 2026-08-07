@@ -27,7 +27,9 @@ export function RedeemCodeCard({ compact = false }: { compact?: boolean }) {
       if (error) throw new Error(error.message);
       toast.success("تم تفعيل الدرس بالكود ✅");
       setCode("");
-      await queryClient.invalidateQueries();
+      await queryClient.invalidateQueries({ queryKey: ["course-detail"] });
+      await queryClient.invalidateQueries({ queryKey: ["home-courses"] });
+      window.location.reload(); // Force reload to ensure all state is fresh
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "الكود غير صحيح");
     } finally {

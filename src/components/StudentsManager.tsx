@@ -69,16 +69,19 @@ export function StudentsManager() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const revoke = useMutation({
+  const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("enrollments").delete().eq("id", id);
+      // In Lovable Cloud, we typically delete the profile which is linked to auth.users
+      // If we want to delete the actual AUTH user, we need a server function or admin client
+      // For now, we'll ensure we delete the profile and all related data via cascade
+      const { error } = await supabase.from("profiles").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم إلغاء الاشتراك");
+      toast.success("تم حذف الطالب بنجاح");
       qc.invalidateQueries({ queryKey: ["students-manager"] });
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: (error: Error) => toast.error("فشل الحذف: " + error.message),
   });
 
   const filtered = useMemo(() => {
@@ -119,25 +122,40 @@ export function StudentsManager() {
         const isOpen = openId === student.id;
         return (
           <div key={student.id} className="glass rounded-2xl p-4">
-            <button
-              type="button"
-              onClick={() => setOpenId(isOpen ? null : student.id)}
-              className="flex w-full items-center gap-3 text-right"
-            >
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-sm font-black text-primary">
-                {student.full_name?.slice(0, 1) || "ط"}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-black">{student.full_name}</span>
-                <span className="block text-xs text-muted-foreground">
-                  {student.phone || "بدون رقم"} · {student.grade || "بدون صف"} · {studentEnrollments.length} اشتراك
+            <div className="flex w-full items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setOpenId(isOpen ? null : student.id)}
+                className="flex flex-1 items-center gap-3 text-right"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-sm font-black text-primary">
+                  {student.full_name?.slice(0, 1) || "ط"}
                 </span>
-              </span>
-              {!student.is_active && (
-                <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-black text-destructive">موقوف</span>
-              )}
-              <ChevronDown className={`size-4 shrink-0 transition ${isOpen ? "rotate-180" : ""}`} />
-            </button>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-black">{student.full_name}</span>
+                  <span className="block text-xs text-muted-foreground">
+                    {student.phone || "بدون رقم"} · {student.grade || "بدون صف"} · {studentEnrollments.length} اشتراك
+                  </span>
+                </span>
+                {!student.is_active && (
+                  <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-black text-destructive">موقوف</span>
+                )}
+                <ChevronDown className={`size-4 shrink-0 transition ${isOpen ? "rotate-180" : ""}`} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm("هل أنت متأكد من حذف هذا الطالب نهائياً من المنصة؟")) {
+                    remove.mutate(student.id);
+                  }
+                }}
+                className="rounded-xl bg-destructive/10 p-2 text-destructive hover:bg-destructive/20"
+                title="حذف الطالب"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
 
             {isOpen && (
               <div className="mt-4 space-y-4 border-t border-border/50 pt-4">
@@ -172,8 +190,14 @@ export function StudentsManager() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => {
-                              if (confirm("إلغاء اشتراك الطالب في هذا الكورس؟")) revoke.mutate(enrollment.id);
+                            onClick={async () => {
+                              if (confirm("إلغاء اشتراك الطالب في هذا الكورس؟")) {
+                                const { error } = await supabase.from("enrollments").delete().eq("id", enrollment.id);
+                                if (!error) {
+                                  toast.success("تم إلغاء الاشتراك");
+                                  qc.invalidateQueries({ queryKey: ["students-manager"] });
+                                }
+                              }
                             }}
                             className="rounded-lg bg-card p-1.5 text-destructive"
                             aria-label="إلغاء الاشتراك"

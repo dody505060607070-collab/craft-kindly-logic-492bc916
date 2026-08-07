@@ -33,7 +33,7 @@ export function SubscribersCounter({ className = "" }: { className?: string }) {
         </span>
         <div className="flex items-baseline gap-1 leading-none">
           <span className="font-display text-sm font-black text-foreground sm:text-base">
-            <CountUp to={642} />
+            <CountUp to={1000} />
             <span className="text-primary">+</span>
           </span>
           <span className="text-[9px] font-bold text-muted-foreground sm:text-[10px]">طالب</span>
