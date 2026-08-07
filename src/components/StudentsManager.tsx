@@ -183,6 +183,13 @@ export function StudentsManager() {
                           </button>
                           <button
                             type="button"
+                            onClick={() => grant.mutate({ userId: student.id, courseId: enrollment.course_id, days: 120 })}
+                            className="rounded-lg bg-card px-2 py-1 font-bold"
+                          >
+                            +ترم
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => grant.mutate({ userId: student.id, courseId: enrollment.course_id, days: 365 })}
                             className="rounded-lg bg-card px-2 py-1 font-bold"
                           >
@@ -225,6 +232,13 @@ export function StudentsManager() {
                             className="rounded-lg bg-primary/15 px-2 py-1 font-bold text-primary"
                           >
                             شهر
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => grant.mutate({ userId: student.id, courseId: course.id, days: 120 })}
+                            className="rounded-lg bg-primary/15 px-2 py-1 font-bold text-primary"
+                          >
+                            ترم
                           </button>
                           <button
                             type="button"
