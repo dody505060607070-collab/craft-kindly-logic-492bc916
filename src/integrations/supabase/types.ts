@@ -1364,6 +1364,7 @@ export type Database = {
           current_views: number
           description: string
           id: string
+          is_free: boolean
           max_views: number
           title: string
           video_url: string
