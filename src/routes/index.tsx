@@ -166,6 +166,7 @@ function CourseCard({ course: c, delay, user }: { course: any; delay: number; us
                     key={pi} 
                     to={user ? "/subscribe/$courseId" : "/auth"}
                     params={user ? { courseId: c.id } : undefined}
+                    search={user ? { plan: p.id || p.label } : undefined}
                     className="flex flex-col rounded-lg bg-surface/50 px-2 py-1 text-[10px] font-bold ring-1 ring-border/50 transition hover:bg-accent/10 hover:ring-accent/30"
                   >
                     <span className="text-muted-foreground">{p.label}</span>
@@ -318,26 +319,26 @@ function Home() {
     if (!liveCourses) return [];
     
     let filtered = liveCourses.map((course, index) => {
-      const prices: Array<{ label: string; amount: number; original?: number }> = [];
+      const prices: Array<{ id: string; label: string; amount: number; original?: number }> = [];
       
       const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
       if (activePlans.length > 0) {
         activePlans.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach(p => {
           const d = discounted(p.price, p.discount_percent);
-          prices.push({ label: p.name, amount: d.final, original: d.hasDiscount ? d.base : undefined });
+          prices.push({ id: p.id, label: p.name, amount: d.final, original: d.hasDiscount ? d.base : undefined });
         });
       } else {
         if (course.price > 0) {
           const d = discounted(course.price, course.discount_percent);
-          prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+          prices.push({ id: "month", label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
         }
         if (course.price_term && course.price_term > 0) {
           const d = discounted(course.price_term, course.discount_percent);
-          prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+          prices.push({ id: "term", label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
         }
         if (course.price_year && course.price_year > 0) {
           const d = discounted(course.price_year, course.discount_percent);
-          prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+          prices.push({ id: "year", label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
         }
       }
 
