@@ -336,7 +336,9 @@ export function CrudSection({
                   )}
                   {visible.map((f) => (
                     <td key={f.key} className="max-w-[260px] truncate px-4 py-3">
-                      {f.type === "bool" ? (
+                      {f.relation ? (
+                        relationOptions[f.key]?.find((o) => String(o.id) === String(row[f.key]))?.[f.relation.label] ?? String(row[f.key] ?? "—")
+                      ) : f.type === "bool" ? (
                         <span className={row[f.key] ? "text-success" : "text-muted-foreground"}>
                           {row[f.key] ? "✔" : "✖"}
                         </span>
