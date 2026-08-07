@@ -747,29 +747,38 @@ export type Database = {
       }
       materials: {
         Row: {
+          answer_key_text: string | null
+          answer_key_url: string | null
           created_at: string
           file_path: string
           file_type: string
           id: string
           lesson_id: string
+          questions_file_url: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          answer_key_text?: string | null
+          answer_key_url?: string | null
           created_at?: string
           file_path: string
           file_type?: string
           id?: string
           lesson_id: string
+          questions_file_url?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          answer_key_text?: string | null
+          answer_key_url?: string | null
           created_at?: string
           file_path?: string
           file_type?: string
           id?: string
           lesson_id?: string
+          questions_file_url?: string | null
           title?: string
           updated_at?: string
         }
