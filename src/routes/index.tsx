@@ -185,6 +185,7 @@ function CourseCard({ course: c, delay, user }: { course: any; delay: number; us
                     <Link
                       to={user ? "/subscribe/$courseId" : "/auth"}
                       params={user ? { courseId: c.id } : undefined}
+                      search={user ? { plan: "month" } : undefined}
                       className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold"
                     >
                       اشترك
