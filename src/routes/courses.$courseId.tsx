@@ -62,8 +62,8 @@ function CourseDetail() {
           ? supabase.from("enrollments").select("*").eq("course_id", courseId).eq("user_id", user.id).maybeSingle()
           : Promise.resolve({ data: null }),
         supabase.from("course_variants").select("*").eq("course_id", courseId).eq("is_active", true),
-        supabase.from("assignments").select("*").eq("course_id", courseId).eq("is_published", true),
-        supabase.from("quizzes").select("*").eq("course_id", courseId).eq("is_published", true),
+        supabase.from("assignments").select("id, title, course_id, lesson_id, due_at, duration_minutes, max_score, pass_score, is_published").eq("course_id", courseId).eq("is_published", true),
+        supabase.from("quizzes").select("id, title, course_id, lesson_id, duration_minutes, pass_score, is_published").eq("course_id", courseId).eq("is_published", true),
       ]);
       const playableRows = (playable.data ?? []) as any[];
       const signedPlayable = await Promise.all(playableRows.map(async (row) => {

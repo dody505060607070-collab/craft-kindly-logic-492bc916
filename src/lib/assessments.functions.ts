@@ -257,7 +257,9 @@ export const gradeSubmissionWithAnswerKey = createServerFn({ method: "POST" })
     if (error) throw error;
     if (!submission) throw new Error("التسليم غير موجود");
 
-    const { data: assignment } = await context.supabase
+    // نموذج الإجابة سري: يُقرأ من السيرفر فقط (مش متاح للقراءة من المتصفح)
+    const { supabaseAdmin: adminForKey } = await import("@/integrations/supabase/client.server");
+    const { data: assignment } = await adminForKey
       .from("assignments")
       .select("title, instructions, description, answer_key_text, answer_key_url, max_score")
       .eq("id", submission.assignment_id)
