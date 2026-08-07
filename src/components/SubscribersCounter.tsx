@@ -23,20 +23,18 @@ function CountUp({ to, duration = 1.8 }: { to: number; duration?: number }) {
  */
 export function SubscribersCounter({ className = "" }: { className?: string }) {
   // Fetch actual student count from profiles table
-  const { data: studentCount = 1000 } = useQuery({
+  const { data: studentCount } = useQuery({
     queryKey: ["student-count"],
     queryFn: async () => {
-      // Use exact count for total student profiles
       const { count, error } = await supabase
         .from("profiles")
         .select("*", { count: "exact", head: true });
       
       if (error) throw error;
-      
-      // Always add the 1000 base offset for consistent visual social proof
       return (count || 0) + 1000;
     },
-    refetchInterval: 1000 * 5, // Refresh every 5 seconds for real-time feel
+    initialData: 1000,
+    refetchInterval: 1000 * 5,
   });
 
   return (
