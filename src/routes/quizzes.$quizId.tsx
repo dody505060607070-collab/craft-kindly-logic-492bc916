@@ -70,7 +70,7 @@ function QuizDetailPage() {
 
   const lastAttempt = attempts[0];
   const attemptCount = attempts.length;
-  const isMaxAttemptsReached = quiz?.max_attempts > 0 && attemptCount >= quiz.max_attempts;
+  const isMaxAttemptsReached = quiz ? (Number(quiz.max_attempts || 0) > 0 && attemptCount >= Number(quiz.max_attempts || 0)) : false;
 
   const gradeEssays = useServerFn(gradeEssayAnswers);
 
@@ -190,7 +190,7 @@ function QuizDetailPage() {
               <div className="soft-card p-4 text-center rounded-2xl">
                 <p className="text-xs text-muted-foreground mb-1">المحاولات</p>
                 <p className="font-black">
-                  {quiz.max_attempts === 0 ? "غير محدود" : `${attemptCount} / ${quiz.max_attempts}`}
+                  {!quiz.max_attempts || Number(quiz.max_attempts) === 0 ? "غير محدود" : `${attemptCount} / ${quiz.max_attempts}`}
                 </p>
               </div>
               <div className="soft-card p-4 text-center rounded-2xl">
