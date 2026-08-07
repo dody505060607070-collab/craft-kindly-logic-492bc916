@@ -162,13 +162,18 @@ function CourseCard({ course: c, delay, user }: { course: any; delay: number; us
                 <span className="text-sm font-bold text-muted-foreground">مجانًا</span>
               ) : (
                 c.prices.map((p: any, pi: number) => (
-                  <div key={pi} className="flex flex-col rounded-lg bg-surface/50 px-2 py-1 text-[10px] font-bold ring-1 ring-border/50">
+                  <Link 
+                    key={pi} 
+                    to={user ? "/subscribe/$courseId" : "/auth"}
+                    params={user ? { courseId: c.id } : undefined}
+                    className="flex flex-col rounded-lg bg-surface/50 px-2 py-1 text-[10px] font-bold ring-1 ring-border/50 transition hover:bg-accent/10 hover:ring-accent/30"
+                  >
                     <span className="text-muted-foreground">{p.label}</span>
                     <span>
                       {p.amount} ج.م
                       {p.original && <span className="ms-1 text-[9px] line-through opacity-50">{p.original}</span>}
                     </span>
-                  </div>
+                  </Link>
                 ))
               )}
             </div>
@@ -312,31 +317,32 @@ function Home() {
     if (!liveCourses) return [];
     
     let filtered = liveCourses.map((course, index) => {
-      const isFree = Boolean(course.is_free);
       const prices: Array<{ label: string; amount: number; original?: number }> = [];
       
-      if (!isFree) {
-        const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
-        if (activePlans.length > 0) {
-          activePlans.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach(p => {
-            const d = discounted(p.price, p.discount_percent);
-            prices.push({ label: p.name, amount: d.final, original: d.hasDiscount ? d.base : undefined });
-          });
-        } else {
-          if (course.price > 0) {
-            const d = discounted(course.price, course.discount_percent);
-            prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-          }
-          if (course.price_term && course.price_term > 0) {
-            const d = discounted(course.price_term, course.discount_percent);
-            prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-          }
-          if (course.price_year && course.price_year > 0) {
-            const d = discounted(course.price_year, course.discount_percent);
-            prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
-          }
+      const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
+      if (activePlans.length > 0) {
+        activePlans.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach(p => {
+          const d = discounted(p.price, p.discount_percent);
+          prices.push({ label: p.name, amount: d.final, original: d.hasDiscount ? d.base : undefined });
+        });
+      } else {
+        if (course.price > 0) {
+          const d = discounted(course.price, course.discount_percent);
+          prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+        }
+        if (course.price_term && course.price_term > 0) {
+          const d = discounted(course.price_term, course.discount_percent);
+          prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+        }
+        if (course.price_year && course.price_year > 0) {
+          const d = discounted(course.price_year, course.discount_percent);
+          prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
         }
       }
+
+      // If is_free is false but we have NO prices, treat it as free 
+      // (safety fallback for UI, even if DB says otherwise)
+      const isFree = Boolean(course.is_free) || prices.length === 0;
 
       return {
         id: course.id,
