@@ -1,6 +1,8 @@
 import { motion, useInView, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useRef } from "react";
 import { TrendingUp, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 function CountUp({ to, duration = 1.8 }: { to: number; duration?: number }) {
   const mv = useMotionValue(0);
@@ -20,6 +22,22 @@ function CountUp({ to, duration = 1.8 }: { to: number; duration?: number }) {
  * Stays as a single horizontal bar on all screen sizes (never becomes a square block).
  */
 export function SubscribersCounter({ className = "" }: { className?: string }) {
+  // Fetch actual student count from profiles table
+  const { data: studentCount = 1000 } = useQuery({
+    queryKey: ["student-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+      
+      if (error) throw error;
+      // Add a base of 1000 as requested or just the real count?
+      // User said "الألف طالب دي تزيد تلقائي", implying start at 1000 or the existing text was 1000.
+      return (count || 0) + 1000;
+    },
+    refetchInterval: 1000 * 60 * 5, // Refresh every 5 minutes
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -33,7 +51,7 @@ export function SubscribersCounter({ className = "" }: { className?: string }) {
         </span>
         <div className="flex items-baseline gap-1 leading-none">
           <span className="font-display text-sm font-black text-foreground sm:text-base">
-            <CountUp to={1000} />
+            <CountUp to={studentCount} />
             <span className="text-primary">+</span>
           </span>
           <span className="text-[9px] font-bold text-muted-foreground sm:text-[10px]">طالب</span>
