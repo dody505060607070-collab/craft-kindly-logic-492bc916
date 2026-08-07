@@ -37,7 +37,7 @@ function QuizDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("quizzes")
-        .select("*, courses(title)")
+        .select("id, title, description, duration_min, duration_minutes, pass_score, is_published, course_id, lesson_id, questions_file_url, max_attempts, courses(title)")
         .eq("id", quizId)
         .single();
       if (error) throw error;
