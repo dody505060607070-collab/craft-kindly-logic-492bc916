@@ -81,7 +81,7 @@ function Subscribe() {
   const payInsta = settings?.payment_instapay || SITE.phone;
 
   const plans: PlanOption[] = (dbPlans && dbPlans.length > 0)
-    ? dbPlans.map((p) => ({
+    ? Array.from(new Map(dbPlans.map(p => [p.name, p])).values()).map((p) => ({
         id: p.id,
         name: p.name,
         duration_days: Number(p.duration_days ?? 30),
