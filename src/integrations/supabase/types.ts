@@ -243,6 +243,7 @@ export type Database = {
           instructions: string | null
           is_published: boolean
           lesson_id: string | null
+          max_attempts: number | null
           max_score: number
           pass_score: number
           questions_file_url: string | null
@@ -261,6 +262,7 @@ export type Database = {
           instructions?: string | null
           is_published?: boolean
           lesson_id?: string | null
+          max_attempts?: number | null
           max_score?: number
           pass_score?: number
           questions_file_url?: string | null
@@ -279,6 +281,7 @@ export type Database = {
           instructions?: string | null
           is_published?: boolean
           lesson_id?: string | null
+          max_attempts?: number | null
           max_score?: number
           pass_score?: number
           questions_file_url?: string | null
@@ -1035,6 +1038,7 @@ export type Database = {
           id: string
           is_published: boolean
           lesson_id: string | null
+          max_attempts: number | null
           pass_score: number
           questions_file_url: string | null
           title: string
@@ -1051,6 +1055,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           lesson_id?: string | null
+          max_attempts?: number | null
           pass_score?: number
           questions_file_url?: string | null
           title: string
@@ -1067,6 +1072,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           lesson_id?: string | null
+          max_attempts?: number | null
           pass_score?: number
           questions_file_url?: string | null
           title?: string
@@ -1329,6 +1335,7 @@ export type Database = {
           id: string
           instructions: string
           lesson_id: string
+          max_attempts: number
           max_score: number
           pass_score: number
           question_count: number
@@ -1388,6 +1395,7 @@ export type Database = {
           description: string
           duration_minutes: number
           id: string
+          max_attempts: number
           pass_score: number
           question_count: number
           title: string

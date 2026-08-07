@@ -138,6 +138,7 @@ function AssignmentsPage() {
             { key: "lesson_id", label: "الدرس / الفيديو", relation: { table: "lessons", label: "title" } },
             { key: "due_at", label: "موعد التسليم", type: "datetime" },
             { key: "duration_minutes", label: "المدة (دقيقة)", type: "number", default: 20 },
+            { key: "max_attempts", label: "عدد المحاولات (0 = غير محدود)", type: "number", default: 0 },
             { key: "max_score", label: "الدرجة القصوى", type: "number", default: 10 },
             { key: "pass_score", label: "درجة النجاح %", type: "number", default: 50 },
             {
