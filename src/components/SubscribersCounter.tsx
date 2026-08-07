@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 function CountUp({ to, duration = 1.8 }: { to: number; duration?: number }) {
   const mv = useMotionValue(0);
-  const rounded = useTransform(mv, (v) => Math.floor(v).toLocaleString("en-US"));
+  const rounded = useTransform(mv, (v) => Math.floor(v).toLocaleString("ar-EG"));
   const ref = useRef<HTMLSpanElement | null>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   useEffect(() => {
