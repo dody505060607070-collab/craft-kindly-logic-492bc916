@@ -34,10 +34,12 @@ type PlanOption = {
 
 function Subscribe() {
   const { courseId } = useParams({ from: "/subscribe/$courseId" });
+  const search = Route.useSearch() as { plan?: string };
+  const initialPlanId = search.plan || null;
   const { user } = useAuth();
   const [reference, setReference] = useState("");
   const [method, setMethod] = useState("vodafone_cash");
-  const [planId, setPlanId] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<string | null>(initialPlanId);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
