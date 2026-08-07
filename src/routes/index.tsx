@@ -245,7 +245,7 @@ function Home() {
   }> =
     liveCourses && liveCourses.length > 0
       ? liveCourses.map((course, index) => {
-          const isFree = Boolean(course.is_free) || (Number(course.price) === 0 && !course.price_term && !course.price_year);
+          const isFree = Boolean(course.is_free);
           
           const prices: Array<{ label: string; amount: number; original?: number }> = [];
           
