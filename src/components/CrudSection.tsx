@@ -336,13 +336,14 @@ export function CrudSection({
                   )}
                   {visible.map((f) => (
                     <td key={f.key} className="max-w-[260px] truncate px-4 py-3">
-                      {f.type === "bool" ? (
+                      {f.relation ? (
+                        String(relationOptions[f.key]?.find((o) => String(o.id) === String(row[f.key]))?.[f.relation.label] ?? row[f.key] ?? "—")
+                      ) : f.type === "bool" ? (
                         <span className={row[f.key] ? "text-success" : "text-muted-foreground"}>
                           {row[f.key] ? "✔" : "✖"}
                         </span>
                       ) : f.type === "select" ? (
-                        (f.options?.find((o) => o.value === row[f.key])?.label ??
-                        String(row[f.key] ?? "—"))
+                        String(f.options?.find((o) => o.value === row[f.key])?.label ?? row[f.key] ?? "—")
                       ) : (
                         String(row[f.key] ?? "—")
                       )}
