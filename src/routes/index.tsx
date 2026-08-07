@@ -432,33 +432,35 @@ function Home() {
                       )}
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                    {c.id ? (
-                      <div className="flex items-center gap-2">
-                        {!c.isFree && (
+                      <div className="flex-1" /> {/* Spacer */}
+                      {c.id ? (
+                        <div className="flex items-center gap-2">
+                          {!c.isFree && (
+                            <Link
+                              to={user ? "/subscribe/$courseId" : "/auth"}
+                              params={user ? { courseId: c.id } : undefined}
+                              className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold"
+                            >
+                              اشترك
+                            </Link>
+                          )}
                           <Link
-                            to={user ? "/subscribe/$courseId" : "/auth"}
-                            params={user ? { courseId: c.id } : undefined}
-                            className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold"
+                            to="/courses/$courseId"
+                            params={{ courseId: c.id }}
+                            className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
                           >
-                            اشترك
+                            {c.isFree ? "ابدأ الدرس" : "ادخل الدرس"}
                           </Link>
-                        )}
+                        </div>
+                      ) : (
                         <Link
-                          to="/courses/$courseId"
-                          params={{ courseId: c.id }}
+                          to="/auth"
                           className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
                         >
-                          {c.isFree ? "ابدأ الدرس" : "ادخل الدرس"}
+                          ادخل الدرس
                         </Link>
-                      </div>
-                    ) : (
-                      <Link
-                        to="/auth"
-                        className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
-                      >
-                        ادخل الدرس
-                      </Link>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </article>
