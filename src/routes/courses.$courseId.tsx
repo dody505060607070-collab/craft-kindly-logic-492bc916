@@ -125,8 +125,8 @@ function CourseDetail() {
   const canWatch = isAdmin || enrolled || isCourseFree;
   const current = activeLesson
     ? lessons.find((l) => l.id === activeLesson)
-    : lessons.find((l) => (canWatch || l.is_free) && l.video_url) ||
-      lessons.find((l) => canWatch || l.is_free) ||
+    : lessons.find((l) => (canWatch || Boolean(l.is_free)) && l.video_url) ||
+      lessons.find((l) => canWatch || Boolean(l.is_free)) ||
       lessons[0];
 
   return (
@@ -169,7 +169,7 @@ function CourseDetail() {
                     </Link>
                   )}
                 </div>
-              ) : current && (canWatch || current.is_free) && current.video_url ? (
+              ) : current && (canWatch || Boolean(current.is_free)) && current.video_url ? (
                 isYoutube(current.video_url) ? (
                   <iframe
                     key={current.id}
@@ -203,7 +203,7 @@ function CourseDetail() {
                     >
                       سجّل دخول أولاً
                     </Link>
-                  ) : !canWatch && !(current?.is_free) ? (
+                  ) : !canWatch && !Boolean(current?.is_free) ? (
                     <Link
                       to="/subscribe/$courseId"
                       params={{ courseId }}
@@ -228,7 +228,7 @@ function CourseDetail() {
                 )}
               </div>
             )}
-            {current && (canWatch || current.is_free) && materials.filter((m) => m.lesson_id === current.id).length > 0 && (
+            {current && (canWatch || Boolean(current.is_free)) && materials.filter((m) => m.lesson_id === current.id).length > 0 && (
               <div className="soft-card rounded-2xl p-4">
                 <h3 className="mb-3 flex items-center gap-2 text-sm font-black">
                   <FileText className="size-4 text-primary" /> ملفات الدرس
@@ -252,7 +252,7 @@ function CourseDetail() {
               </div>
             )}
 
-            {current && (canWatch || current.is_free) &&
+            {current && (canWatch || Boolean(current.is_free)) &&
               (assignments.some((a: any) => a.lesson_id === current.id) || quizzes.some((q: any) => q.lesson_id === current.id)) && (
               <div className="soft-card rounded-2xl p-4">
                 <h3 className="mb-3 text-sm font-black">واجبات واختبارات الدرس</h3>
@@ -273,7 +273,7 @@ function CourseDetail() {
               </div>
             )}
 
-            {current && (canWatch || current.is_free) && (
+            {current && (canWatch || Boolean(current.is_free)) && (
               <AILessonToolbox
                 lessonTitle={current.title}
                 lessonText={[current.description, current.summary, current.transcript].filter(Boolean).join("\n\n")}
@@ -296,7 +296,7 @@ function CourseDetail() {
                       <p className="mb-2 text-xs font-black text-primary">{ch.title}</p>
                       <div className="space-y-1">
                         {chLessons.map((l) => {
-                          const unlocked = canWatch || l.is_free;
+                          const unlocked = canWatch || Boolean(l.is_free);
                           const isActive = current?.id === l.id;
                           return (
                             <button
@@ -314,7 +314,7 @@ function CourseDetail() {
                                 <Lock className="size-4 shrink-0 opacity-60" />
                               )}
                               <span className="line-clamp-1 flex-1">{l.title}</span>
-                              {l.is_free && !enrolled && (
+                              {Boolean(l.is_free) && !enrolled && (
                                 <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-500">
                                   مجاني
                                 </span>
@@ -337,7 +337,7 @@ function CourseDetail() {
                           onClick={() => setActiveLesson(l.id)}
                           className="flex w-full items-center gap-2 rounded-xl bg-surface px-3 py-2.5 text-right text-xs font-bold"
                         >
-                          {canWatch || l.is_free ? <PlayCircle className="size-4" /> : <Lock className="size-4 opacity-60" />}
+                          {canWatch || Boolean(l.is_free) ? <PlayCircle className="size-4" /> : <Lock className="size-4 opacity-60" />}
                           {l.title}
                         </button>
                       ))}
