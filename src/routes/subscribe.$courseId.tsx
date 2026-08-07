@@ -88,22 +88,29 @@ function Subscribe() {
         price: Number(p.price ?? 0),
         discount_percent: Number(p.discount_percent ?? course?.discount_percent ?? 0),
       }))
-    : [
-        {
-          id: "month",
-          name: "شهر",
-          duration_days: 30,
-          price: Number(course?.price ?? 0),
-          discount_percent: Number(course?.discount_percent ?? 0),
-        },
-        {
-          id: "year",
-          name: "سنة",
-          duration_days: 365,
-          price: Number(course?.price_year ?? course?.price ?? 0),
-          discount_percent: Number(course?.discount_percent ?? 0),
-        },
-      ];
+      : [
+          {
+            id: "month",
+            name: "شهر",
+            duration_days: 30,
+            price: Number(course?.price ?? 0),
+            discount_percent: Number(course?.discount_percent ?? 0),
+          },
+          {
+            id: "term",
+            name: "ترم",
+            duration_days: 120,
+            price: Number(course?.price_term ?? course?.price ?? 0),
+            discount_percent: Number(course?.discount_percent ?? 0),
+          },
+          {
+            id: "year",
+            name: "سنة",
+            duration_days: 365,
+            price: Number(course?.price_year ?? course?.price ?? 0),
+            discount_percent: Number(course?.discount_percent ?? 0),
+          },
+        ];
 
   const selected = plans.find((p) => p.id === planId || p.name === planId) ?? plans[0];
   const deal = discounted(selected?.price ?? 0, selected?.discount_percent ?? 0);

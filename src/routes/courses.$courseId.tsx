@@ -147,7 +147,7 @@ function CourseDetail() {
               {course.grade || "الكل"}
             </span>
             <span className="rounded-full bg-card px-3 py-1 text-xs font-bold">
-              {isCourseFree ? "مجاني" : `${course.price} ج.م`}
+              {isCourseFree ? "مجاني" : `باشتراك`}
             </span>
             {enrolled && (
               <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">
