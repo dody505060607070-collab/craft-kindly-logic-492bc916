@@ -48,6 +48,7 @@ export function CrudSection({
   allowCreate = true,
   emptyText = "لا توجد بيانات بعد.",
   aiHelpers,
+  selectColumns = "*",
 }: {
   table: string;
   title: string;
@@ -59,6 +60,8 @@ export function CrudSection({
   allowCreate?: boolean;
   emptyText?: string;
   aiHelpers?: Record<string, { purpose: string; placeholder?: string }>;
+  /** أعمدة القراءة — تُستخدم لإخفاء الأعمدة السرية (زي ملف الإجابات) عن القراءة. */
+  selectColumns?: string;
 }) {
   const { isAdmin } = useAuth();
   const qc = useQueryClient();
@@ -84,10 +87,10 @@ export function CrudSection({
 
 
   const { data, isLoading } = useQuery({
-    queryKey: ["crud", table],
+    queryKey: ["crud", table, selectColumns],
     queryFn: async () => {
       const { data, error } = await db(table)
-        .select("*")
+        .select(selectColumns)
         .order(orderBy, { ascending })
         .limit(500);
       if (error) throw error;
