@@ -198,7 +198,7 @@ function CourseDetail() {
                       title={current.title}
                       onLoad={() => {
                         if (!isAdmin) {
-                          supabase.rpc('track_video_view', { _lesson_id: current.id }).then(() => {
+                          (supabase as any).rpc('track_video_view', { _lesson_id: current.id }).then(() => {
                             // Silently refresh view count in background if needed
                           });
                         }
@@ -213,7 +213,7 @@ function CourseDetail() {
                       className="h-full w-full"
                       onPlay={() => {
                         if (!isAdmin) {
-                          supabase.rpc('track_video_view', { _lesson_id: current.id }).then(() => {
+                          (supabase as any).rpc('track_video_view', { _lesson_id: current.id }).then(() => {
                             // Could trigger a refetch here but might be jarring
                           });
                         }
