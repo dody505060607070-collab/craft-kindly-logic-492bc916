@@ -77,13 +77,13 @@ function CoursesPage() {
       </div>
 
       <div>
-        <SectionHint title="٢. الكورسات">
-          هنا بتضيف الكورس نفسه. "معرّف المادة" بتاخده من صف المادة اللي فوق (اضغط عرض ونسخ الـUUID). حط سعر بالجنيه، وحدّد الصف الدراسي. لو "مجاني = نعم" الطالب هيدخله من غير اشتراك. "منشور = لا" بيخفيه من الطلاب.
+        <SectionHint title="٢. الكورسات والاشتراكات">
+          هنا بتضيف الكورس نفسه وكل خطط الاشتراك بتاعته (شهر، ترم، سنة). لازم تختار "المادة" أولاً. سعر السنة والترم والخصومات بتظهر للطالب في صفحة الاشتراك. "مجاني = نعم" بيخلي الطالب يدخل الكورس من غير اشتراك.
         </SectionHint>
         <CrudSection
           table="courses"
-          title="الكورسات"
-          description="كل كورس له سعر وصف دراسي وحالة نشر."
+          title="إضافة وتعديل الكورسات"
+          description="إدارة الكورس والأسعار (شهر/ترم/سنة) والخصومات في مكان واحد."
           orderBy="sort_order"
           ascending
           fields={[
@@ -91,9 +91,6 @@ function CoursesPage() {
             { key: "description", label: "الوصف", type: "textarea" },
             { key: "subject_id", label: "المادة", relation: { table: "subjects", label: "name" } },
             { key: "grade", label: "الصف الدراسي" },
-            { key: "price", label: "السعر (ج.م)", type: "number", default: 0 },
-            { key: "price_year", label: "سعر السنة (ج.م)", type: "number" },
-            { key: "discount_percent", label: "الخصم %", type: "number", default: 0 },
             { key: "is_free", label: "مجاني", type: "bool", default: false },
             { key: "is_published", label: "منشور", type: "bool", default: true },
             {
@@ -103,6 +100,10 @@ function CoursesPage() {
               upload: { bucket: "course-covers", mode: "signed", accept: "image/*", prefix: "covers", label: "ارفع صورة الغلاف من جهازك" },
               hint: "ارفع الصورة من الزر وهي هتتحط تلقائيًا، أو الصق رابط صورة جاهز.",
             },
+            { key: "price", label: "سعر الشهر (ج.م)", type: "number", default: 0 },
+            { key: "price_term", label: "سعر الترم (ج.م)", type: "number", default: 0 },
+            { key: "price_year", label: "سعر السنة (ج.م)", type: "number", default: 0 },
+            { key: "discount_percent", label: "الخصم %", type: "number", default: 0 },
             { key: "sort_order", label: "الترتيب", type: "number", default: 0 },
           ]}
         />
