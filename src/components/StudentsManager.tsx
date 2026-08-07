@@ -190,7 +190,7 @@ export function StudentsManager() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={async () => {
                               if (confirm("إلغاء اشتراك الطالب في هذا الكورس؟")) {
                                 const { error } = await supabase.from("enrollments").delete().eq("id", enrollment.id);
                                 if (!error) {
