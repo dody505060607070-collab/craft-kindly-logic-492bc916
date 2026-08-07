@@ -11,6 +11,11 @@ import { discounted } from "@/lib/pricing";
 import { RedeemCodeCard } from "@/components/RedeemCodeCard";
 
 export const Route = createFileRoute("/subscribe/$courseId")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      plan: search.plan as string | undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "اشترك في الدرس | منصة المستر" },
