@@ -105,7 +105,7 @@ export function AILessonToolbox({ lessonText, lessonTitle }: { lessonText?: stri
         </span>
         <div>
           <p className="font-black">أدوات ذكاء اصطناعي للدرس</p>
-          <p className="text-[11px] text-muted-foreground">اختار أداة واضغط تنفيذ — Groq يشتغل ليك</p>
+          <p className="text-[11px] text-muted-foreground">اختار أداة واضغط تنفيذ — الذكاء الاصطناعي بيشتغل ليك</p>
         </div>
       </div>
 

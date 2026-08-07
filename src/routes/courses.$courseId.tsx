@@ -121,7 +121,8 @@ function CourseDetail() {
   const course = applyVariant(rawCourse, variant);
   const { chapters, lessons, enrollment, materials, assignments, quizzes } = data;
   const enrolled = Boolean(enrollment && (!enrollment.expires_at || new Date(enrollment.expires_at) > new Date()));
-  const canWatch = isAdmin || enrolled || course.is_free;
+  const isCourseFree = Boolean(course.is_free) || Number(course.price) === 0;
+  const canWatch = isAdmin || enrolled || isCourseFree;
   const current = activeLesson
     ? lessons.find((l) => l.id === activeLesson)
     : lessons.find((l) => (canWatch || l.is_free) && l.video_url) ||
@@ -141,7 +142,7 @@ function CourseDetail() {
               {course.grade || "الكل"}
             </span>
             <span className="rounded-full bg-card px-3 py-1 text-xs font-bold">
-              {course.is_free ? "مجاني" : `${course.price} ج.م`}
+              {isCourseFree ? "مجاني" : `${course.price} ج.م`}
             </span>
             {enrolled && (
               <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-500">
@@ -215,7 +216,7 @@ function CourseDetail() {
                 </div>
               )}
             </div>
-            {!canWatch && user && (
+            {!canWatch && !isCourseFree && user && (
               <RedeemCodeCard />
             )}
 
@@ -344,7 +345,7 @@ function CourseDetail() {
                 )}
               </div>
 
-              {!enrolled && !course.is_free && (
+              {!enrolled && !isCourseFree && (
                 <Link
                   to="/subscribe/$courseId"
                   params={{ courseId }}
