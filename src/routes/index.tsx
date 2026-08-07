@@ -239,26 +239,62 @@ function Home() {
     title: string;
     grade: string;
     img: string;
-    price: string;
+    prices: Array<{ label: string; amount: number; original?: number }>;
     isFree: boolean;
     contents: string[];
   }> =
     liveCourses && liveCourses.length > 0
-      ? liveCourses.map((course, index) => ({
-          id: course.id,
-          title: course.title,
-          grade: course.grade || course.description?.slice(0, 40) || "درس برمجة",
-          img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
-          price:
-            course.is_free || Number(course.price) === 0
-              ? "مجانًا"
-              : discounted(course.price, course.discount_percent).hasDiscount
-                ? `${discounted(course.price, course.discount_percent).final} جنيه (بدل ${Number(course.price)})`
-                : `${Number(course.price)} جنيه`,
-          isFree: Boolean(course.is_free) || Number(course.price) === 0,
-          contents: [], // Only show course info on home
-        }))
-      : COURSES.map((course) => ({ id: null, ...course, isFree: false, contents: [] }));
+      ? liveCourses.map((course, index) => {
+          const isFree = Boolean(course.is_free) || (Number(course.price) === 0 && !course.price_term && !course.price_year);
+          
+          const prices: Array<{ label: string; amount: number; original?: number }> = [];
+          
+          if (!isFree) {
+            // Use course_plans if available
+            const activePlans = (course.course_plans as any[] || []).filter(p => p.is_active);
+            if (activePlans.length > 0) {
+              activePlans.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).forEach(p => {
+                const d = discounted(p.price, p.discount_percent);
+                prices.push({
+                  label: p.name,
+                  amount: d.final,
+                  original: d.hasDiscount ? d.base : undefined
+                });
+              });
+            } else {
+              // Fallback to basic fields
+              if (course.price) {
+                const d = discounted(course.price, course.discount_percent);
+                prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+              }
+              if (course.price_term) {
+                const d = discounted(course.price_term, course.discount_percent);
+                prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+              }
+              if (course.price_year) {
+                const d = discounted(course.price_year, course.discount_percent);
+                prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
+              }
+            }
+          }
+
+          return {
+            id: course.id,
+            title: course.title,
+            grade: course.grade || course.description?.slice(0, 40) || "درس برمجة",
+            img: course.cover_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]!,
+            prices,
+            isFree,
+            contents: [],
+          };
+        })
+      : COURSES.map((course) => ({ 
+          id: null, 
+          ...course, 
+          isFree: false, 
+          contents: [],
+          prices: [{ label: "شهر", amount: parseInt(course.price.replace(/\D/g, "")) || 0 }] 
+        }));
 
 
 
