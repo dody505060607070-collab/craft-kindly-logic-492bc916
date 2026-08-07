@@ -264,15 +264,15 @@ function Home() {
               });
             } else {
               // Fallback to basic fields
-              if (course.price) {
+              if (course.price > 0) {
                 const d = discounted(course.price, course.discount_percent);
                 prices.push({ label: "شهر", amount: d.final, original: d.hasDiscount ? d.base : undefined });
               }
-              if (course.price_term) {
+              if (course.price_term && course.price_term > 0) {
                 const d = discounted(course.price_term, course.discount_percent);
                 prices.push({ label: "ترم", amount: d.final, original: d.hasDiscount ? d.base : undefined });
               }
-              if (course.price_year) {
+              if (course.price_year && course.price_year > 0) {
                 const d = discounted(course.price_year, course.discount_percent);
                 prices.push({ label: "سنة", amount: d.final, original: d.hasDiscount ? d.base : undefined });
               }
